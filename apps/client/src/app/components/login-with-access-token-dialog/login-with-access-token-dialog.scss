@@ -1,0 +1,23 @@
+:host {
+  display: block;
+
+  textarea.mat-input-element.cdk-textarea-autosize {
+    box-sizing: content-box;
+  }
+
+  .mat-checkbox {
+    ::ng-deep {
+      label {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .mat-form-field {
+    ::ng-deep {
+      .mat-form-field-wrapper {
+        padding-bottom: 0;
+      }
+    }
+  }
+}

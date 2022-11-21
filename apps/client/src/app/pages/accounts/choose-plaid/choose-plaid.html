@@ -1,0 +1,27 @@
+<h1 i18n mat-dialog-title>Choose an account to link</h1>
+  <div class="flex-grow-1" mat-dialog-content>
+    Connect your accounts to automatically import your holdings. We have partnered with Plaid to securely connect to your holdings.
+    <p>Alternatively, you can choose to create a manual account in the case of a physical holding, such as property. Or, simply because you prefer to enter manually.</p>
+  </div>
+  <div class="justify-content-end" mat-dialog-actions>
+    <button i18n style="margin-bottom: 2%;margin-left: 40%;" (click)="btnClick()">
+      Connect w/Plaid
+    </button>
+  </div>
+  <div class="justify-content-end" mat-dialog-actions>
+    <button i18n style="margin-left: 40%;margin-bottom: 2%;" (click)="manualClick()"
+    routerLink="[]"
+      queryParams="{ createDialog: true }">
+      Add a Manual Account
+    </button>
+  </div>
+  <div class="justify-content-end" mat-dialog-actions>
+    <button i18n style="margin-left: 40%;margin-bottom: 10%;" 
+    (click)="onCancel()">
+      Cancel
+    </button>
+  </div>
+  <div style="width: 50%;">
+    Your security is important to us.
+    in addition to security measures,you are only authorizing read-only access via plaid.
+  </div>

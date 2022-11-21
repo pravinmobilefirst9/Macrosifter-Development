@@ -1,0 +1,60 @@
+<header>
+  <gf-header
+    class="position-fixed w-100"
+    [currentRoute]="currentRoute"
+    [info]="info"
+    [user]="user"
+    (signOut)="onSignOut()"
+  ></gf-header>
+</header>
+
+<main role="main">
+  <div
+    *ngIf="canCreateAccount || (info?.systemMessage && user)"
+    class="container info-message-container"
+  >
+    <div class="row">
+      <div class="col-md-8 offset-md-2 text-center">
+        <a
+          *ngIf="canCreateAccount"
+          class="text-center"
+          [routerLink]="['/register']"
+        >
+          <div
+            class="cursor-pointer d-inline-block info-message px-3 py-2"
+            (click)="onCreateAccount()"
+          >
+            <span>You are using the Live Demo.</span>
+            <span class="a ml-2">Create Account</span>
+          </div></a
+        >
+        <div
+          *ngIf="!canCreateAccount && info?.systemMessage && user"
+          class="d-inline-block info-message px-3 py-2"
+        >
+          {{ info.systemMessage }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <router-outlet></router-outlet>
+</main>
+
+<footer
+  *ngIf="currentRoute === 'start'"
+  class="footer d-flex justify-content-center w-100"
+>
+  <div class="container text-center">
+    <div>
+      © {{ currentYear }} <a href="https://ghostfol.io">Ghostfolio</a>
+      {{ version }}
+    </div>
+    <div class="py-2 text-muted">
+      <small i18n
+        >The risk of loss in trading can be substantial. It is not advisable to
+        invest money you may need in the short term.</small
+      >
+    </div>
+  </div>
+</footer>

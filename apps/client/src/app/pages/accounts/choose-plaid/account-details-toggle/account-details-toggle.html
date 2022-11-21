@@ -1,0 +1,14 @@
+<h1 i18n mat-dialog-title>Verified Account</h1>
+  <div class="flex-grow-1" mat-dialog-content *ngIf="accountStatusCode == '201'">
+    {{msg}}
+  </div>
+  <div class="flex-grow-1" mat-dialog-content *ngIf="accountStatusCode != '201'">
+    {{msg}}
+  </div>
+
+  <div class="justify-content-start" mat-dialog-actions>
+    <button i18n style="margin-left: 40%;margin-bottom: 10%;" 
+    (click)="onCancel()">
+      Cancel
+    </button>
+  </div>
