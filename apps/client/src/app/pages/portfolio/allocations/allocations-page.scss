@@ -1,0 +1,61 @@
+:host {
+  display: block;
+
+  .allocations-by-symbol {
+    gf-portfolio-proportion-chart {
+      max-width: 80vh;
+    }
+  }
+
+  .world-map-chart {
+    .mat-card {
+      .mat-card-content {
+        aspect-ratio: 16 / 9;
+      }
+    }
+  }
+
+  .mat-card {
+    .mat-card-header {
+      ::ng-deep {
+        .mat-card-header-text {
+          flex: 1 1 auto;
+          overflow: hidden;
+        }
+      }
+
+      gf-toggle {
+        font-size: 90%;
+      }
+    }
+  }
+
+  .mat-progress-bar {
+    border-radius: 0.25rem;
+    height: 0.5rem;
+
+    ::ng-deep {
+      .mat-progress-bar-background {
+        fill: rgb(var(--palette-background-unselected-chip));
+      }
+
+      .mat-progress-bar-buffer {
+        background-color: rgb(var(--palette-background-unselected-chip));
+      }
+    }
+  }
+}
+
+:host-context(.is-dark-theme) {
+  .mat-progress-bar {
+    ::ng-deep {
+      .mat-progress-bar-background {
+        fill: rgb(var(--palette-background-unselected-chip-dark));
+      }
+
+      .mat-progress-bar-buffer {
+        background-color: rgb(var(--palette-background-unselected-chip-dark));
+      }
+    }
+  }
+}

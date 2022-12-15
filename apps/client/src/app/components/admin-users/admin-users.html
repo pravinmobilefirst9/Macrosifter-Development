@@ -1,0 +1,97 @@
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <div class="users">
+        <table class="gf-table">
+          <thead>
+            <tr class="mat-header-row">
+              <th class="mat-header-cell px-1 py-2 text-right">#</th>
+              <th class="mat-header-cell px-1 py-2" i18n>User</th>
+              <th class="mat-header-cell px-1 py-2 text-right">
+                <ng-container i18n>Registration</ng-container>
+              </th>
+              <th class="mat-header-cell px-1 py-2 text-right">
+                <ng-container i18n>Accounts</ng-container>
+              </th>
+              <th class="mat-header-cell px-1 py-2 text-right">
+                <ng-container i18n>Activities</ng-container>
+              </th>
+              <th class="mat-header-cell px-1 py-2 text-right">
+                <ng-container i18n>Engagement per Day</ng-container>
+              </th>
+              <th class="mat-header-cell px-1 py-2" i18n>Last Request</th>
+              <th class="mat-header-cell px-1 py-2"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let userItem of users; let i = index" class="mat-row">
+              <td class="mat-cell px-1 py-2 text-right">{{ i + 1 }}</td>
+              <td class="mat-cell px-1 py-2">
+                <div class="d-flex align-items-center">
+                  <span class="d-none d-sm-inline-block"
+                    >{{ userItem.id }}</span
+                  >
+                  <span class="d-inline-block d-sm-none"
+                    >{{ (userItem.id | slice:0:5) + '...' }}</span
+                  >
+                  <gf-premium-indicator
+                    *ngIf="userItem?.subscription?.type === 'Premium'"
+                    class="ml-1"
+                  ></gf-premium-indicator>
+                </div>
+              </td>
+              <td class="mat-cell px-1 py-2 text-right">
+                {{ formatDistanceToNow(userItem.createdAt) }}
+              </td>
+              <td class="mat-cell px-1 py-2 text-right">
+                <gf-value
+                  class="d-inline-block justify-content-end"
+                  [locale]="user?.settings?.locale"
+                  [value]="userItem.accountCount"
+                ></gf-value>
+              </td>
+              <td class="mat-cell px-1 py-2 text-right">
+                <gf-value
+                  class="d-inline-block justify-content-end"
+                  [locale]="user?.settings?.locale"
+                  [value]="userItem.transactionCount"
+                ></gf-value>
+              </td>
+              <td class="mat-cell px-1 py-2 text-right">
+                <gf-value
+                  class="d-inline-block justify-content-end"
+                  [locale]="user?.settings?.locale"
+                  [precision]="0"
+                  [value]="userItem.engagement"
+                ></gf-value>
+              </td>
+              <td class="mat-cell px-1 py-2">
+                {{ formatDistanceToNow(userItem.lastActivity) }}
+              </td>
+              <td class="mat-cell px-1 py-2">
+                <button
+                  class="mx-1 no-min-width px-2"
+                  mat-button
+                  [matMenuTriggerFor]="accountMenu"
+                  (click)="$event.stopPropagation()"
+                >
+                  <ion-icon name="ellipsis-vertical"></ion-icon>
+                </button>
+                <mat-menu #accountMenu="matMenu" xPosition="before">
+                  <button
+                    mat-menu-item
+                    [disabled]="userItem.id === user?.id"
+                    (click)="onDeleteUser(userItem.id)"
+                  >
+                    <ion-icon class="mr-2" name="trash-outline"></ion-icon>
+                    <span i18n>Delete</span>
+                  </button>
+                </mat-menu>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

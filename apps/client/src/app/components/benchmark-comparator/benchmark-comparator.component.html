@@ -1,0 +1,48 @@
+<div class="mb-2 row">
+  <div class="col-md-6 col-xs-12 d-flex">
+    <div class="align-items-center d-flex flex-grow-1 h5 mb-0 text-truncate">
+      <span i18n>Performance</span>
+      <gf-premium-indicator
+        *ngIf="user?.subscription?.type === 'Basic'"
+        class="ml-1"
+      ></gf-premium-indicator>
+    </div>
+  </div>
+  <div class="col-md-6 col-xs-12 d-flex justify-content-end">
+    <mat-form-field
+      appearance="outline"
+      class="w-100 without-hint"
+      color="accent"
+      [hidden]="benchmarks?.length === 0"
+    >
+      <mat-label i18n>Compare with...</mat-label>
+      <mat-select
+        name="benchmark"
+        [value]="benchmark"
+        (selectionChange)="onChangeBenchmark($event.value)"
+      >
+        <mat-option [value]="null"></mat-option>
+        <mat-option
+          *ngFor="let symbolProfile of benchmarks"
+          [value]="symbolProfile.id"
+          >{{ symbolProfile.name }}</mat-option
+        >
+      </mat-select>
+    </mat-form-field>
+  </div>
+</div>
+<div class="chart-container">
+  <ngx-skeleton-loader
+    *ngIf="isLoading"
+    animation="pulse"
+    [theme]="{
+      height: '100%',
+      width: '100%'
+    }"
+  ></ngx-skeleton-loader>
+  <canvas
+    #chartCanvas
+    class="h-100"
+    [ngStyle]="{ display: isLoading ? 'none' : 'block' }"
+  ></canvas>
+</div>

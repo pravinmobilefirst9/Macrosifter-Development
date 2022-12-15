@@ -1,0 +1,50 @@
+<table class="gf-table w-100" mat-table [dataSource]="benchmarks">
+  <ng-container matColumnDef="name">
+    <th *matHeaderCellDef class="px-2" i18n mat-header-cell>Index</th>
+    <td *matCellDef="let element" class="px-2" mat-cell>
+      {{ element?.name }}
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="change">
+    <th *matHeaderCellDef class="text-right" mat-header-cell>
+      <span class="d-none d-sm-block text-nowrap" i18n
+        >Change from All Time High</span
+      >
+      <span class="d-block d-sm-none text-nowrap" i18n>from ATH</span>
+    </th>
+    <td *matCellDef="let element" class="text-right" mat-cell>
+      <gf-value
+        class="d-inline-block justify-content-end"
+        size="medium"
+        [isPercent]="true"
+        [locale]="locale"
+        [ngClass]="{
+          'text-danger':
+            element?.performances?.allTimeHigh?.performancePercent < 0,
+          'text-success':
+            element?.performances?.allTimeHigh?.performancePercent > 0
+        }"
+        [value]="
+          element?.performances?.allTimeHigh?.performancePercent ?? undefined
+        "
+      ></gf-value>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="marketCondition">
+    <th *matHeaderCellDef mat-header-cell></th>
+    <td *matCellDef="let element" class="px-0" mat-cell>
+      <div
+        *ngIf="element?.marketCondition"
+        class="text-center"
+        [title]="element?.marketCondition"
+      >
+        {{ resolveMarketCondition(element.marketCondition).emoji }}
+      </div>
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+</table>

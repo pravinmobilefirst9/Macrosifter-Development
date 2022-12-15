@@ -1,0 +1,205 @@
+<div class="container">
+  <div class="mb-5 row">
+    <div class="col">
+      <h3 class="d-flex justify-content-center mb-3">About MacroSifter</h3>
+      <div class="about-container">
+        <p>Hi, my name is Fehzan Ali and I am the founder of MacroSifter.</p>
+        <p>
+          MacroSifter is an investment management software created for
+          individuals interested in enterprise-grade portfolio management. We
+          make it easy for you to connect, track, and analyze your investments
+          across various asset classes.
+        </p>
+        <p>
+          After spending the last decade investing with advisors, investing in
+          my own ideas, investing in others ideas, trying to time the market,
+          and generally making bad investing decisions, I finally found my firm
+          footing in the world of investing by establishing foundational
+          knowledge in macroeconomics, the way the world works, investment
+          management, and what makes great companies tick. After this time, I
+          was finally able to start generating real investment returns while
+          consistently learning from mistakes.
+        </p>
+        <p>
+          Most importantly, I learned that investing is overly complex for very
+          few reasons. For everyday investors, the chips are stacked against you
+          with high fees, confusing products, and emotions that can become
+          difficult to navigate during market gyrations.
+        </p>
+        <p>
+          MacroSifter is meant to replace excel with something better for
+          myself. I believe in this product because it saves me substantial time
+          and allows me to automate tracking and analysis of my various
+          investment portfolios while spotting opportunities, issues, and other
+          key analysis I may otherwise miss. More than that, it helps me stay
+          the course during turbulent times by keeping my eye on the metrics
+          that matter most - the long term fundamentals of my investments.
+        </p>
+
+        <p>I hope MacroSifter is that solution for you too.</p>
+
+        <p class="text-center">
+          <a
+            class="mx-2"
+            href="https://twitter.com/"
+            mat-icon-button
+            title="Follow MacroSifter on Twitter"
+          >
+            <ion-icon
+              name="logo-twitter"
+              size="large"
+              style="color: #007bff"
+            ></ion-icon>
+          </a>
+          <a
+            class="mx-2"
+            href="https://facebook.com/"
+            mat-icon-button
+            title="Follow MacroSifter on Facebook"
+          >
+            <ion-icon
+              name="logo-facebook"
+              size="large"
+              style="color: #007bff"
+            ></ion-icon>
+          </a>
+          <a
+            class="mx-2"
+            href="mailto:hi@ghostfol.io"
+            mat-icon-button
+            title="Send an e-mail"
+          >
+            <ion-icon
+              name="mail"
+              size="large"
+              style="color: #007bff"
+            ></ion-icon>
+          </a>
+        </p>
+        <div
+          *ngIf="hasPermissionForSubscription"
+          class="d-flex justify-content-center"
+        >
+          <div
+            class="independent-and-bootstrapped-logo mb-2"
+            title="MacroSifter is an independent & bootstrapped business"
+          ></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="hasPermissionForStatistics" class="mb-5 row">
+    <div class="col">
+      <h3 class="mb-3 text-center">Ghostfolio in Numbers</h3>
+      <mat-card>
+        <mat-card-content>
+          <div class="row">
+            <div class="col-xs-12 col-md-4 my-2">
+              <gf-value
+                size="large"
+                subLabel="(Last 24 hours)"
+                [value]="statistics?.activeUsers1d ?? '-'"
+                >Active Users</gf-value
+              >
+            </div>
+            <div class="col-xs-12 col-md-4 my-2">
+              <gf-value
+                size="large"
+                subLabel="(Last 30 days)"
+                [value]="statistics?.newUsers30d ?? '-'"
+                >New Users</gf-value
+              >
+            </div>
+            <div class="col-xs-12 col-md-4 my-2">
+              <gf-value
+                size="large"
+                subLabel="(Last 30 days)"
+                [value]="statistics?.activeUsers30d ?? '-'"
+                >Active Users</gf-value
+              >
+            </div>
+            <div class="col-xs-12 col-md-4 my-2">
+              <a
+                class="d-block"
+                href="https://join.slack.com/t/ghostfolio/shared_invite/zt-vsaan64h-F_I0fEo5M0P88lP9ibCxFg"
+              >
+                <gf-value
+                  size="large"
+                  [value]="statistics?.slackCommunityUsers ?? '-'"
+                  >Users in Slack community</gf-value
+                >
+              </a>
+            </div>
+            <div class="col-xs-12 col-md-4 my-2">
+              <a
+                class="d-block"
+                href="https://github.com/ghostfolio/ghostfolio/graphs/contributors"
+              >
+                <gf-value
+                  size="large"
+                  [value]="statistics?.gitHubContributors ?? '-'"
+                  >Contributors on GitHub</gf-value
+                >
+              </a>
+            </div>
+            <div class="col-xs-12 col-md-4 my-2">
+              <a
+                class="d-block"
+                href="https://github.com/ghostfolio/ghostfolio/stargazers"
+              >
+                <gf-value
+                  size="large"
+                  [value]="statistics?.gitHubStargazers ?? '-'"
+                  >Stars on GitHub</gf-value
+                >
+              </a>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <div class="row">
+    <div *ngIf="hasPermissionForSubscription" class="col-md-3 col-xs-12 my-2">
+      <a
+        class="py-2 w-100"
+        color="primary"
+        mat-stroked-button
+        [routerLink]="['/faq']"
+        >FAQ</a
+      >
+    </div>
+    <!-- <div
+      class="col-md-3 col-xs-12 my-2"
+      [ngClass]="{ 'offset-md-4': !hasPermissionForBlog }"
+    >
+      <a
+        class="py-2 w-100"
+        color="primary"
+        mat-stroked-button
+        [routerLink]="['/about', 'changelog']"
+        >Changelog & License</a
+      >
+    </div> -->
+    <div *ngIf="hasPermissionForSubscription" class="col-md-3 col-xs-12 my-2">
+      <a
+        class="py-2 w-100"
+        color="primary"
+        mat-stroked-button
+        [routerLink]="['/about', 'privacy-policy']"
+        >Privacy Policy</a
+      >
+    </div>
+    <div *ngIf="hasPermissionForBlog" class="col-md-3 col-xs-12 my-2">
+      <a
+        class="py-2 w-100"
+        color="primary"
+        mat-flat-button
+        [routerLink]="['/blog']"
+        >Blog</a
+      >
+    </div>
+  </div>
+</div>
