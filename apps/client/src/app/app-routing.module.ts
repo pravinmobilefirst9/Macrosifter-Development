@@ -44,6 +44,20 @@ const routes: Routes = [
       )
   },
   {
+    path: 'plaid-oauth-redirect',
+    loadChildren: () =>
+      import('./pages/plaid-auth-redirect/plaid-auth-redirect-page.module').then(
+        (m) => m.PlaidAuthRedirectPageModule
+      )
+  },
+  {
+    path: 'plaid-flow',
+    loadChildren: () =>
+      import('./pages/accounts/accounts-page.module').then(
+        (m) => m.AccountsPageModule
+      )
+  },
+  {
     path: 'admin',
     loadChildren: () =>
       import('./pages/admin/admin-page.module').then((m) => m.AdminPageModule)

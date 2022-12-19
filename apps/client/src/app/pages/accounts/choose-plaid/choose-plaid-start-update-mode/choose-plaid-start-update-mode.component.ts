@@ -66,6 +66,7 @@ export class ChoosePlaidStartUpdateModeDialog implements OnInit {
 
   public btnClick = async () => {
 
+    this.router.navigate(['/plaid-flow'], { relativeTo: this.route });
     this.dataService.createPlaidLinkTokenUpdateMode(this.data['accessToken']).subscribe(data => {
       this.config.token = data['link_token']
       this.plaidLinkService
@@ -150,7 +151,7 @@ export class ChoosePlaidStartUpdateModeDialog implements OnInit {
             });
         }
 
-        this.router.navigate(['.'], { relativeTo: this.route });
+        this.router.navigate(['/accounts'], { relativeTo: this.route });
       });
   }
 
@@ -162,6 +163,7 @@ export class ChoosePlaidStartUpdateModeDialog implements OnInit {
   onExit(error, metadata) {
     console.log("We exited:", error);
     console.log("We got metadata:", metadata);
+    this.router.navigate(['/accounts'], { relativeTo: this.route });
     this.dialogRef.close();
   }
 

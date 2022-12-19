@@ -63,6 +63,7 @@ export class ChoosePlaidStartMicroDepositDialog implements OnInit {
 
 
   public btnClick = async () => {
+    this.router.navigate(['/plaid-flow'], { relativeTo: this.route });
     this.dataService.createPlaidLinkTokenMicroDeposit().subscribe(data => {
       this.config.token = data['link_token']
       this.plaidLinkService
@@ -92,6 +93,7 @@ export class ChoosePlaidStartMicroDepositDialog implements OnInit {
     console.log("We got a token:", token);
     console.log("We got metadata:", metadata);
 
+    this.router.navigate(['/accounts'], { relativeTo: this.route });
     this.dialogRef.close();
 
     // let bodyData = {
@@ -148,6 +150,7 @@ export class ChoosePlaidStartMicroDepositDialog implements OnInit {
   onExit(error, metadata) {
     console.log("We exited:", error);
     console.log("We got metadata:", metadata);
+    this.router.navigate(['/accounts'], { relativeTo: this.route });
     this.dialogRef.close();
   }
 

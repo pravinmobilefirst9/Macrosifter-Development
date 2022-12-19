@@ -344,7 +344,7 @@ export class DataService {
       client_name: "Macrosifter",
       country_codes: ["US"],
       language: "en",
-      redirect_uri: 'https://macrosifter.com/redirectcallback',
+      redirect_uri: 'http://localhost:4200/en/plaid-oauth-redirect',
       user: {
         client_user_id: localStorage.getItem('local-user-id')
       },
@@ -372,7 +372,7 @@ export class DataService {
       country_codes: ["US"],
       language: "en",
       access_token: accessToken,
-      redirect_uri: 'https://macrosifter.com/redirectcallback',
+      redirect_uri: 'http://localhost:4200/en/plaid-oauth-redirect',
       update: { account_selection_enabled: true },
       user: {
         client_user_id: localStorage.getItem('local-user-id')
@@ -389,6 +389,7 @@ export class DataService {
       data, httpOptions
     );
   }
+
   public createPlaidLinkToken() {
     const data = {
       client_id: environment.plaid_client_id,
@@ -396,7 +397,7 @@ export class DataService {
       client_name: "Macrosifter",
       country_codes: ["US"],
       language: "en",
-      redirect_uri: 'https://macrosifter.com/redirectcallback',
+      redirect_uri: 'http://localhost:4200/en/plaid-oauth-redirect',
       user: {
         client_user_id: localStorage.getItem('local-user-id')
       },
@@ -412,6 +413,32 @@ export class DataService {
       data, httpOptions
     );
   }
+
+  public createPlaidLinkTokenWithRedirectUri({ redirectedUri, token }) {
+    const data = {
+      token: token['link_token'],
+      receivedRedirectUri: redirectedUri,
+      client_id: environment.plaid_client_id,
+      secret: environment.plaid_secret,
+      client_name: "Macrosifter",
+      country_codes: ["US"],
+      language: "en",
+      user: {
+        client_user_id: localStorage.getItem('local-user-id')
+      },
+      webhook: 'https://44a0-2409-4042-2411-cfb-ddcb-80f5-5953-e7ca.in.ngrok.io/api/v1/plaid/receive_webhook',
+    }
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json'
+      }),
+    };
+    return this.http.post('/api/v1/plaid/create-token',
+      data, httpOptions
+    );
+  }
+
+
 
   public postPlaidAccountDetails(accountDetails) {
     const httpOptions = {

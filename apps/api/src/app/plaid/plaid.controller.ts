@@ -164,9 +164,11 @@ export class PlaidController {
       );
     }
 
+    let plaidToken
+
     try {
 
-      let plaidToken = await this.prismaService.plaidToken.findFirst({
+      plaidToken = await this.prismaService.plaidToken.findFirst({
         where: {
           userId: bodyData.userId,
           AND: {
@@ -345,7 +347,7 @@ export class PlaidController {
       console.log('userAccountExistCounter->', userAccountExistCounter)
       console.log('userFreshNewRecordCreated->', userFreshNewRecordCounter)
       console.log('Final account data to be pushed inside Macrosifter DB', data);
-      return this.plaidService.onPlaidSuccess(data);
+      return this.plaidService.onPlaidSuccess(data, plaidToken);
     } catch (error) {
       console.log(error)
       throw new HttpException(

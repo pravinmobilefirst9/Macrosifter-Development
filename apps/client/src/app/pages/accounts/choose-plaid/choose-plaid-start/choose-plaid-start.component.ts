@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, Injector, OnInit } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatDialog, MatDialogModule, MatDialogRef } from "@angular/material/dialog";
@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSelectModule } from "@angular/material/select";
 import { ActivatedRoute, Router } from "@angular/router";
 import { CreateAccountDto } from "@ghostfolio/api/app/account/create-account.dto";
+import { AccountPageComponent } from "@ghostfolio/client/pages/account/account-page.component";
 import { DataService } from "@ghostfolio/client/services/data.service";
 import { environment } from "apps/client/src/environments/environment";
 import { DeviceDetectorService } from "ngx-device-detector";
@@ -64,7 +65,9 @@ export class ChoosePlaidStartDialog implements OnInit {
 
 
   public btnClick = async () => {
+    this.router.navigate(['/plaid-flow'], { relativeTo: this.route });
     this.dataService.createPlaidLinkToken().subscribe(data => {
+      localStorage.setItem("linkTokenData", JSON.stringify(data));
       this.config.token = data['link_token']
       this.plaidLinkService
         .createPlaid(
@@ -128,20 +131,8 @@ export class ChoosePlaidStartDialog implements OnInit {
       .afterClosed()
       .pipe(takeUntil(this.unsubscribeSubject))
       .subscribe((data: any) => {
-        const account: CreateAccountDto = data?.account;
 
-        if (account) {
-          this.dataService
-            .postAccount(account)
-            .pipe(takeUntil(this.unsubscribeSubject))
-            .subscribe({
-              next: () => {
-
-              }
-            });
-        }
-
-        this.router.navigate(['.'], { relativeTo: this.route });
+        this.router.navigate(['/accounts'], { relativeTo: this.route });
       });
   }
 
@@ -153,6 +144,7 @@ export class ChoosePlaidStartDialog implements OnInit {
   onExit(error, metadata) {
     console.log("We exited:", error);
     console.log("We got metadata:", metadata);
+    this.router.navigate(['/accounts'], { relativeTo: this.route });
 
     switch (metadata.status) {
 

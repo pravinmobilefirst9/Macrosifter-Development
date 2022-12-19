@@ -7,11 +7,11 @@ export const environment = {
   production: false,
   stripePublicKey: '',
   version: 'dev',
-  plaid_client_id: '610bdbc99ef9440010dd68c6',
-  plaid_secret: '3cff1e787d53bd8e496e26bdc8281e',
-  plaid_institution: 'MacroSifter'
-  //plaid_client_id : '610bdbc99ef9440010dd68c6',
-  //plaid_secret: '3cff1e787d53bd8e496e26bdc8281e',
+  // plaid_client_id: '610bdbc99ef9440010dd68c6',
+  // plaid_secret: '3cff1e787d53bd8e496e26bdc8281e',
+  plaid_institution: 'MacroSifter',
+  plaid_client_id: '610ba50cc5c2c100116eb9d5',
+  plaid_secret: 'ab0499cac310beb056d759af917f3e',
   //plaid_institution: 'MobileFirst'
 };
 

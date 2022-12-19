@@ -12,9 +12,9 @@ export class PlaidService {
 
     public constructor(private readonly prismaService: PrismaService) { }
 
-    public async createLinkToken(data: CreateTokenDto) {
+    public async createLinkToken(data) {
 
-        console.log('BodyData->', data);
+        console.log('BodyData for link_token->', data);
 
         const config = {
             method: 'post',
@@ -25,31 +25,25 @@ export class PlaidService {
             data: data
         };
 
-        const response = await axios.post(config.url, data);
-        console.log(response.data);
-        return response.data;
+        try {
+            const response = await axios.post(config.url, data);
+            console.log(response.data);
+            return response.data;
 
-        // let result;
-        // axios(config)
-        //     .then(function (response) {
-        //         console.log(response.data);
-        //         result = (response.data);
-        //     })
-        //     .catch(function (error) {
-        //         console.log(error);
-
-        //         throw new HttpException(
-        //             getReasonPhrase(StatusCodes.FORBIDDEN),
-        //             StatusCodes.FORBIDDEN
-        //         );
-        //     });
+        } catch (error) {
+            console.log(error);
+            throw new HttpException(
+                getReasonPhrase(StatusCodes.FORBIDDEN),
+                StatusCodes.FORBIDDEN
+            );
+        }
 
 
-        // return result;
+
 
     }
 
-    public async onPlaidSuccess(data: Prisma.AccountCreateManyInput[]) {
+    public async onPlaidSuccess(data: Prisma.AccountCreateManyInput[], plaidToken: any) {
 
         try {
 
@@ -60,6 +54,7 @@ export class PlaidService {
             return {
                 status: 'success',
                 statusCode: 201,
+                plaidToken,
                 msg: 'account is verified with plaid we are importing account details'
             };
 
