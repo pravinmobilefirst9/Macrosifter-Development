@@ -14,6 +14,7 @@ import { DeviceDetectorService } from "ngx-device-detector";
 import { NgxPlaidLinkService, PlaidLinkHandler } from "ngx-plaid-link";
 import { Subject, takeUntil } from "rxjs";
 import { AccountDetailsToggleDialog } from "../account-details-toggle/account-details-toggle.component";
+import { AccountDetailsTogglePendingDialog } from "../choose-plaid-start-update-mode/account-details-toggle-pending.component";
 
 @Component({
   selector: 'choose-plaid-start-micro-deposit',
@@ -93,54 +94,66 @@ export class ChoosePlaidStartMicroDepositDialog implements OnInit {
     console.log("We got a token:", token);
     console.log("We got metadata:", metadata);
 
-    this.router.navigate(['/accounts'], { relativeTo: this.route });
-    this.dialogRef.close();
 
-    // let bodyData = {
-    //   "accounts": metadata.accounts,
-    //   "institution": metadata.institution,
-    //   "public_token": metadata.public_token,
-    //   "userId": window.localStorage.getItem("local-user-id")
-    // }
+    let bodyData = {
+      "accounts": metadata.accounts,
+      "institution": metadata.institution,
+      "public_token": metadata.public_token,
+      "userId": window.localStorage.getItem("local-user-id")
+    }
 
-    // this.dataService.postPlaidAccountDetails(bodyData).subscribe(response => {
-    //   this.dialogRef.close();
-    //   this.openAccountDetailsToggle(response)
-    // })
+    this.dataService.postPlaidAccountDetails(bodyData).subscribe(response => {
+      this.dialogRef.close();
+      this.openAccountDetailsToggle(response)
+    })
   }
 
-  // openAccountDetailsToggle(status) {
-  //   const dialogRef = this.dialog.open(AccountDetailsToggleDialog, {
-  //     data: {
-  //       account: {
-  //         accountType: status,
+  openAccountDetailsToggle(status) {
 
-  //       }
-  //     },
-  //     height: this.deviceType === 'mobile' ? '97.5vh' : '80vh',
-  //     width: this.deviceType === 'mobile' ? '100vw' : '50rem'
-  //   });
+    if (status.status === "pending_automatic_verification") {
 
-  //   dialogRef
-  //     .afterClosed()
-  //     .pipe(takeUntil(this.unsubscribeSubject))
-  //     .subscribe((data: any) => {
-  //       const account: CreateAccountDto = data?.account;
+      const dialogRef = this.dialog.open(AccountDetailsTogglePendingDialog, {
+        data: {
+          account: {
+            accountType: status,
 
-  //       if (account) {
-  //         this.dataService
-  //           .postAccount(account)
-  //           .pipe(takeUntil(this.unsubscribeSubject))
-  //           .subscribe({
-  //             next: () => {
+          }
+        },
+        height: this.deviceType === 'mobile' ? '97.5vh' : '80vh',
+        width: this.deviceType === 'mobile' ? '100vw' : '50rem'
+      });
 
-  //             }
-  //           });
-  //       }
+      dialogRef
+        .afterClosed()
+        .pipe(takeUntil(this.unsubscribeSubject))
+        .subscribe((data: any) => {
 
-  //       this.router.navigate(['.'], { relativeTo: this.route });
-  //     });
-  // }
+          this.router.navigate(['/accounts'], { relativeTo: this.route });
+        });
+
+    } else {
+      const dialogRef = this.dialog.open(AccountDetailsToggleDialog, {
+        data: {
+          account: {
+            accountType: status,
+
+          }
+        },
+        height: this.deviceType === 'mobile' ? '97.5vh' : '80vh',
+        width: this.deviceType === 'mobile' ? '100vw' : '50rem'
+      });
+
+      dialogRef
+        .afterClosed()
+        .pipe(takeUntil(this.unsubscribeSubject))
+        .subscribe((data: any) => {
+
+          this.router.navigate(['/accounts'], { relativeTo: this.route });
+        });
+    }
+
+
+  }
 
   onEvent(eventName, metadata) {
     console.log("We got an event:", eventName);

@@ -28,16 +28,12 @@ const axios = require('axios');
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export class PlaidController {
 
+  public PLAID_BASE_URI = process.env.PLAID_BASE_URI;
   public constructor(
     private readonly plaidService: PlaidService,
     private readonly prismaService: PrismaService,
     @Inject(REQUEST) private readonly request: RequestWithUser,
   ) { }
-
-  @Post('on-plaid-success-demo')
-  public async createLinkTokendemo() {
-    return this.plaidService.createLinkTokendemo();
-  }
 
   @UseGuards(AuthGuard('jwt'))
   @Post('create-token')
@@ -48,6 +44,7 @@ export class PlaidController {
   @Post('on-plaid-success')
   public async onPlaidSuccess(@Body() bodyData: OnPlaidSuccessDto) {
     // First finding platform id from platform table
+    console.log('========================on-plaid-success-start============================================================');
 
     let platform = null;
     try {
@@ -102,7 +99,7 @@ export class PlaidController {
 
         const config3 = {
           method: 'post',
-          url: 'https://sandbox.plaid.com/institutions/get_by_id',
+          url: this.PLAID_BASE_URI + '/institutions/get_by_id',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -113,7 +110,6 @@ export class PlaidController {
 
         currentInstitutionLogo = response.data.institution.logo;
 
-        console.log('currentInstitutionLogo' + currentInstitutionLogo);
 
 
         institution = await this.prismaService.institution.create({
@@ -139,7 +135,7 @@ export class PlaidController {
     // Getting access_token from public_token
     const config = {
       method: 'post',
-      url: 'https://sandbox.plaid.com/item/public_token/exchange',
+      url: this.PLAID_BASE_URI + '/item/public_token/exchange',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -179,7 +175,6 @@ export class PlaidController {
       })
 
       if (plaidToken) {
-        console.log('PlaidToken Entry Already Exist:', plaidToken);
       } else {
 
         plaidToken = await this.prismaService.plaidToken.create({
@@ -192,7 +187,6 @@ export class PlaidController {
           }
         })
 
-        console.log('Created PlaidToken Entry:', plaidToken);
 
       }
 
@@ -204,14 +198,9 @@ export class PlaidController {
       );
     }
 
-
-
-    // 3. Same Access token is used to get  
-    // https://{{env_url}}/accounts/balance/get  balance.
-
     const config2 = {
       method: 'post',
-      url: 'https://sandbox.plaid.com/accounts/balance/get',
+      url: this.PLAID_BASE_URI + '/accounts/balance/get',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -265,13 +254,11 @@ export class PlaidController {
       return (AccountSubTypes) ? AccountSubTypes : null;
     })
 
-    let userAccountExistCounter = 0;
     const getData = async () => {
 
       return Promise.all(bodyData.accounts.map(async ({ name, subtype, type }) => {
 
         let isCurrentAccountExist = false;
-        // console.log('isInstitutionExist', isInstitutionExist);
 
         if (isInstitutionExist) {
 
@@ -293,10 +280,8 @@ export class PlaidController {
 
 
         if (isCurrentAccountExist) {
-          // HERE WE CAN UPDATE CURRENT_ACCOUNT
-          userAccountExistCounter++;
+
         } else {
-          // If not exist then we are creating new account entry of Account table.
           const accountSubType = await this.prismaService.accountSubTypes.findFirst({
             where: {
               plaidAccountSubtype: subtype,
@@ -314,21 +299,22 @@ export class PlaidController {
           })
 
           let current_balance = 0;
+          let verification_status = '';
           let current_currency = null;
 
           for (let i = 0; i < plaidAccounts.length; i++) {
             if ((plaidAccounts[i].subtype === subtype) && (plaidAccounts[i].type === type)) {
               current_balance = plaidAccounts[i].balances.current
               current_currency = plaidAccounts[i].balances.iso_currency_code
+              verification_status = plaidAccounts[i].verification_status ? plaidAccounts[i].verification_status : ''
             }
           }
-
-
 
           return {
             userId: bodyData.userId,
             accountType: accountTypeName,
             balance: current_balance,
+            verification_status,
             currency: current_currency,
             name: name,
             institutionId: institution.id,
@@ -343,10 +329,16 @@ export class PlaidController {
 
     try {
       const data = await getData();
-      const userFreshNewRecordCounter = bodyData.accounts.length - userAccountExistCounter;
-      console.log('userAccountExistCounter->', userAccountExistCounter)
-      console.log('userFreshNewRecordCreated->', userFreshNewRecordCounter)
       console.log('Final account data to be pushed inside Macrosifter DB', data);
+
+      console.log('========================on-plaid-success-end============================================================');
+      // return {
+      //   status: 'success',
+      //   statusCode: 201,
+      //   plaidToken,
+      //   msg: 'account is verified with plaid we are importing account details'
+      // };
+
       return this.plaidService.onPlaidSuccess(data, plaidToken);
     } catch (error) {
       console.log(error)
@@ -391,7 +383,6 @@ export class PlaidController {
   @Post('update-item-login-required-status/:itemId')
   @UseGuards(AuthGuard('jwt'))
   public async updateItemLoginRequiredStatus(@Param('itemId') itemId: string) {
-    console.log(itemId);
     return this.plaidService.updateItemLoginRequiredStatus(itemId);
   }
 

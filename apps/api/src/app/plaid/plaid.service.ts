@@ -10,15 +10,14 @@ const axios = require('axios');
 @Injectable()
 export class PlaidService {
 
+    public PLAID_BASE_URI = process.env.PLAID_BASE_URI;
     public constructor(private readonly prismaService: PrismaService) { }
 
     public async createLinkToken(data) {
 
-        console.log('BodyData for link_token->', data);
-
         const config = {
             method: 'post',
-            url: 'https://sandbox.plaid.com/link/token/create',
+            url: this.PLAID_BASE_URI + '/link/token/create',
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -27,7 +26,6 @@ export class PlaidService {
 
         try {
             const response = await axios.post(config.url, data);
-            console.log(response.data);
             return response.data;
 
         } catch (error) {
@@ -51,6 +49,15 @@ export class PlaidService {
                 data
             });
 
+            if (data[0] && data[0].verification_status === 'pending_automatic_verification') {
+                return {
+                    status: 'pending_automatic_verification',
+                    statusCode: 201,
+                    plaidToken,
+                    msg: 'Your account is pending automatic verification'
+                };
+            }
+
             return {
                 status: 'success',
                 statusCode: 201,
@@ -66,11 +73,6 @@ export class PlaidService {
             );
         }
 
-    }
-
-
-    public async createLinkTokendemo() {
-        return "DemoTesting1122"
     }
 
 
@@ -152,7 +154,6 @@ export class PlaidService {
                 }
             })
 
-            console.log(plaidTokens);
             const sanatizedData = [];
             plaidTokens.map(({ PlaidMessages, institutionUniqueId, accessToken, itemId }) => {
                 if (PlaidMessages.length !== 0) {
@@ -197,6 +198,7 @@ export class PlaidService {
             return result;
 
         } catch (error) {
+            console.log(error);
             throw new HttpException(
                 getReasonPhrase(StatusCodes.FORBIDDEN),
                 StatusCodes.FORBIDDEN

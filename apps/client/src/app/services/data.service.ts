@@ -1,3 +1,4 @@
+/* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { CreateAccessDto } from '@ghostfolio/api/app/access/create-access.dto';
@@ -337,21 +338,23 @@ export class DataService {
     });
   }
 
+
   public createPlaidLinkTokenMicroDeposit() {
     const data = {
       client_id: environment.plaid_client_id,
       secret: environment.plaid_secret,
-      client_name: "Macrosifter",
-      country_codes: ["US"],
+      client_name: environment.client_name,
+      country_codes: environment.country_codes,
+      redirect_uri: environment.redirect_uri,
+      webhook: environment.webhook,
       language: "en",
-      redirect_uri: 'http://localhost:4200/en/plaid-oauth-redirect',
       user: {
         client_user_id: localStorage.getItem('local-user-id')
       },
-      webhook: 'https://44a0-2409-4042-2411-cfb-ddcb-80f5-5953-e7ca.in.ngrok.io/api/v1/plaid/receive_webhook',
       products: ["auth"],
       auth: {
         automated_microdeposits_enabled: true,
+        same_day_microdeposits_enabled: true,
       },
     }
     const httpOptions = {
@@ -368,16 +371,16 @@ export class DataService {
     const data = {
       client_id: environment.plaid_client_id,
       secret: environment.plaid_secret,
-      client_name: "Macrosifter",
-      country_codes: ["US"],
+      client_name: environment.client_name,
+      country_codes: environment.country_codes,
+      redirect_uri: environment.redirect_uri,
+      webhook: environment.webhook,
       language: "en",
       access_token: accessToken,
-      redirect_uri: 'http://localhost:4200/en/plaid-oauth-redirect',
       update: { account_selection_enabled: true },
       user: {
         client_user_id: localStorage.getItem('local-user-id')
       },
-      webhook: 'https://44a0-2409-4042-2411-cfb-ddcb-80f5-5953-e7ca.in.ngrok.io/api/v1/plaid/receive_webhook',
       products: ["transactions"]
     }
     const httpOptions = {
@@ -394,14 +397,14 @@ export class DataService {
     const data = {
       client_id: environment.plaid_client_id,
       secret: environment.plaid_secret,
-      client_name: "Macrosifter",
-      country_codes: ["US"],
+      client_name: environment.client_name,
+      country_codes: environment.country_codes,
+      redirect_uri: environment.redirect_uri,
+      webhook: environment.webhook,
       language: "en",
-      redirect_uri: 'http://localhost:4200/en/plaid-oauth-redirect',
       user: {
         client_user_id: localStorage.getItem('local-user-id')
       },
-      webhook: 'https://44a0-2409-4042-2411-cfb-ddcb-80f5-5953-e7ca.in.ngrok.io/api/v1/plaid/receive_webhook',
       products: ["transactions"]
     }
     const httpOptions = {
@@ -413,32 +416,6 @@ export class DataService {
       data, httpOptions
     );
   }
-
-  public createPlaidLinkTokenWithRedirectUri({ redirectedUri, token }) {
-    const data = {
-      token: token['link_token'],
-      receivedRedirectUri: redirectedUri,
-      client_id: environment.plaid_client_id,
-      secret: environment.plaid_secret,
-      client_name: "Macrosifter",
-      country_codes: ["US"],
-      language: "en",
-      user: {
-        client_user_id: localStorage.getItem('local-user-id')
-      },
-      webhook: 'https://44a0-2409-4042-2411-cfb-ddcb-80f5-5953-e7ca.in.ngrok.io/api/v1/plaid/receive_webhook',
-    }
-    const httpOptions = {
-      headers: new HttpHeaders({
-        'Content-Type': 'application/json'
-      }),
-    };
-    return this.http.post('/api/v1/plaid/create-token',
-      data, httpOptions
-    );
-  }
-
-
 
   public postPlaidAccountDetails(accountDetails) {
     const httpOptions = {

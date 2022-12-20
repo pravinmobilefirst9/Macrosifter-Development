@@ -27,6 +27,7 @@ const axios = require('axios');
 export class UserService {
   public static DEFAULT_CURRENCY = 'USD';
 
+  public PLAID_BASE_URI = process.env.PLAID_BASE_URI;
   private baseCurrency: string;
 
   public constructor(
@@ -341,7 +342,7 @@ export class UserService {
 
     const config = {
       method: 'post',
-      url: 'https://sandbox.plaid.com/accounts/balance/get',
+      url: this.PLAID_BASE_URI + '/accounts/balance/get',
       headers: {
         'Content-Type': 'application/json'
       },
