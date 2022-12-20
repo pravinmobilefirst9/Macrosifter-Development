@@ -254,9 +254,13 @@ export class PlaidController {
       return (AccountSubTypes) ? AccountSubTypes : null;
     })
 
+    console.log('bodyData', bodyData);
+    console.log('plaidAccounts', plaidAccounts);
+
+
     const getData = async () => {
 
-      return Promise.all(bodyData.accounts.map(async ({ name, subtype, type }) => {
+      return Promise.all(bodyData.accounts.map(async ({ name, subtype, id, type }) => {
 
         let isCurrentAccountExist = false;
 
@@ -300,12 +304,14 @@ export class PlaidController {
 
           let current_balance = 0;
           let verification_status = '';
+          let account_id = '';
           let current_currency = null;
 
           for (let i = 0; i < plaidAccounts.length; i++) {
-            if ((plaidAccounts[i].subtype === subtype) && (plaidAccounts[i].type === type)) {
+            if ((plaidAccounts[i].subtype === subtype) && (plaidAccounts[i].type === type) && (plaidAccounts[i].account_id === id)) {
               current_balance = plaidAccounts[i].balances.current
               current_currency = plaidAccounts[i].balances.iso_currency_code
+              account_id = plaidAccounts[i].account_id
               verification_status = plaidAccounts[i].verification_status ? plaidAccounts[i].verification_status : ''
             }
           }
@@ -317,6 +323,7 @@ export class PlaidController {
             verification_status,
             currency: current_currency,
             name: name,
+            account_id,
             institutionId: institution.id,
             platformId: platform.id,
             accountSubTypeId: accountSubType.id

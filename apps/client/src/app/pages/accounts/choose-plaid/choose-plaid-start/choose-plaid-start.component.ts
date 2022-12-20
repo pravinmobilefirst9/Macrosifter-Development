@@ -35,7 +35,7 @@ export class ChoosePlaidStartDialog implements OnInit {
 
   private config: any = {
     apiVersion: "v2",
-    env: "sandbox",
+    env: environment.PLAID_ENV,
     institution: environment.plaid_institution,
     token: null,
     webhook: "",
@@ -95,19 +95,14 @@ export class ChoosePlaidStartDialog implements OnInit {
   onSuccess(token, metadata) {
     console.log("We got a token:", token);
     console.log("We got metadata:", metadata);
-    // api call
-    // this.openAccountDetailsToggle('success')
+
     let bodyData = {
       "accounts": metadata.accounts,
       "institution": metadata.institution,
       "public_token": metadata.public_token,
       "userId": window.localStorage.getItem("local-user-id")
     }
-    // let response = {
-    //   "statusCode": 201,
-    //   "message": "account is verified with plaid we are importing account detailsssssss"
-    // }
-    // this.openAccountDetailsToggle(response)
+
 
     this.dataService.postPlaidAccountDetails(bodyData).subscribe(response => {
       this.dialogRef.close();

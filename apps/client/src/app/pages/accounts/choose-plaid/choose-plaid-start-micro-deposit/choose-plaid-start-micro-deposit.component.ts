@@ -34,7 +34,7 @@ export class ChoosePlaidStartMicroDepositDialog implements OnInit {
 
   private config: any = {
     apiVersion: "v2",
-    env: "sandbox",
+    env: environment.PLAID_ENV,
     institution: environment.plaid_institution,
     token: null,
     webhook: "",

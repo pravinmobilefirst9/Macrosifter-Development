@@ -46,7 +46,7 @@ export class AccountDetailsToggleDialog implements OnDestroy {
 
   private config: any = {
     apiVersion: "v2",
-    env: "sandbox",
+    env: environment.PLAID_ENV,
     institution: environment.plaid_institution,
     token: null,
     webhook: "",
@@ -65,16 +65,14 @@ export class AccountDetailsToggleDialog implements OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private deviceService: DeviceDetectorService,
-    @Inject(MAT_DIALOG_DATA) public data: AccountDetailsToggleParams,
+    @Inject(MAT_DIALOG_DATA) public data: any,
     private dialog: MatDialog,
   ) { }
-  accountStatusCode = ''
-  msg = ''
+
+
   ngOnInit() {
-    console.log(this.data.account.accountType)
-    console.log(this.data.account.accountType['statusCode'])
-    this.accountStatusCode = this.data.account.accountType['statusCode']
-    this.msg = this.data.account.accountType['msg']
+    console.log("++++++++++++++++++++++++++++++++")
+    console.log(this.data)
     const { currencies, platforms } = this.dataService.fetchInfo();
 
     this.currencies = currencies;
