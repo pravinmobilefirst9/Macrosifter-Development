@@ -13,7 +13,7 @@ export const environment = {
   client_name: "MacroSifter",
   PLAID_ENV: 'sandbox',
   country_codes: ["US"],
-  webhook: 'https://e67f-2409-4042-4b81-c3d9-ed7d-6d76-17de-23dd.in.ngrok.io/api/v1/plaid/receive_webhook',
+  webhook: 'https://f927-2409-4042-d0a-deec-a5ea-4ac-53bc-951b.in.ngrok.io/api/v1/plaid/receive_webhook',
   redirect_uri: 'http://localhost:4200/en/plaid-oauth-redirect',
 };
 
