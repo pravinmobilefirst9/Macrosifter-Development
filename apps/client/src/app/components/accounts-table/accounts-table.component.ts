@@ -18,6 +18,7 @@ import { Subject, Subscription } from 'rxjs';
 import { MatDialog, MatDialogConfig, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DataService } from '@ghostfolio/client/services/data.service';
 import { ChoosePlaidStartUpdateModeDialog } from '@ghostfolio/client/pages/accounts/choose-plaid/choose-plaid-start-update-mode/choose-plaid-start-update-mode.component';
+import { ChoosePlaidStartTwoDepositDialog } from '@ghostfolio/client/pages/accounts/choose-plaid/choose-plaid-start-two-deposit/choose-plaid-start-two-deposit.component';
 
 @Component({
   selector: 'gf-accounts-table',
@@ -80,6 +81,9 @@ export class AccountsTableComponent implements OnChanges, OnDestroy, OnInit {
           firstAccount['Platform'] = currentAccount['Platform']
           firstAccount['isHeader'] = true;
           firstAccount['isInstitution'] = true;
+          firstAccount['verification_status'] = currentAccount['verification_status'];
+          firstAccount['access_token'] = currentAccount['access_token'];
+          firstAccount['account_id'] = currentAccount['account_id'];
           accountObj[currentAccount.institutionId].push(firstAccount);
         }
 
@@ -194,6 +198,29 @@ export class AccountsTableComponent implements OnChanges, OnDestroy, OnInit {
 
   public syncInstitution(institutionId: string) {
     alert("Sync Institution" + institutionId);
+  }
+
+  public verifyTwoDeposit(access_token: string, account_id: string) {
+    if (access_token) {
+      const dialogConfig = new MatDialogConfig();
+
+      dialogConfig.disableClose = true;
+      dialogConfig.autoFocus = true;
+
+      dialogConfig.height = "500px";
+      dialogConfig.width = "700px";
+
+      dialogConfig.enterAnimationDuration = '500ms';
+      dialogConfig.exitAnimationDuration = '0ms';
+
+      dialogConfig.data = {
+        accessToken: access_token,
+        account_id,
+      };
+
+      this.dialog.open(ChoosePlaidStartTwoDepositDialog, dialogConfig);
+    }
+
   }
 
   public onDeleteAccount(aId: string) {

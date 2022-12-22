@@ -1,7 +1,7 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, Inject, OnInit } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCheckboxModule } from "@angular/material/checkbox";
-import { MatDialog, MatDialogModule, MatDialogRef } from "@angular/material/dialog";
+import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
@@ -13,13 +13,13 @@ import { environment } from "apps/client/src/environments/environment";
 import { DeviceDetectorService } from "ngx-device-detector";
 import { NgxPlaidLinkService, PlaidLinkHandler } from "ngx-plaid-link";
 import { Subject, takeUntil } from "rxjs";
-import { AccountDetailsTogglePendingSameDayDialog } from "../account-details-pending-same-day";
 import { AccountDetailsToggleDialog } from "../account-details-toggle/account-details-toggle.component";
-import { AccountDetailsTogglePendingDialog } from "../choose-plaid-start-update-mode/account-details-toggle-pending.component";
+import { AccountDetailsToggleVerificationFailedSameDayDialog } from "../account-details-verification_failed-same-day";
+import { AccountDetailsToggleVerifiedSameDayDialog } from "../account-details-verified-same-day";
 
 @Component({
-  selector: 'choose-plaid-start-micro-deposit',
-  templateUrl: 'choose-plaid-start-micro-deposit.html',
+  selector: 'choose-plaid-start-two-deposit',
+  templateUrl: './choose-plaid-start-two-deposit.html',
   imports: [
     MatButtonModule,
     MatCheckboxModule,
@@ -31,17 +31,18 @@ import { AccountDetailsTogglePendingDialog } from "../choose-plaid-start-update-
   ],
   standalone: true
 })
-export class ChoosePlaidStartMicroDepositDialog implements OnInit {
+export class ChoosePlaidStartTwoDepositDialog implements OnInit {
 
   private config: any = {
-    apiVersion: "v2",
-    env: environment.PLAID_ENV,
-    institution: environment.plaid_institution,
-    token: null,
-    webhook: "",
-    product: ["transactions"],
-    countryCodes: ['US'],
-    key: environment.plaid_secret
+    "client_id": environment.plaid_client_id,
+    "secret": "{{secret_key}}",
+    "client_name": "Insert Client name here",
+    "country_codes": ["US"],
+    "language": "en",
+    "user": {
+      "client_user_id": "unique_user_id"
+    },
+    "access_token": "ENTER_ACCESS_TOKEN_HERE"
   };
 
   private unsubscribeSubject = new Subject<void>();
@@ -49,13 +50,14 @@ export class ChoosePlaidStartMicroDepositDialog implements OnInit {
   private plaidLinkHandler: PlaidLinkHandler;
   public deviceType: string;
 
-  constructor(public dialogRef: MatDialogRef<ChoosePlaidStartMicroDepositDialog>,
+  constructor(public dialogRef: MatDialogRef<ChoosePlaidStartTwoDepositDialog>,
     private dialog: MatDialog,
     private router: Router,
     private route: ActivatedRoute,
     private deviceService: DeviceDetectorService,
     private dataService: DataService,
     private plaidLinkService: NgxPlaidLinkService,
+    @Inject(MAT_DIALOG_DATA) public data: ChoosePlaidStartTwoDepositDialog
   ) {
     this.btnClick();
   }
@@ -65,8 +67,9 @@ export class ChoosePlaidStartMicroDepositDialog implements OnInit {
 
 
   public btnClick = async () => {
+
     this.router.navigate(['/plaid-flow'], { relativeTo: this.route });
-    this.dataService.createPlaidLinkTokenMicroDeposit().subscribe(data => {
+    this.dataService.createPlaidLinkTokenTwoDeposit(this.data['accessToken']).subscribe(data => {
       this.config.token = data['link_token']
       this.plaidLinkService
         .createPlaid(
@@ -95,33 +98,33 @@ export class ChoosePlaidStartMicroDepositDialog implements OnInit {
     console.log("We got a token:", token);
     console.log("We got metadata:", metadata);
 
-
+    // api call
+    // this.openAccountDetailsToggle('success')
     let bodyData = {
       "accounts": metadata.accounts,
-      "institution": metadata.institution,
       "public_token": metadata.public_token,
       "userId": window.localStorage.getItem("local-user-id")
     }
 
 
-    this.dataService.postPlaidAccountDetails(bodyData).subscribe(response => {
+    this.dataService.updateManualTwoDepositStatus(bodyData).subscribe(response => {
       this.dialogRef.close();
       this.openAccountDetailsToggle(response)
     })
 
 
+
+
+
   }
 
-  openAccountDetailsToggle(status) {
+  openAccountDetailsToggle(response) {
 
-    if (status.status === "pending_automatic_verification") {
+    if (response.verification_status === 'manually_verified') {
 
-      const dialogRef = this.dialog.open(AccountDetailsTogglePendingDialog, {
+      const dialogRef = this.dialog.open(AccountDetailsToggleVerifiedSameDayDialog, {
         data: {
-          account: {
-            accountType: status,
 
-          }
         },
         height: this.deviceType === 'mobile' ? '97.5vh' : '80vh',
         width: this.deviceType === 'mobile' ? '100vw' : '50rem'
@@ -134,35 +137,11 @@ export class ChoosePlaidStartMicroDepositDialog implements OnInit {
 
           this.router.navigate(['/accounts'], { relativeTo: this.route });
         });
-
-    } else if (status.status === "pending_manual_verification") {
-
-      const dialogRef = this.dialog.open(AccountDetailsTogglePendingSameDayDialog, {
-        data: {
-          account: {
-            accountType: status,
-
-          }
-        },
-        height: this.deviceType === 'mobile' ? '97.5vh' : '80vh',
-        width: this.deviceType === 'mobile' ? '100vw' : '50rem'
-      });
-
-      dialogRef
-        .afterClosed()
-        .pipe(takeUntil(this.unsubscribeSubject))
-        .subscribe((data: any) => {
-
-          this.router.navigate(['/accounts'], { relativeTo: this.route });
-        });
-
     } else {
-      const dialogRef = this.dialog.open(AccountDetailsToggleDialog, {
-        data: {
-          account: {
-            accountType: status,
 
-          }
+      const dialogRef = this.dialog.open(AccountDetailsToggleVerificationFailedSameDayDialog, {
+        data: {
+
         },
         height: this.deviceType === 'mobile' ? '97.5vh' : '80vh',
         width: this.deviceType === 'mobile' ? '100vw' : '50rem'
@@ -176,7 +155,6 @@ export class ChoosePlaidStartMicroDepositDialog implements OnInit {
           this.router.navigate(['/accounts'], { relativeTo: this.route });
         });
     }
-
 
   }
 
@@ -188,8 +166,20 @@ export class ChoosePlaidStartMicroDepositDialog implements OnInit {
   onExit(error, metadata) {
     console.log("We exited:", error);
     console.log("We got metadata:", metadata);
-    this.router.navigate(['/accounts'], { relativeTo: this.route });
-    this.dialogRef.close();
+    let bodyData = {
+      "accounts": metadata.accounts,
+      "account_id": this.data['account_id'],
+      "verification_failed": true,
+      "public_token": metadata.public_token,
+      "userId": window.localStorage.getItem("local-user-id")
+    }
+
+    this.dataService.updateManualTwoDepositStatus(bodyData).subscribe(response => {
+      this.dialogRef.close();
+      this.openAccountDetailsToggle(response)
+    })
+
+
   }
 
 

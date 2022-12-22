@@ -41,12 +41,164 @@ export class PlaidController {
     return this.plaidService.createLinkToken(data);
   }
 
+  @UseGuards(AuthGuard('jwt'))
+  @Post('create-token-two-deposit')
+  public async createLinkTokenTwoDeposit(@Body() data) {
+    return this.plaidService.createLinkTokenTwoDeposit(data);
+  }
+
   @Post('on-plaid-success')
   public async onPlaidSuccess(@Body() bodyData: OnPlaidSuccessDto) {
-    // First finding platform id from platform table
-    console.log('========================on-plaid-success-start============================================================');
 
     let platform = null;
+    try {
+
+      platform = await this.prismaService.platform.findUnique({
+        where: {
+          url: 'https://www.plaid.com'
+        }
+      })
+
+      // if not platform then we are creating 'Plaid' platform
+      if (!platform) {
+        platform = await this.prismaService.platform.create({
+          data: {
+            url: 'https://www.plaid.com',
+            name: 'Plaid',
+          }
+        })
+      }
+    } catch (error) {
+      console.log(error)
+      throw new HttpException(
+        getReasonPhrase(StatusCodes.FORBIDDEN),
+        StatusCodes.FORBIDDEN
+      );
+    }
+
+    // This is for same_day
+    if (!(bodyData.institution.institution_id)) {
+
+
+      const same_day_institution = await this.prismaService.institution.findFirst({
+        where: {
+          institutionUniqueId: 'same_day'
+        }
+      })
+
+      if (!same_day_institution) {
+
+        await this.prismaService.institution.create({
+          data: {
+            institutionName: "SAME_DAY",
+            institutionUniqueId: 'same_day',
+            institutionUrl: 'https://www.plaid.com',
+            platformId: platform.id,
+          }
+        })
+
+
+      }
+
+      // Getting access_token from public_token
+      const configSameDay = {
+        method: 'post',
+        url: this.PLAID_BASE_URI + '/item/public_token/exchange',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        data: JSON.stringify({
+          "client_id": process.env.CLIENT_ID,
+          "secret": process.env.SECRET_ID,
+          "public_token": bodyData.public_token
+        })
+      };
+
+      let access_token_same = null;
+      let item_id_same = null;
+      try {
+        const res = await axios(configSameDay);
+        access_token_same = res.data.access_token;
+        item_id_same = res.data.item_id;
+      } catch (error) {
+        console.log(error)
+        throw new HttpException(
+          getReasonPhrase(StatusCodes.FORBIDDEN),
+          StatusCodes.FORBIDDEN
+        );
+      }
+
+      let plaidTokenSame
+
+      try {
+
+        plaidTokenSame = await this.prismaService.plaidToken.findFirst({
+          where: {
+            userId: bodyData.userId,
+            AND: {
+              institutionUniqueId: bodyData.institution.institution_id
+            }
+          }
+
+        })
+
+        if (plaidTokenSame) {
+        } else {
+
+          plaidTokenSame = await this.prismaService.plaidToken.create({
+            data: {
+              accessToken: access_token_same,
+              itemId: item_id_same,
+              publicToken: bodyData.public_token,
+              institutionUniqueId: 'same_day',
+              userId: bodyData.userId,
+            }
+          })
+
+
+        }
+
+      } catch (error) {
+        console.log(error);
+        throw new HttpException(
+          getReasonPhrase(StatusCodes.FORBIDDEN),
+          StatusCodes.FORBIDDEN
+        );
+      }
+
+
+      const data = [
+
+
+        {
+
+          userId: bodyData.userId,
+          accountType: null,
+          balance: 0,
+          verification_status: bodyData.accounts[0].verification_status,
+          currency: 'USD',
+          name: bodyData.accounts[0].name,
+          account_id: bodyData.accounts[0].id,
+          institutionId: same_day_institution.id,
+          platformId: platform.id,
+          accountSubTypeId: null,
+
+        }
+
+      ]
+
+      console.log("Final data for same day manual ", data);
+
+      return this.plaidService.onPlaidSuccess(data, plaidTokenSame);
+
+
+
+    }
+
+
+
+    // First finding platform id from platform table
+    console.log('========================on-plaid-success-start============================================================');
     try {
 
       platform = await this.prismaService.platform.findUnique({
@@ -368,6 +520,9 @@ export class PlaidController {
       case "ITEM":
         this.plaidService.handleItemWebhook(code, bodyData);
         break;
+      case "AUTH":
+        this.plaidService.handleAuthWebhook(code, bodyData);
+        break;
       // case "ASSETS":
       //   handleAssetsWebhook(code, bodyData);
       //   break;
@@ -391,6 +546,14 @@ export class PlaidController {
   @UseGuards(AuthGuard('jwt'))
   public async updateItemLoginRequiredStatus(@Param('itemId') itemId: string) {
     return this.plaidService.updateItemLoginRequiredStatus(itemId);
+  }
+
+  @Post('update-manual-two-deposit-status')
+  @UseGuards(AuthGuard('jwt'))
+  public async updateManualTwoDepositStatus(@Body() bodyData: any) {
+    console.log('update-manual-two-deposit-status received bodyData');
+    console.log(bodyData);
+    return this.plaidService.updateManualTwoDepositStatus(bodyData);
   }
 
 }

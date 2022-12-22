@@ -23,6 +23,77 @@
           "
         />
 
+        <img
+          *ngIf="
+            element.Institution &&
+            element.isHeader &&
+            element.verification_status === 'verification_expired'
+          "
+          matTooltip="Unfortunately, Plaid was unable to automatically verify your account, Please re-link your account and try again."
+          matTooltipPosition="above"
+          style="width: 30px; height: 30px; margin-right: 10px"
+          [src]="
+            element.Institution && element.isHeader
+              ? element.verification_status === 'verification_expired'
+                ? '../../../assets/item_login_alert2.png'
+                : ''
+              : ''
+          "
+        />
+
+        <img
+          *ngIf="
+            element.Institution &&
+            element.isHeader &&
+            element.verification_status === 'verification_failed'
+          "
+          matTooltip="Unfortunately, Plaid was unable to manually verify your account. Please re-link your account and try again."
+          matTooltipPosition="above"
+          style="width: 30px; height: 30px; margin-right: 10px"
+          [src]="
+            element.Institution && element.isHeader
+              ? element.verification_status === 'verification_failed'
+                ? '../../../assets/item_login_alert2.png'
+                : ''
+              : ''
+          "
+        />
+        <img
+          *ngIf="
+            element.Institution &&
+            element.isHeader &&
+            element.verification_status === 'pending_automatic_verification'
+          "
+          matTooltip="Your account is pending automatic verification with Plaid which can take 1-2 business days. As soon as your account is verified, we'll import your transcations and holdings. If there are any issues in verification, we may ask you to re-link your account."
+          matTooltipPosition="above"
+          style="width: 30px; height: 30px; margin-right: 10px"
+          [src]="
+            element.Institution && element.isHeader
+              ? element.verification_status === 'pending_automatic_verification'
+                ? '../../../assets/PendingIcon.png'
+                : ''
+              : ''
+          "
+        />
+
+        <img
+          *ngIf="
+            element.Institution &&
+            element.isHeader &&
+            element.verification_status === 'pending_manual_verification'
+          "
+          matTooltip="Your account is pending manual verification with Plaid. Once you receive the two manual deposits in 1-2 business days, please re-visit the Accounts page to enter the manual amounts. Your account must be verified withing 7 days, or we'll ask you to re-link the account."
+          matTooltipPosition="above"
+          style="width: 30px; height: 30px; margin-right: 10px"
+          [src]="
+            element.Institution && element.isHeader
+              ? element.verification_status === 'pending_manual_verification'
+                ? '../../../assets/PendingIcon.png'
+                : ''
+              : ''
+          "
+        />
+
         <span>
           <img
             [class]="element.isHeader ? '' : 'd-none'"
@@ -267,6 +338,18 @@
         <button mat-menu-item (click)="syncInstitution(element.Institution.id)">
           <ion-icon class="mr-2" name="create-outline"></ion-icon>
           <span i18n>Sync</span>
+        </button>
+        <button
+          *ngIf="
+            element.Institution &&
+            element.isHeader &&
+            element.verification_status === 'pending_manual_verification'
+          "
+          mat-menu-item
+          (click)="verifyTwoDeposit(element.access_token, element.account_id)"
+        >
+          <ion-icon class="mr-2" name="create-outline"></ion-icon>
+          <span i18n>Verify Two Deposits</span>
         </button>
         <button
           mat-menu-item

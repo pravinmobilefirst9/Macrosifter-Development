@@ -18,6 +18,7 @@ import { ConfigurationService } from '@ghostfolio/api/services/configuration.ser
 import { DataProviderService } from '@ghostfolio/api/services/data-provider/data-provider.service';
 import { ExchangeRateDataService } from '@ghostfolio/api/services/exchange-rate-data.service';
 import { ImpersonationService } from '@ghostfolio/api/services/impersonation.service';
+import { PrismaService } from '@ghostfolio/api/services/prisma.service';
 import { SymbolProfileService } from '@ghostfolio/api/services/symbol-profile.service';
 import {
   ASSET_SUB_CLASS_EMERGENCY_FUND,
@@ -98,6 +99,7 @@ export class PortfolioService {
     private readonly dataProviderService: DataProviderService,
     private readonly exchangeRateDataService: ExchangeRateDataService,
     private readonly impersonationService: ImpersonationService,
+    private readonly prismaService: PrismaService,
     private readonly orderService: OrderService,
     @Inject(REQUEST) private readonly request: RequestWithUser,
     private readonly rulesService: RulesService,
@@ -197,6 +199,36 @@ export class PortfolioService {
         account.valueInBaseCurrency
       );
       transactionCount += account.transactionCount;
+    }
+
+
+    console.log(userId);
+    console.log(this.request.user.id);
+
+    for (let i = 0; i < accounts.length; i++) {
+
+      // console.log(accounts[i]);
+      if (accounts[i].institutionId) {
+
+        if (accounts[i].Institution?.institutionUniqueId) {
+          const plaidToken = await this.prismaService.plaidToken.findFirst({
+            where: {
+              userId: this.request.user.id,
+              institutionUniqueId: accounts[i].Institution.institutionUniqueId
+            }
+          })
+
+          if (plaidToken) {
+            if (plaidToken.accessToken) {
+              accounts[i]['access_token'] = plaidToken.accessToken;
+              console.log(plaidToken.accessToken);
+            }
+          }
+
+        }
+
+      }
+
     }
 
     return {

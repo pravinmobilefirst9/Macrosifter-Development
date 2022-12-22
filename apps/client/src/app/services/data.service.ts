@@ -393,6 +393,31 @@ export class DataService {
     );
   }
 
+  public createPlaidLinkTokenTwoDeposit(accessToken: string) {
+    const data = {
+      client_id: environment.plaid_client_id,
+      secret: environment.plaid_secret,
+      client_name: environment.client_name,
+      country_codes: environment.country_codes,
+      redirect_uri: environment.redirect_uri,
+      webhook: environment.webhook,
+      language: "en",
+      access_token: accessToken,
+      user: {
+        client_user_id: localStorage.getItem('local-user-id')
+      },
+      products: []
+    }
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json'
+      }),
+    };
+    return this.http.post('/api/v1/plaid/create-token-two-deposit',
+      data, httpOptions
+    );
+  }
+
   public createPlaidLinkToken() {
     const data = {
       client_id: environment.plaid_client_id,
@@ -442,6 +467,19 @@ export class DataService {
 
   public updateItemLoginRequiredStatus(itemId: string) {
     return this.http.post(`/api/v1/plaid/update-item-login-required-status/${itemId}`, {});
+  }
+
+  public updateManualTwoDepositStatus(bodyData: any) {
+    console.log(bodyData);
+
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json'
+      }),
+    };
+    return this.http.post(`/api/v1/plaid/update-manual-two-deposit-status`, bodyData
+      , httpOptions)
+
   }
 
   private buildFiltersAsQueryParams({ filters }: { filters?: Filter[] }) {

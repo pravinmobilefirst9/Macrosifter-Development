@@ -1,0 +1,67 @@
+<div class="close-btn" (click)="onCancel()"></div>
+<div align="center" mat-dialog-actions>
+  <h4 i18n mat-dialog-title>
+    <b>Your account has been added!</b>
+  </h4>
+</div>
+<br />
+<div class="d-flex justify-content-center">
+  <img
+    alt="Snow"
+    id="myImg"
+    src="https://cdn-icons-png.flaticon.com/512/7518/7518748.png"
+    style="width: 100%; max-width: 80px"
+  />
+</div>
+<br />
+<div align="center">
+  <div style="font-size: 15px; max-width: 300px; text-align: justify">
+    Please allow XX-XX minutes for all of your holdings and transactions to be
+    imported into the account.
+  </div>
+</div>
+<!-- <br />  -->
+<div align="center">
+  <h4 i18n mat-dialog-title><b>Ready to add another account ?</b></h4>
+</div>
+<div class="d-flex justify-content-center flex-column">
+  <div class="d-flex justify-content-center mb-2">
+    <button color="primary" mat-raised-button (click)="onConnectToPlaid()">
+      Connect W/ Plaid
+    </button>
+  </div>
+  <!-- <br /> -->
+  <div class="d-flex justify-content-center">
+    <button color="primary" mat-raised-button (click)="onAddManualAccount()">
+      Add a Manual Account
+    </button>
+  </div>
+</div>
+
+<br />
+<div align="left" mat-dialog-actions>
+  <img
+    alt="Snow"
+    id="myImg"
+    src="https://cdn-icons-png.flaticon.com/512/1691/1691940.png"
+    style="width: 100%; max-width: 80px"
+  />
+  <div
+    style="
+      font-size: 15px;
+      max-width: 300px;
+      text-align: left;
+      margin-left: 15px;
+    "
+  >
+    Your Security is important to us, in addition to security measures, you are
+    only authorizing read-only access via Plaid.
+  </div>
+</div>
+
+<!-- <div *ngIf="accountStatusCode == '201'" class="flex-grow-1" mat-dialog-content>
+  {{msg}}
+</div>
+<div *ngIf="accountStatusCode != '201'" class="flex-grow-1" mat-dialog-content>
+  {{msg}}
+</div> -->

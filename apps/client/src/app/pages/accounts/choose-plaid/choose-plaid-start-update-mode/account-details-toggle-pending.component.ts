@@ -30,13 +30,16 @@ import { ChoosePlaidDialog } from '../choose-plaid.component';
 import { ChoosePlaidStartDialog } from '../choose-plaid-start/choose-plaid-start.component';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { AccountDetailsToggleParams } from '../account-details-toggle/interfaces/interfaces';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   host: { class: 'h-100' },
   selector: 'gf-account-details-toggle-pending',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./account-details-toggle-pending.scss'],
-  templateUrl: './account-details-toggle-pending.html'
+  templateUrl: './account-details-toggle-pending.html',
+  imports: [MatButtonModule],
+  standalone: true
 })
 export class AccountDetailsTogglePendingDialog implements OnDestroy {
   public currencies: string[] = [];

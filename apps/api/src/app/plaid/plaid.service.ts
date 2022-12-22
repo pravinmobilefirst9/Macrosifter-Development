@@ -40,6 +40,33 @@ export class PlaidService {
 
 
     }
+    public async createLinkTokenTwoDeposit(data) {
+
+        const config = {
+            method: 'post',
+            url: this.PLAID_BASE_URI + '/link/token/create',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: data
+        };
+
+        try {
+            const response = await axios.post(config.url, data);
+            return response.data;
+
+        } catch (error) {
+            console.log(error);
+            throw new HttpException(
+                getReasonPhrase(StatusCodes.FORBIDDEN),
+                StatusCodes.FORBIDDEN
+            );
+        }
+
+
+
+
+    }
 
     public async onPlaidSuccess(data: Prisma.AccountCreateManyInput[], plaidToken: any) {
 
@@ -55,6 +82,15 @@ export class PlaidService {
                     statusCode: 201,
                     plaidToken,
                     msg: 'Your account is pending automatic verification'
+                };
+            }
+
+            if (data[0] && data[0].verification_status === 'pending_manual_verification') {
+                return {
+                    status: 'pending_manual_verification',
+                    statusCode: 201,
+                    plaidToken,
+                    msg: 'Your account is pending manual verification'
                 };
             }
 
@@ -141,6 +177,79 @@ export class PlaidService {
         }
     }
 
+    public async handleAuthWebhook(code, bodyData) {
+        switch (code) {
+            case "AUTOMATICALLY_VERIFIED": {
+
+                const {
+                    account_id,
+                } = bodyData;
+
+
+                const isAccount_idExist = await this.prismaService.account
+                    .findFirst({
+                        where: {
+                            account_id: account_id
+                        }
+                    })
+
+                if (isAccount_idExist) {
+
+                    await this.prismaService.account.update({
+                        data: {
+                            verification_status: 'automatically_verified'
+                        },
+                        where: {
+                            id_userId: {
+                                id: isAccount_idExist.id,
+                                userId: isAccount_idExist.userId
+                            }
+                        }
+                    })
+
+                }
+
+            }
+                break;
+
+            case "VERIFICATION_EXPIRED": {
+
+                const {
+                    account_id,
+                } = bodyData;
+
+                const isAccount_idExist = await this.prismaService.account
+                    .findFirst({
+                        where: {
+                            account_id: account_id
+                        }
+                    })
+
+                if (isAccount_idExist) {
+
+                    await this.prismaService.account.update({
+                        data: {
+                            verification_status: 'verification_expired'
+                        },
+                        where: {
+                            id_userId: {
+                                id: isAccount_idExist.id,
+                                userId: isAccount_idExist.userId
+                            }
+                        }
+                    })
+
+                }
+
+            }
+                break;
+
+            default:
+                console.log(`Can't handle webhook code ${code}`);
+                break;
+        }
+    }
+
     public async getPlaidMessages(userId: string) {
 
         try {
@@ -196,6 +305,98 @@ export class PlaidService {
             })
 
             return result;
+
+        } catch (error) {
+            console.log(error);
+            throw new HttpException(
+                getReasonPhrase(StatusCodes.FORBIDDEN),
+                StatusCodes.FORBIDDEN
+            );
+        }
+
+    }
+
+    public async updateManualTwoDepositStatus(bodyData: any) {
+
+        try {
+
+            const { accounts, userId } = bodyData;
+
+
+            for (let i = 0; i < accounts.length; i++) {
+
+                const { verification_status, id } = accounts[i]
+
+                const isAccountExist = await this.prismaService.account.findFirst({
+                    where: {
+                        account_id: id,
+                        userId: userId
+                    }
+                })
+
+                if (isAccountExist) {
+                    const updatedAccount = await this.prismaService.account.update({
+                        data: {
+                            verification_status: verification_status
+                        },
+                        where: {
+                            id_userId: {
+                                id: isAccountExist.id,
+                                userId: userId
+                            }
+                        }
+                    })
+
+                    console.log(updatedAccount);
+
+                    return {
+                        verification_status: verification_status,
+                        statusCode: 201,
+                        updatedAccount,
+                        msg: `Your account manual verification is ${verification_status}`
+                    };
+
+                }
+
+
+            }
+
+
+            if (bodyData.verification_failed) {
+
+
+                const { account_id } = bodyData
+
+                const isAccountExist = await this.prismaService.account.findFirst({
+                    where: {
+                        account_id: account_id,
+                        userId: userId
+                    }
+                })
+
+                const updatedAccount = await this.prismaService.account.update({
+                    data: {
+                        verification_status: 'verification_failed'
+                    },
+                    where: {
+                        id_userId: {
+                            id: isAccountExist.id,
+                            userId: userId
+                        }
+                    }
+                })
+
+                console.log(updatedAccount);
+
+                return {
+                    verification_status: 'verification_failed',
+                    statusCode: 201,
+                    updatedAccount,
+                    msg: `Your account manual verification is verification_failed`
+                };
+
+
+            }
 
         } catch (error) {
             console.log(error);
