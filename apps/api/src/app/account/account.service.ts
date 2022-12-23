@@ -45,7 +45,6 @@ export class AccountService {
       }
     })
 
-    console.log(userAccounts);
     let totalBalanceInBaseCurrency = 0;
 
 
@@ -248,6 +247,21 @@ export class AccountService {
         where: {
           userId: userId,
           institutionId: institutionId,
+        }
+      })
+
+      const plaidToken = await this.prismaService.plaidToken.findFirst({
+        where: {
+          userId: userId,
+          Institution: {
+            id: institutionId
+          }
+        }
+      })
+
+      await this.prismaService.plaidToken.delete({
+        where: {
+          id: plaidToken.id,
         }
       })
 

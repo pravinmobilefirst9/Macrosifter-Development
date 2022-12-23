@@ -102,6 +102,7 @@ export class ChoosePlaidStartTwoDepositDialog implements OnInit {
     // this.openAccountDetailsToggle('success')
     let bodyData = {
       "accounts": metadata.accounts,
+      "verification_failed": false,
       "public_token": metadata.public_token,
       "userId": window.localStorage.getItem("local-user-id")
     }

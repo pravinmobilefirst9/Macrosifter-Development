@@ -127,7 +127,7 @@ export class PortfolioService {
     const [accounts, details] = await Promise.all([
       this.accountService.accounts({
         where,
-        include: { Order: true, Platform: true, Institution: true },
+        include: { Order: true, Platform: true, Institution: true, PlaidToken: true },
         orderBy: { name: 'asc' }
       }),
       this.getDetails({
@@ -202,8 +202,6 @@ export class PortfolioService {
     }
 
 
-    console.log(userId);
-    console.log(this.request.user.id);
 
     for (let i = 0; i < accounts.length; i++) {
 
@@ -221,7 +219,6 @@ export class PortfolioService {
           if (plaidToken) {
             if (plaidToken.accessToken) {
               accounts[i]['access_token'] = plaidToken.accessToken;
-              console.log(plaidToken.accessToken);
             }
           }
 

@@ -21,26 +21,28 @@ model Access {
 }
 
 model Account {
-  accountType      AccountType?
-  balance          Float            @default(0)
-  createdAt        DateTime         @default(now())
-  currency         String?
-  id               String           @default(uuid())
-  isDefault        Boolean          @default(false)
-  isExcluded       Boolean          @default(false)
-  name             String?
-  platformId       String?
-  institutionId    String?
-  account_id       String?
-  verification_status    String?    
-  updatedAt        DateTime         @updatedAt
-  userId           String
-  accountSubTypeId Int?
-  AccountSubTypes  AccountSubTypes? @relation(fields: [accountSubTypeId], references: [id])
-  Platform         Platform?        @relation(fields: [platformId], references: [id])
-  Institution      Institution?     @relation(fields: [institutionId], references: [id])
-  User             User             @relation(fields: [userId], references: [id])
-  Order            Order[]
+  accountType         AccountType?
+  balance             Float            @default(0)
+  createdAt           DateTime         @default(now())
+  currency            String?
+  id                  String           @default(uuid())
+  isDefault           Boolean          @default(false)
+  isExcluded          Boolean          @default(false)
+  name                String?
+  platformId          String?
+  institutionId       String?
+  plaidTokenId        Int?
+  account_id          String?
+  verification_status String?
+  updatedAt           DateTime         @updatedAt
+  userId              String
+  accountSubTypeId    Int?
+  AccountSubTypes     AccountSubTypes? @relation(fields: [accountSubTypeId], references: [id])
+  Platform            Platform?        @relation(fields: [platformId], references: [id])
+  Institution         Institution?     @relation(fields: [institutionId], references: [id])
+  PlaidToken          PlaidToken?      @relation(fields: [plaidTokenId], references: [id])
+  User                User             @relation(fields: [userId], references: [id])
+  Order               Order[]
 
   @@id([id, userId])
 }
@@ -254,14 +256,15 @@ model PlaidToken {
   PlaidMessages       PlaidMessages[]
   User                User            @relation(fields: [userId], references: [id])
   Institution         Institution     @relation(fields: [institutionUniqueId], references: [institutionUniqueId])
+  Account             Account[]
 }
 
 model PlaidMessages {
-  id                         Int     @id @default(autoincrement())
-  item_Login_Required_Status Boolean @default(false)
-  itemId              String?
-  PlaidToken   PlaidToken? @relation(fields: [plaidTokenId], references: [id])
-  plaidTokenId Int?
+  id                         Int         @id @default(autoincrement())
+  item_Login_Required_Status Boolean     @default(false)
+  itemId                     String?
+  PlaidToken                 PlaidToken? @relation(fields: [plaidTokenId], references: [id])
+  plaidTokenId               Int?
 }
 
 enum AccountType {

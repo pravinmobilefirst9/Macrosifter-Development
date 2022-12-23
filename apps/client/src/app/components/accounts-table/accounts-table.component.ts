@@ -79,6 +79,7 @@ export class AccountsTableComponent implements OnChanges, OnDestroy, OnInit {
           const firstAccount = {};
           firstAccount['Institution'] = currentAccount['Institution']
           firstAccount['Platform'] = currentAccount['Platform']
+          firstAccount['PlaidToken'] = currentAccount['PlaidToken']
           firstAccount['isHeader'] = true;
           firstAccount['isInstitution'] = true;
           firstAccount['verification_status'] = currentAccount['verification_status'];
@@ -201,6 +202,10 @@ export class AccountsTableComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   public verifyTwoDeposit(access_token: string, account_id: string) {
+    if (!access_token) {
+      alert('Token undefined!')
+      return;
+    }
     if (access_token) {
       const dialogConfig = new MatDialogConfig();
 

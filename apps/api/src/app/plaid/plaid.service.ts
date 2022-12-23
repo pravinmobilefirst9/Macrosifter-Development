@@ -1,6 +1,6 @@
 import { PrismaService } from "@ghostfolio/api/services/prisma.service";
 import { HttpException, Injectable } from "@nestjs/common";
-import { Prisma } from "@prisma/client";
+import { Institution, PlaidToken, Prisma } from "@prisma/client";
 import { getReasonPhrase, StatusCodes } from "http-status-codes";
 import { CreateTokenDto } from "./create-token-dto";
 import { OnPlaidSuccessDto } from "./on-plaid-success-dto";
@@ -11,6 +11,8 @@ const axios = require('axios');
 export class PlaidService {
 
     public PLAID_BASE_URI = process.env.PLAID_BASE_URI;
+    public PLAID_CLIENT_ID = process.env.CLIENT_ID;
+    public PLAID_SECRET_ID = process.env.SECRET_ID;
     public constructor(private readonly prismaService: PrismaService) { }
 
     public async createLinkToken(data) {
@@ -66,6 +68,89 @@ export class PlaidService {
 
 
 
+    }
+
+    public async getBalance(access_token) {
+
+        const data = JSON.stringify({
+            "client_id": this.PLAID_CLIENT_ID,
+            "secret": this.PLAID_SECRET_ID,
+            "access_token": access_token
+        });
+
+        const config = {
+            method: 'post',
+            url: this.PLAID_BASE_URI + `/accounts/balance/get`,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: data
+        };
+
+
+        try {
+            const response = await axios(config)
+            return response.data;
+        } catch (error) {
+            return null;
+        }
+
+
+    }
+
+    public async updateBalance(account, userId: string) {
+
+        const { account_id, balances, verification_status } = account;
+
+        const current_account = await this.prismaService.account.findFirst({
+            where: {
+                userId: userId,
+                account_id: account_id
+            }
+        })
+
+        await this.prismaService.account.update({
+            where: {
+                id_userId: {
+                    id: current_account.id,
+                    userId: userId
+                }
+            },
+            data: {
+                verification_status: verification_status,
+                balance: balances.current
+            }
+        })
+
+    }
+
+    public async fetchLatestBalance(userId: string) {
+
+        const plaidTokens: PlaidToken[] = await this.prismaService.plaidToken.findMany({
+            where: {
+                userId: userId
+            }
+        })
+
+        for (let i = 0; i < plaidTokens.length; i++) {
+
+            if (plaidTokens[i].accessToken) {
+                const result = await this.getBalance(plaidTokens[i].accessToken)
+                if (result) {
+
+                    const accounts = result.accounts;
+
+                    for (let j = 0; j < accounts.length; j++) {
+                        await this.updateBalance(accounts[j], userId);
+                    }
+
+
+                }
+
+            }
+        }
+
+        return 'updated with latest balance';
     }
 
     public async onPlaidSuccess(data: Prisma.AccountCreateManyInput[], plaidToken: any) {
@@ -323,40 +408,38 @@ export class PlaidService {
             const { accounts, userId } = bodyData;
 
 
-            for (let i = 0; i < accounts.length; i++) {
+            if (!(bodyData.verification_failed)) {
 
-                const { verification_status, id } = accounts[i]
-
-                const isAccountExist = await this.prismaService.account.findFirst({
-                    where: {
-                        account_id: id,
-                        userId: userId
-                    }
-                })
-
-                if (isAccountExist) {
-                    const updatedAccount = await this.prismaService.account.update({
-                        data: {
-                            verification_status: verification_status
-                        },
+                const existingAccount = await this.prismaService.account.
+                    findFirst({
                         where: {
-                            id_userId: {
-                                id: isAccountExist.id,
-                                userId: userId
+                            account_id: accounts[0].id,
+                            userId: userId,
+                            Institution: {
+                                institutionUniqueId: 'same_day'
                             }
                         }
                     })
 
-                    console.log(updatedAccount);
 
-                    return {
-                        verification_status: verification_status,
-                        statusCode: 201,
-                        updatedAccount,
-                        msg: `Your account manual verification is ${verification_status}`
-                    };
+                const updatedAccount = await this.prismaService.account.update({
+                    data: {
+                        verification_status: accounts[0].verification_status
+                    },
+                    where: {
+                        id_userId: {
+                            id: existingAccount.id,
+                            userId: userId,
+                        },
+                    }
+                })
 
-                }
+                return {
+                    verification_status: accounts[0].verification_status,
+                    statusCode: 201,
+                    updatedAccount,
+                    msg: ``
+                };
 
 
             }
@@ -386,8 +469,6 @@ export class PlaidService {
                     }
                 })
 
-                console.log(updatedAccount);
-
                 return {
                     verification_status: 'verification_failed',
                     statusCode: 201,
@@ -411,3 +492,186 @@ export class PlaidService {
 }
 
 
+
+// {
+//     "accounts": [
+//         {
+//             "account_id": "MAMnkV4b4wsEarQ7eq7vuw4XBMKokqs73wVax",
+//             "balances": {
+//                 "available": 100,
+//                 "current": 110,
+//                 "iso_currency_code": "USD",
+//                 "limit": null,
+//                 "unofficial_currency_code": null
+//             },
+//             "mask": "0000",
+//             "name": "Plaid Checking",
+//             "official_name": "Plaid Gold Standard 0% Interest Checking",
+//             "subtype": "checking",
+//             "type": "depository"
+//         },
+//         {
+//             "account_id": "1GpAnBVKVyIGaoErbpryCX6VqzdnMpfm4Ll6R",
+//             "balances": {
+//                 "available": 200,
+//                 "current": 210,
+//                 "iso_currency_code": "USD",
+//                 "limit": null,
+//                 "unofficial_currency_code": null
+//             },
+//             "mask": "1111",
+//             "name": "Plaid Saving",
+//             "official_name": "Plaid Silver Standard 0.1% Interest Saving",
+//             "subtype": "savings",
+//             "type": "depository"
+//         },
+//         {
+//             "account_id": "LWZA8wanajCJdKzyrlyWuke6VqyB4Nc91vGZ5",
+//             "balances": {
+//                 "available": null,
+//                 "current": 1000,
+//                 "iso_currency_code": "USD",
+//                 "limit": null,
+//                 "unofficial_currency_code": null
+//             },
+//             "mask": "2222",
+//             "name": "Plaid CD",
+//             "official_name": "Plaid Bronze Standard 0.2% Interest CD",
+//             "subtype": "cd",
+//             "type": "depository"
+//         },
+//         {
+//             "account_id": "3qgZmxbzbBCgo1AwvLwKu3kjR9zevnT8kK34L",
+//             "balances": {
+//                 "available": null,
+//                 "current": 410,
+//                 "iso_currency_code": "USD",
+//                 "limit": 2000,
+//                 "unofficial_currency_code": null
+//             },
+//             "mask": "3333",
+//             "name": "Plaid Credit Card",
+//             "official_name": "Plaid Diamond 12.5% APR Interest Credit Card",
+//             "subtype": "credit card",
+//             "type": "credit"
+//         },
+//         {
+//             "account_id": "qBV6noDWDXuB9o5ekKeEUe5b5X5GGmsV9Akpv",
+//             "balances": {
+//                 "available": 43200,
+//                 "current": 43200,
+//                 "iso_currency_code": "USD",
+//                 "limit": null,
+//                 "unofficial_currency_code": null
+//             },
+//             "mask": "4444",
+//             "name": "Plaid Money Market",
+//             "official_name": "Plaid Platinum Standard 1.85% Interest Money Market",
+//             "subtype": "money market",
+//             "type": "depository"
+//         },
+//         {
+//             "account_id": "KEQLgWdGdaiXxqgaJ3aBFyEoE4Eee1HmeWbdg",
+//             "balances": {
+//                 "available": null,
+//                 "current": 320.76,
+//                 "iso_currency_code": "USD",
+//                 "limit": null,
+//                 "unofficial_currency_code": null
+//             },
+//             "mask": "5555",
+//             "name": "Plaid IRA",
+//             "official_name": null,
+//             "subtype": "ira",
+//             "type": "investment"
+//         },
+//         {
+//             "account_id": "r3V6boDADRukKZRQvrQxcbXxXyX99jiDjqg8y",
+//             "balances": {
+//                 "available": null,
+//                 "current": 23631.9805,
+//                 "iso_currency_code": "USD",
+//                 "limit": null,
+//                 "unofficial_currency_code": null
+//             },
+//             "mask": "6666",
+//             "name": "Plaid 401k",
+//             "official_name": null,
+//             "subtype": "401k",
+//             "type": "investment"
+//         },
+//         {
+//             "account_id": "z7q631rRrMtaEye83N8WueKqKzKddJsgRJWko",
+//             "balances": {
+//                 "available": null,
+//                 "current": 65262,
+//                 "iso_currency_code": "USD",
+//                 "limit": null,
+//                 "unofficial_currency_code": null
+//             },
+//             "mask": "7777",
+//             "name": "Plaid Student Loan",
+//             "official_name": null,
+//             "subtype": "student",
+//             "type": "loan"
+//         },
+//         {
+//             "account_id": "BQxo7WZ1ZlToGjnW3pWmuBgdgAgxxPiLd6nm4",
+//             "balances": {
+//                 "available": null,
+//                 "current": 56302.06,
+//                 "iso_currency_code": "USD",
+//                 "limit": null,
+//                 "unofficial_currency_code": null
+//             },
+//             "mask": "8888",
+//             "name": "Plaid Mortgage",
+//             "official_name": null,
+//             "subtype": "mortgage",
+//             "type": "loan"
+//         }
+//     ],
+//     "item": {
+//         "available_products": [
+//             "assets",
+//             "balance",
+//             "identity",
+//             "income"
+//         ],
+//         "billed_products": [
+//             "auth",
+//             "transactions"
+//         ],
+//         "consent_expiration_time": null,
+//         "error": null,
+//         "institution_id": "ins_14",
+//         "item_id": "5rEXqab3bxtz8ADwxew4sqj97ZopQgTZpE6o9",
+//         "optional_products": null,
+//         "products": [
+//             "auth",
+//             "transactions"
+//         ],
+//         "update_type": "background",
+//         "webhook": "https://745c-2409-4042-d0a-deec-a5ea-4ac-53bc-951b.in.ngrok.io/api/v1/plaid/receive_webhook"
+//     },
+//     "numbers": {
+//         "ach": [
+//             {
+//                 "account": "1111222233330000",
+//                 "account_id": "MAMnkV4b4wsEarQ7eq7vuw4XBMKokqs73wVax",
+//                 "routing": "011401533",
+//                 "wire_routing": "021000021"
+//             },
+//             {
+//                 "account": "1111222233331111",
+//                 "account_id": "1GpAnBVKVyIGaoErbpryCX6VqzdnMpfm4Ll6R",
+//                 "routing": "011401533",
+//                 "wire_routing": "021000021"
+//             }
+//         ],
+//         "bacs": [],
+//         "eft": [],
+//         "international": []
+//     },
+//     "request_id": "ayyg4IMfmzoxrVo"
+// }

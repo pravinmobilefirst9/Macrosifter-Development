@@ -346,7 +346,9 @@
             element.verification_status === 'pending_manual_verification'
           "
           mat-menu-item
-          (click)="verifyTwoDeposit(element.access_token, element.account_id)"
+          (click)="
+            verifyTwoDeposit(element.PlaidToken.accessToken, element.account_id)
+          "
         >
           <ion-icon class="mr-2" name="create-outline"></ion-icon>
           <span i18n>Verify Two Deposits</span>

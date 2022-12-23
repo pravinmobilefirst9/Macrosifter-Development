@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
-import { AccountType, Prisma } from '@prisma/client';
+import { AccountType, PlaidToken, Prisma } from '@prisma/client';
 import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 import { CreateTokenDto } from './create-token-dto';
 import { OnPlaidSuccessDto } from './on-plaid-success-dto';
@@ -39,6 +39,12 @@ export class PlaidController {
   @Post('create-token')
   public async createLinkToken(@Body() data: CreateTokenDto) {
     return this.plaidService.createLinkToken(data);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('fetch-latest-balance')
+  public async fetchLatestBalance() {
+    return this.plaidService.fetchLatestBalance(this.request.user.id);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -130,19 +136,69 @@ export class PlaidController {
 
       let plaidTokenSame
 
+
       try {
 
         plaidTokenSame = await this.prismaService.plaidToken.findFirst({
           where: {
             userId: bodyData.userId,
             AND: {
-              institutionUniqueId: bodyData.institution.institution_id
+              institutionUniqueId: 'same_day'
             }
           }
 
         })
 
         if (plaidTokenSame) {
+
+          await this.prismaService.plaidToken.update({
+            data: {
+              accessToken: access_token_same,
+              itemId: item_id_same,
+            },
+            where: {
+              id: plaidTokenSame.id
+            }
+          })
+
+          const existingAccount = await this.prismaService.account.findFirst({
+            where: {
+              userId: bodyData.userId,
+              Institution: {
+                institutionUniqueId: 'same_day'
+              }
+            }
+          })
+
+          const updatedAccountSameDay = await this.prismaService.account.update({
+            data: {
+              userId: bodyData.userId,
+              accountType: null,
+              balance: 0,
+              verification_status: bodyData.accounts[0].verification_status,
+              currency: 'USD',
+              plaidTokenId: plaidTokenSame.id,
+              name: bodyData.accounts[0].name,
+              account_id: bodyData.accounts[0].id,
+              institutionId: same_day_institution.id,
+              platformId: platform.id,
+              accountSubTypeId: null,
+            },
+            where: {
+              id_userId: {
+                id: existingAccount.id,
+                userId: bodyData.userId,
+              }
+            }
+          })
+
+          return {
+            status: bodyData.accounts[0].verification_status,
+            statusCode: 201,
+            plaidTokenSame,
+          };
+
+
         } else {
 
           plaidTokenSame = await this.prismaService.plaidToken.create({
@@ -155,6 +211,25 @@ export class PlaidController {
             }
           })
 
+          const data = [
+            {
+
+              userId: bodyData.userId,
+              accountType: null,
+              balance: 0,
+              verification_status: bodyData.accounts[0].verification_status,
+              currency: 'USD',
+              plaidTokenId: plaidTokenSame.id,
+              name: bodyData.accounts[0].name,
+              account_id: bodyData.accounts[0].id,
+              institutionId: same_day_institution.id,
+              platformId: platform.id,
+              accountSubTypeId: null,
+            }
+
+          ]
+
+          return this.plaidService.onPlaidSuccess(data, plaidTokenSame);
 
         }
 
@@ -167,29 +242,7 @@ export class PlaidController {
       }
 
 
-      const data = [
 
-
-        {
-
-          userId: bodyData.userId,
-          accountType: null,
-          balance: 0,
-          verification_status: bodyData.accounts[0].verification_status,
-          currency: 'USD',
-          name: bodyData.accounts[0].name,
-          account_id: bodyData.accounts[0].id,
-          institutionId: same_day_institution.id,
-          platformId: platform.id,
-          accountSubTypeId: null,
-
-        }
-
-      ]
-
-      console.log("Final data for same day manual ", data);
-
-      return this.plaidService.onPlaidSuccess(data, plaidTokenSame);
 
 
 
@@ -262,8 +315,6 @@ export class PlaidController {
 
         currentInstitutionLogo = response.data.institution.logo;
 
-
-
         institution = await this.prismaService.institution.create({
           data: {
             institutionName: bodyData.institution.name,
@@ -312,7 +363,7 @@ export class PlaidController {
       );
     }
 
-    let plaidToken
+    let plaidToken: PlaidToken;
 
     try {
 
@@ -375,8 +426,6 @@ export class PlaidController {
       );
     }
 
-    console.log('bodyData->', bodyData)
-    console.log('plaidAccounts->', plaidAccounts)
     let isInstitutionExist = false;
     const institutionNew = await this.prismaService.institution.findUnique({
       where: {
@@ -405,9 +454,6 @@ export class PlaidController {
     const userOnlyWithAccountSubTypes = userAccountsWithAccountSubTypes.map(({ AccountSubTypes }) => {
       return (AccountSubTypes) ? AccountSubTypes : null;
     })
-
-    console.log('bodyData', bodyData);
-    console.log('plaidAccounts', plaidAccounts);
 
 
     const getData = async () => {
@@ -475,6 +521,7 @@ export class PlaidController {
             verification_status,
             currency: current_currency,
             name: name,
+            plaidTokenId: plaidToken.id,
             account_id,
             institutionId: institution.id,
             platformId: platform.id,
@@ -551,8 +598,6 @@ export class PlaidController {
   @Post('update-manual-two-deposit-status')
   @UseGuards(AuthGuard('jwt'))
   public async updateManualTwoDepositStatus(@Body() bodyData: any) {
-    console.log('update-manual-two-deposit-status received bodyData');
-    console.log(bodyData);
     return this.plaidService.updateManualTwoDepositStatus(bodyData);
   }
 
