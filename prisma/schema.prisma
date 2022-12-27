@@ -205,11 +205,6 @@ model Institution {
   PlaidToken          PlaidToken[]
 }
 
-model ActivityType {
-  id   Int    @id @default(autoincrement())
-  type String @unique
-}
-
 model AccountSubTypes {
   id                  Int           @id @default(autoincrement())
   accountSubTypeName  String?
@@ -228,9 +223,14 @@ model AccountTypes {
   AccountSubTypes AccountSubTypes[]
 }
 
+model ActivityType {
+  id   Int    @id @default(autoincrement())
+  type String @unique
+}
+
 model ActivitySubType {
   id      Int    @id @default(autoincrement())
-  subtype String @unique
+  subtype String 
   type    String
   typeId  Int
 }
