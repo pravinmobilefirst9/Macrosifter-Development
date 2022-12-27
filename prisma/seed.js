@@ -291,23 +291,144 @@ async function main() {
   await prisma.activityType.createMany({
     data: [
       {
+        id: 1,
         type: 'BUY'
       },
       {
+        id: 2,
         type: 'DIVIDEND'
       },
       {
+        id: 3,
         type: 'ITEM'
       },
       {
+        id: 4,
         type: 'SELL'
       },
       {
+        id: 5,
         type: 'TAX'
       },
       {
+        id: 6,
         type: 'FEES'
+      },
+      {
+        id: 7,
+        type: 'CANCEL'
+      },
+      {
+        id: 8,
+        type: 'TRANSFER'
+      },
+      {
+        id: 9,
+        type: 'CASH'
       }
+    ],
+    skipDuplicates: true
+  });
+
+  await prisma.activitySubType.createMany({
+    data: [
+      { type: 'BUY', subtype: 'Assignment', typeId: 1, id: 1 },
+      { type: 'BUY', subtype: 'Buy to Cover', typeId: 1, id: 2 },
+      {
+        type: 'BUY',
+        subtype: 'Ordinary Dividend Reinvestment',
+        typeId: 1,
+        id: 3
+      },
+      {
+        type: 'BUY',
+        subtype: 'Qualified Dividend Reinvestment',
+        typeId: 1,
+        id: 4
+      },
+      { type: 'BUY', subtype: 'Interest Reinvestment', typeId: 1, id: 5 },
+      {
+        type: 'BUY',
+        subtype: 'Partnership Distribution Reinvestment',
+        typeId: 1,
+        id: 6
+      },
+      {
+        type: 'BUY',
+        subtype: 'Long Term Capital Gain Reinvestment',
+        typeId: 1,
+        id: 7
+      },
+      {
+        type: 'BUY',
+        subtype: 'Short Term Capital Gain Reinvestment',
+        typeId: 1,
+        id: 8
+      },
+      { type: 'BUY', subtype: 'Buy', typeId: 1, id: 9 },
+      { type: 'BUY', subtype: 'Contribution', typeId: 1, id: 10 },
+      { type: 'SELL', subtype: 'Exercise', typeId: 4, id: 11 },
+      { type: 'SELL', subtype: 'Sell short', typeId: 4, id: 12 },
+      { type: 'SELL', subtype: 'Sell', typeId: 4, id: 13 },
+      { type: 'SELL', subtype: 'Distribution', typeId: 4, id: 14 },
+      { type: 'DIVIDEND', subtype: 'Ordinary Dividend', typeId: 2, id: 15 },
+      {
+        type: 'DIVIDEND',
+        subtype: 'Qualified Dividend',
+        typeId: 2,
+        id: 16
+      },
+      { type: 'DIVIDEND', subtype: 'Interest', typeId: 2, id: 17 },
+      {
+        type: 'DIVIDEND',
+        subtype: 'Partnership Distribution',
+        typeId: 2,
+        id: 18
+      },
+      { type: 'TAX', subtype: 'Foreign Tax Withheld', typeId: 5, id: 19 },
+      { type: 'TAX', subtype: 'Tax Withheld', typeId: 5, id: 20 },
+      { type: 'TAX', subtype: 'Non-Resident Tax', typeId: 5, id: 21 },
+      { type: 'FEES', subtype: 'Account Fee', typeId: 6, id: 22 },
+      { type: 'FEES', subtype: 'Management Fee', typeId: 6, id: 23 },
+      { type: 'FEES', subtype: 'Transfer Fee', typeId: 6, id: 24 },
+      { type: 'FEES', subtype: 'Trust Fee', typeId: 6, id: 25 },
+      { type: 'FEES', subtype: 'ADR Fees', typeId: 6, id: 26 },
+      { type: 'FEES', subtype: 'Foreign Security Fee', typeId: 6, id: 27 },
+      { type: 'FEES', subtype: 'Other Fees', typeId: 6, id: 28 },
+      { type: 'FEES', subtype: 'Legal Fee', typeId: 6, id: 29 },
+      { type: 'FEES', subtype: 'Margin Expense', typeId: 6, id: 30 },
+      { type: 'FEES', subtype: 'Adjustment', typeId: 6, id: 31 },
+      { type: 'TRANSFER', subtype: 'Assignment', typeId: 8, id: 32 },
+      { type: 'TRANSFER', subtype: 'Adjustment', typeId: 8, id: 33 },
+      { type: 'TRANSFER', subtype: 'Exercise', typeId: 8, id: 34 },
+      { type: 'TRANSFER', subtype: 'Expire', typeId: 8, id: 35 },
+      { type: 'TRANSFER', subtype: 'Merger', typeId: 8, id: 36 },
+      { type: 'TRANSFER', subtype: 'Request', typeId: 8, id: 37 },
+      { type: 'TRANSFER', subtype: 'Send', typeId: 8, id: 38 },
+      { type: 'TRANSFER', subtype: 'Spin off', typeId: 8, id: 39 },
+      { type: 'TRANSFER', subtype: 'Split', typeId: 8, id: 40 },
+      { type: 'TRANSFER', subtype: 'Trade', typeId: 8, id: 41 },
+      { type: 'TRANSFER', subtype: 'Transfer', typeId: 8, id: 42 },
+      { type: 'CASH', subtype: 'Contribution', typeId: 9, id: 43 },
+      { type: 'CASH', subtype: 'Deposit', typeId: 9, id: 44 },
+      { type: 'CASH', subtype: 'Distribution', typeId: 9, id: 45 },
+      { type: 'CASH', subtype: 'Margin expense', typeId: 9, id: 46 },
+      {
+        type: 'CASH',
+        subtype: 'Long-term Capital Gains',
+        typeId: 9,
+        id: 47
+      },
+      {
+        type: 'CASH',
+        subtype: 'Short Term Capital Gains',
+        typeId: 9,
+        id: 48
+      },
+      { type: 'CASH', subtype: 'Pending Credit', typeId: 9, id: 49 },
+      { type: 'CASH', subtype: 'Pending Debit', typeId: 9, id: 50 },
+      { type: 'CASH', subtype: 'Unqualified Gain', typeId: 9, id: 51 },
+      { type: 'CASH', subtype: 'Withdrawal', typeId: 9, id: 52 }
     ],
     skipDuplicates: true
   });
