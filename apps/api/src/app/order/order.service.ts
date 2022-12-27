@@ -25,6 +25,7 @@ import { groupBy } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Activity } from './interfaces/activities.interface';
+const axios = require('axios');
 
 @Injectable()
 export class OrderService {
@@ -34,7 +35,7 @@ export class OrderService {
     private readonly exchangeRateDataService: ExchangeRateDataService,
     private readonly prismaService: PrismaService,
     private readonly symbolProfileService: SymbolProfileService
-  ) {}
+  ) { }
 
   public async order(
     orderWhereUniqueInput: Prisma.OrderWhereUniqueInput
@@ -148,6 +149,16 @@ export class OrderService {
       delete data.comment;
     }
 
+
+    const dividend = await this.getDividendBySymbol(data.symbol)
+
+    // calculate the yield_on_cost using formula
+
+    let yield_on_cost: number = (dividend / data.unitPrice) * (100)
+    yield_on_cost = Number(yield_on_cost.toFixed(3))
+
+    data['yield_on_cost'] = yield_on_cost;
+
     delete data.currency;
     delete data.dataSource;
     delete data.symbol;
@@ -168,6 +179,26 @@ export class OrderService {
         }
       }
     });
+  }
+
+  public async getDividendBySymbol(symbol) {
+
+    try {
+
+      const url = `https://api.polygon.io/v3/reference/dividends?ticker=${symbol}&frequency=1&apiKey=LVl5C4UXx7wA8wv0g0oPpqGPWXOwwJoS`
+      const response = await axios.get(url)
+
+      if (response.data.results[0] && response.data.results[0]) {
+        return response.data.results[0]['cash_amount']
+      }
+
+      return 0;
+
+    } catch (error) {
+      console.log(error);
+      return 0;
+    }
+
   }
 
   public async deleteOrder(

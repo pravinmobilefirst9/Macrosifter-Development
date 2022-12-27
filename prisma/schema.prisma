@@ -87,6 +87,8 @@ model Order {
   id              String        @id @default(uuid())
   isDraft         Boolean       @default(false)
   quantity        Float
+  yield_on_cost   Float?
+  dividendpershare_at_cost Float?
   symbolProfileId String
   type            Type
   unitPrice       Float
