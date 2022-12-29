@@ -19,6 +19,7 @@ import {
   Tag,
   Type as TypeOfOrder
 } from '@prisma/client';
+const yahooFinance = require('yahoo-finance2').default;
 import Big from 'big.js';
 import { endOfToday, isAfter } from 'date-fns';
 import { groupBy } from 'lodash';
@@ -150,14 +151,27 @@ export class OrderService {
     }
 
 
-    const dividend = await this.getDividendBySymbol(data.symbol)
+    const symbolDetail = await this.getSymbolDetail(data.symbol)
 
-    // calculate the yield_on_cost using formula
+    const { price, summaryDetail } = symbolDetail;
+    // price & summaryDetail
+    // - dividendYield can be mapped to "yield_on_cost"
+    // - dividendRate can be mapped to "dividendpershare_at_cost"
+    // - If we are not able to find dividendYield or dividendRate then we can search trailingAnnualDividendRate and trailingAnnualDividendYield  from response and mapped values accordingly.
+    // - trailingAnnualDividendYield mapped to yield_on_cost
+    // - trailingAnnualDividendRate mapped to dividendpershare_at_cost
 
-    let yield_on_cost: number = (dividend / data.unitPrice) * (100)
-    yield_on_cost = Number(yield_on_cost.toFixed(3))
+    if (!(symbolDetail)) {
 
-    data['yield_on_cost'] = yield_on_cost;
+      data['yield_on_cost'] = 0.0;
+      data['dividendpershare_at_cost'] = 0.0;
+
+    } else {
+
+      data['yield_on_cost'] = summaryDetail['dividendYield'] ? summaryDetail['dividendYield'] : (summaryDetail['trailingAnnualDividendYield']) ? (summaryDetail['trailingAnnualDividendYield']) : 0.0;
+      data['dividendpershare_at_cost'] = summaryDetail['dividendRate'] ? summaryDetail['dividendRate'] : (summaryDetail['trailingAnnualDividendRate']) ? (summaryDetail['trailingAnnualDividendRate']) : 0.0;
+
+    }
 
     delete data.currency;
     delete data.dataSource;
@@ -181,22 +195,17 @@ export class OrderService {
     });
   }
 
-  public async getDividendBySymbol(symbol) {
+  public async getSymbolDetail(symbol) {
 
     try {
+      const queryOptions = { modules: ['price', 'summaryDetail'] }; // defaults
 
-      const url = `https://api.polygon.io/v3/reference/dividends?ticker=${symbol}&frequency=1&apiKey=LVl5C4UXx7wA8wv0g0oPpqGPWXOwwJoS`
-      const response = await axios.get(url)
-
-      if (response.data.results[0] && response.data.results[0]) {
-        return response.data.results[0]['cash_amount']
-      }
-
-      return 0;
+      const response = await yahooFinance.quoteSummary(symbol, queryOptions);
+      return response;
 
     } catch (error) {
       console.log(error);
-      return 0;
+      return undefined;
     }
 
   }

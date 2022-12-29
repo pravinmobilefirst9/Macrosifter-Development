@@ -11,7 +11,7 @@ export class ConfigurationService {
   public constructor() {
     this.environmentConfiguration = cleanEnv(process.env, {
       ACCESS_TOKEN_SALT: str(),
-      ALPHA_VANTAGE_API_KEY: str({ default: '' }),
+      ALPHA_VANTAGE_API_KEY: str({ default: '3ZXHUWBRCZBI8N3C' }),
       BASE_CURRENCY: str({ default: 'USD' }),
       CACHE_TTL: num({ default: 1 }),
       DATA_SOURCE_PRIMARY: str({ default: DataSource.YAHOO }),
@@ -27,7 +27,7 @@ export class ConfigurationService {
       ENABLE_FEATURE_STATISTICS: bool({ default: false }),
       ENABLE_FEATURE_SUBSCRIPTION: bool({ default: false }),
       ENABLE_FEATURE_SYSTEM_MESSAGE: bool({ default: false }),
-      EOD_HISTORICAL_DATA_API_KEY: str({ default: '' }),
+      EOD_HISTORICAL_DATA_API_KEY: str({ default: '633b608e2acf44.53707275' }),
       GOOGLE_CLIENT_ID: str({ default: 'dummyClientId' }),
       GOOGLE_SECRET: str({ default: 'dummySecret' }),
       GOOGLE_SHEETS_ACCOUNT: str({ default: '' }),
