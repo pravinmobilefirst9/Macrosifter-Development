@@ -131,6 +131,9 @@ model SymbolProfile {
   createdAt              DateTime                @default(now())
   currency               String
   dataSource             DataSource
+  dataSource2            DataSource?
+  dividend               Boolean?         @default(false)
+  dividend_period        String?     
   id                     String                  @id @default(uuid())
   name                   String?
   updatedAt              DateTime                @updatedAt

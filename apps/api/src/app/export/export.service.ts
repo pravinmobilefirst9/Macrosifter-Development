@@ -5,7 +5,7 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class ExportService {
-  public constructor(private readonly prismaService: PrismaService) {}
+  public constructor(private readonly prismaService: PrismaService) { }
 
   public async export({
     activityIds,
@@ -25,6 +25,8 @@ export class ExportService {
         quantity: true,
         SymbolProfile: true,
         type: true,
+        yield_on_cost: true,
+        dividendpershare_at_cost: true,
         unitPrice: true
       },
       where: { userId }
@@ -43,6 +45,8 @@ export class ExportService {
           accountId,
           comment,
           date,
+          dividendpershare_at_cost,
+          yield_on_cost,
           fee,
           id,
           quantity,
@@ -56,6 +60,8 @@ export class ExportService {
             fee,
             id,
             quantity,
+            dividendpershare_at_cost,
+            yield_on_cost,
             type,
             unitPrice,
             currency: SymbolProfile.currency,
