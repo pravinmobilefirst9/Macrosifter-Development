@@ -10,6 +10,7 @@ import {
 import { Filter } from '@ghostfolio/common/interfaces';
 import { OrderWithAccount } from '@ghostfolio/common/types';
 import { Injectable } from '@nestjs/common';
+import { format, formatDistance, formatRelative, parseISO, subDays } from 'date-fns'
 import {
   AssetClass,
   AssetSubClass,
@@ -26,6 +27,7 @@ import { groupBy } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Activity } from './interfaces/activities.interface';
+import { log } from 'console';
 const axios = require('axios');
 
 @Injectable()
@@ -150,26 +152,45 @@ export class OrderService {
       delete data.comment;
     }
 
+    if (!(data.type === 'ITEM')) {
 
-    const symbolDetail = await this.getSymbolDetail(data.symbol)
+      const symbolDetail = await this.getSymbolDetail(data.symbol)
 
-    const { price, summaryDetail } = symbolDetail;
-    // price & summaryDetail
-    // - dividendYield can be mapped to "yield_on_cost"
-    // - dividendRate can be mapped to "dividendpershare_at_cost"
-    // - If we are not able to find dividendYield or dividendRate then we can search trailingAnnualDividendRate and trailingAnnualDividendYield  from response and mapped values accordingly.
-    // - trailingAnnualDividendYield mapped to yield_on_cost
-    // - trailingAnnualDividendRate mapped to dividendpershare_at_cost
+      const { price, summaryDetail } = symbolDetail;
+      if (!(symbolDetail)) {
 
-    if (!(symbolDetail)) {
+        data['dividendpershare_at_cost'] = 0.0;
 
-      data['yield_on_cost'] = 0.0;
-      data['dividendpershare_at_cost'] = 0.0;
+      } else {
 
-    } else {
+        let response = await this.dataGatheringService.getHistoricalDividendData(data.symbol);
 
-      data['yield_on_cost'] = summaryDetail['dividendYield'] ? summaryDetail['dividendYield'] : (summaryDetail['trailingAnnualDividendYield']) ? (summaryDetail['trailingAnnualDividendYield']) : 0.0;
-      data['dividendpershare_at_cost'] = summaryDetail['dividendRate'] ? summaryDetail['dividendRate'] : (summaryDetail['trailingAnnualDividendRate']) ? (summaryDetail['trailingAnnualDividendRate']) : 0.0;
+        if (!(response)) {
+          data['dividendpershare_at_cost'] = null;
+        } else {
+          console.log(response);
+
+          const frontendDate = format(new Date(data.date), 'yyyy-MM-dd')
+          response = response.filter((value) => value['date'] <= frontendDate)
+          const { period } = response[response.length - 1];
+          let sum = 0;
+          if (period === 'Quarterly') {
+            response.slice(response.length - 4, response.length).map(e => sum += e['value'])
+          } else if (period === 'Annual') {
+            response.slice(response.length - 1, response.length).map(e => sum += e['value'])
+          } else if (period === 'SemiAnnual') {
+            response.slice(response.length - 2, response.length).map(e => sum += e['value'])
+          } else {
+            response.slice(response.length - 1, response.length).map(e => sum += e['value'])
+          }
+
+          console.log("Sum = ", sum);
+
+          data['dividendpershare_at_cost'] = sum;
+          // Previous Logic
+          // data['dividendpershare_at_cost'] = summaryDetail['dividendRate'] ? summaryDetail['dividendRate'] : (summaryDetail['trailingAnnualDividendRate']) ? (summaryDetail['trailingAnnualDividendRate']) : 0.0;
+        }
+      }
 
     }
 

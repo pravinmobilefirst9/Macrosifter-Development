@@ -87,7 +87,6 @@ model Order {
   id              String        @id @default(uuid())
   isDraft         Boolean       @default(false)
   quantity        Float
-  yield_on_cost   Float?
   dividendpershare_at_cost Float?
   symbolProfileId String
   type            Type
@@ -131,9 +130,11 @@ model SymbolProfile {
   createdAt              DateTime                @default(now())
   currency               String
   dataSource             DataSource
-  dataSource2            DataSource?
-  dividend               Boolean?         @default(false)
-  dividend_period        String?     
+  dataSource2            Json?
+  dividend               Int?         @default(0)
+  dividend_period        String?   
+  dividendpershare       Float?
+  dividendpershare_type  Int?          
   id                     String                  @id @default(uuid())
   name                   String?
   updatedAt              DateTime                @updatedAt
@@ -270,6 +271,18 @@ model PlaidMessages {
   itemId                     String?
   PlaidToken                 PlaidToken? @relation(fields: [plaidTokenId], references: [id])
   plaidTokenId               Int?
+}
+
+model DividendData{
+    id                  String       @id @default(uuid())
+    createdAt           DateTime     @default(now())
+    dataSource          DataSource
+    marketDataId        String
+    symbol              String
+    date                DateTime?
+    value               Float
+    unadjusted_value    Float
+    currency            String
 }
 
 enum AccountType {

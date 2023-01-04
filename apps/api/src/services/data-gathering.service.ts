@@ -12,7 +12,8 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DataSource } from '@prisma/client';
 import { JobOptions, Queue } from 'bull';
 import { format, subDays } from 'date-fns';
-
+const axios = require('axios');
+const yahooFinance = require('yahoo-finance2').default;
 import { DataProviderService } from './data-provider/data-provider.service';
 import { DataEnhancerInterface } from './data-provider/interfaces/data-enhancer.interface';
 import { ExchangeRateDataService } from './exchange-rate-data.service';
@@ -32,7 +33,7 @@ export class DataGatheringService {
     private readonly marketDataService: MarketDataService,
     private readonly prismaService: PrismaService,
     private readonly symbolProfileService: SymbolProfileService
-  ) {}
+  ) { }
 
   public async addJobToQueue(name: string, data: any, options?: JobOptions) {
     const hasJob = await this.hasJob(name, data);
@@ -108,6 +109,10 @@ export class DataGatheringService {
   }
 
   public async gatherAssetProfiles(aUniqueAssets?: UniqueAsset[]) {
+    console.log('========================================================================');
+    console.log(`====================gatherAssetProfiles  =================================`);
+    console.log('========================================================================');
+
     let uniqueAssets = aUniqueAssets?.filter((dataGatheringItem) => {
       return dataGatheringItem.dataSource !== 'MANUAL';
     });
@@ -157,6 +162,99 @@ export class DataGatheringService {
         url
       } = assetProfiles[symbol];
 
+      const data = await this.getHistoricalDividendData(symbol);
+
+      const marketData = await this.prismaService.marketData.findFirst({
+        where: {
+          symbol
+        }
+      })
+      const finalMarketData = []
+
+      if (marketData) {
+        console.log("Market data exist");
+
+
+        for (let i = 0; i < data.length; i++) {
+
+          const obj = {
+            dataSource: 'EOD_HISTORICAL_DATA',
+            marketDataId: marketData['id'],
+            symbol,
+            value: data[i]['value'],
+            unadjusted_value: data[i]['unadjustedValue'],
+            date: (data[i]['paymentDate']) ? (data[i]['paymentDate']) : (data[i]['date']),
+            currency: data[i]['currency'],
+          }
+
+          obj['date'] = new Date(obj['date']);
+
+          finalMarketData.push(obj);
+
+        }
+
+        const isDividendDataExist = await this.prismaService.dividendData.findFirst({
+          where: {
+            symbol
+          }
+        })
+
+        if (!(isDividendDataExist)) {
+
+          await this.prismaService.dividendData.createMany({
+            data: [
+              ...finalMarketData
+            ],
+            skipDuplicates: true,
+          })
+
+        }
+
+      } else {
+        console.log("Market data does not exist");
+      }
+      // 
+      let dividendpershare = null;
+      let dividendpershare_type = null;
+
+      const { summaryDetail } = await this.getSymbolDetail(symbol);
+
+      if (!(summaryDetail)) {
+        dividendpershare = null;
+        dividendpershare_type = null;
+      } else {
+
+        dividendpershare = summaryDetail['dividendRate'] ? summaryDetail['dividendRate'] :
+          (summaryDetail['trailingAnnualDividendRate']) ? summaryDetail['trailingAnnualDividendRate'] : null;
+
+        dividendpershare_type = summaryDetail['dividendRate'] ? 1 : (summaryDetail['trailingAnnualDividendRate']) ? 0 : null;
+      }
+
+
+
+      let dividend = 0;
+      const dataSource2 = {
+        source1: 'EOD_HISTORICAL_DATA'
+      }
+      let dividend_period = null;
+
+      if (!(data)) {
+        dividend = 0;
+
+      } else if (data && data.length === 0) {
+        dividend = 0;
+      } else {
+        dividend = 1;
+        dividend_period = data[data.length - 1]['period'] ? data[data.length - 1]['period'] : null;
+
+        if (!(dividend_period)) {
+          dividend_period = this.calculatePeriod(data);
+        }
+
+
+      }
+
+
       try {
         await this.prismaService.symbolProfile.upsert({
           create: {
@@ -165,15 +263,25 @@ export class DataGatheringService {
             countries,
             currency,
             dataSource,
+            dividend,
+            dataSource2,
+            dividend_period,
             name,
             sectors,
             symbol,
+            dividendpershare,
+            dividendpershare_type,
             url
           },
           update: {
             assetClass,
             assetSubClass,
             countries,
+            dividend,
+            dataSource2,
+            dividendpershare,
+            dividendpershare_type,
+            dividend_period,
             currency,
             name,
             sectors,
@@ -204,6 +312,59 @@ export class DataGatheringService {
       'DataGatheringService'
     );
   }
+
+  public async getSymbolDetail(symbol) {
+
+    try {
+      const queryOptions = { modules: ['price', 'summaryDetail'] }; // defaults
+
+      const response = await yahooFinance.quoteSummary(symbol, queryOptions);
+      return response;
+
+    } catch (error) {
+      console.log(error);
+      return undefined;
+    }
+
+  }
+
+  public calculatePeriod(data) {
+
+    if (data) {
+      const latestYear = data[data.length - 1]['date'].substring(0, 4);
+      let latestYearCount = 0;
+      for (let i = 0; i < data.length; i++) {
+        if (data[i].date.startsWith(latestYear)) {
+          latestYearCount++;
+        }
+      }
+      let flag = 'other';
+      switch (latestYearCount) {
+        case 12: flag = 'monthly'; break;
+        case 4: flag = 'quarterly'; break;
+        case 2: flag = 'SemiAnnual'; break;
+        case 1: flag = 'annual'; break;
+        default:
+          flag = 'other'; break;
+      }
+      return flag;
+    } else {
+      return "other"
+    }
+  }
+
+  public async getHistoricalDividendData(symbol) {
+    try {
+
+      const url = `https://eodhistoricaldata.com/api/div/${symbol}?fmt=json&from=2000-01-01&api_token=633b608e2acf44.53707275`
+      const response = await axios.get(url)
+      return response.data;
+
+    } catch (error) {
+      return undefined;
+    }
+  }
+
 
   public async gatherSymbols(aSymbolsWithStartDate: IDataGatheringItem[]) {
     for (const { dataSource, date, symbol } of aSymbolsWithStartDate) {
