@@ -277,7 +277,6 @@ model DividendData{
     id                  String       @id @default(uuid())
     createdAt           DateTime     @default(now())
     dataSource          DataSource
-    marketDataId        String
     symbol              String
     date                DateTime?
     value               Float

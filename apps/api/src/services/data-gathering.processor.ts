@@ -29,7 +29,7 @@ export class DataGatheringProcessor {
     private readonly dataGatheringService: DataGatheringService,
     private readonly dataProviderService: DataProviderService,
     private readonly prismaService: PrismaService
-  ) {}
+  ) { }
 
   @Process(GATHER_ASSET_PROFILE_PROCESS)
   public async gatherAssetProfile(job: Job<UniqueAsset>) {
@@ -47,6 +47,9 @@ export class DataGatheringProcessor {
 
   @Process(GATHER_HISTORICAL_MARKET_DATA_PROCESS)
   public async gatherHistoricalMarketData(job: Job<IDataGatheringItem>) {
+    console.log('========================================================================');
+    console.log(`==================== gatherHistoricalMarketData =================================`);
+    console.log('========================================================================');
     try {
       const { dataSource, date, symbol } = job.data;
 
@@ -98,7 +101,7 @@ export class DataGatheringProcessor {
                 marketPrice: lastMarketPrice
               }
             });
-          } catch {}
+          } catch { }
         }
 
         // Count month one up for iteration

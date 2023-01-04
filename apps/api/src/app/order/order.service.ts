@@ -167,8 +167,7 @@ export class OrderService {
 
         if (!(response)) {
           data['dividendpershare_at_cost'] = null;
-        } else {
-          console.log(response);
+        } else if (response && response.length > 1) {
 
           const frontendDate = format(new Date(data.date), 'yyyy-MM-dd')
           response = response.filter((value) => value['date'] <= frontendDate)
@@ -192,6 +191,9 @@ export class OrderService {
         }
       }
 
+      // --------------------------
+      await this.setHistoricalDividendData(data.symbol);
+      // --------------------------
     }
 
     delete data.currency;
@@ -214,6 +216,62 @@ export class OrderService {
         }
       }
     });
+  }
+
+
+  public async setHistoricalDividendData(symbol: string) {
+    const data = await this.getHistoricalDividendData(symbol);
+
+    const finalDividendData = []
+    for (let i = 0; i < data.length; i++) {
+
+      const obj = {
+        dataSource: 'EOD_HISTORICAL_DATA',
+        symbol,
+        value: data[i]['value'],
+        unadjusted_value: data[i]['unadjustedValue'],
+        date: (data[i]['paymentDate']) ? (data[i]['paymentDate']) : (data[i]['date']),
+        currency: data[i]['currency'],
+      }
+
+      obj['date'] = new Date(obj['date']);
+
+      finalDividendData.push(obj);
+
+    }
+
+    const isDividendDataExist = await this.prismaService.dividendData.findFirst({
+      where: {
+        symbol
+      }
+    })
+
+    if (!(isDividendDataExist)) {
+
+      await this.prismaService.dividendData.createMany({
+        data: [
+          ...finalDividendData
+        ],
+        skipDuplicates: true,
+      })
+      console.log(`DividendData table's data is inserted for ${symbol} !`);
+
+    } else {
+      console.log(`DividendData table's data is already exist for ${symbol} !`);
+    }
+
+  }
+
+  public async getHistoricalDividendData(symbol) {
+    try {
+
+      const url = `https://eodhistoricaldata.com/api/div/${symbol}?fmt=json&from=2000-01-01&api_token=633b608e2acf44.53707275`
+      const response = await axios.get(url)
+      return response.data;
+
+    } catch (error) {
+      return undefined;
+    }
   }
 
   public async getSymbolDetail(symbol) {

@@ -164,56 +164,6 @@ export class DataGatheringService {
 
       const data = await this.getHistoricalDividendData(symbol);
 
-      const marketData = await this.prismaService.marketData.findFirst({
-        where: {
-          symbol
-        }
-      })
-      const finalMarketData = []
-
-      if (marketData) {
-        console.log("Market data exist");
-
-
-        for (let i = 0; i < data.length; i++) {
-
-          const obj = {
-            dataSource: 'EOD_HISTORICAL_DATA',
-            marketDataId: marketData['id'],
-            symbol,
-            value: data[i]['value'],
-            unadjusted_value: data[i]['unadjustedValue'],
-            date: (data[i]['paymentDate']) ? (data[i]['paymentDate']) : (data[i]['date']),
-            currency: data[i]['currency'],
-          }
-
-          obj['date'] = new Date(obj['date']);
-
-          finalMarketData.push(obj);
-
-        }
-
-        const isDividendDataExist = await this.prismaService.dividendData.findFirst({
-          where: {
-            symbol
-          }
-        })
-
-        if (!(isDividendDataExist)) {
-
-          await this.prismaService.dividendData.createMany({
-            data: [
-              ...finalMarketData
-            ],
-            skipDuplicates: true,
-          })
-
-        }
-
-      } else {
-        console.log("Market data does not exist");
-      }
-      // 
       let dividendpershare = null;
       let dividendpershare_type = null;
 
