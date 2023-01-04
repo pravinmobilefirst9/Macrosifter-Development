@@ -144,6 +144,9 @@ export class OrderService {
       ]);
     }
 
+    data.SymbolProfile.connectOrCreate.create.assetClass = data.assetClass
+    data.SymbolProfile.connectOrCreate.create.assetSubClass = data.assetSubClass
+
     delete data.accountId;
     delete data.assetClass;
     delete data.assetSubClass;
@@ -222,42 +225,46 @@ export class OrderService {
   public async setHistoricalDividendData(symbol: string) {
     const data = await this.getHistoricalDividendData(symbol);
 
-    const finalDividendData = []
-    for (let i = 0; i < data.length; i++) {
 
-      const obj = {
-        dataSource: 'EOD_HISTORICAL_DATA',
-        symbol,
-        value: data[i]['value'],
-        unadjusted_value: data[i]['unadjustedValue'],
-        date: (data[i]['paymentDate']) ? (data[i]['paymentDate']) : (data[i]['date']),
-        currency: data[i]['currency'],
+    if (data && (data.length > 0)) {
+      const finalDividendData = []
+      for (let i = 0; i < data.length; i++) {
+
+        const obj = {
+          dataSource: 'EOD_HISTORICAL_DATA',
+          symbol,
+          value: data[i]['value'],
+          unadjusted_value: data[i]['unadjustedValue'],
+          date: (data[i]['paymentDate']) ? (data[i]['paymentDate']) : (data[i]['date']),
+          currency: data[i]['currency'],
+        }
+
+        obj['date'] = new Date(obj['date']);
+
+        finalDividendData.push(obj);
+
       }
 
-      obj['date'] = new Date(obj['date']);
-
-      finalDividendData.push(obj);
-
-    }
-
-    const isDividendDataExist = await this.prismaService.dividendData.findFirst({
-      where: {
-        symbol
-      }
-    })
-
-    if (!(isDividendDataExist)) {
-
-      await this.prismaService.dividendData.createMany({
-        data: [
-          ...finalDividendData
-        ],
-        skipDuplicates: true,
+      const isDividendDataExist = await this.prismaService.dividendData.findFirst({
+        where: {
+          symbol
+        }
       })
-      console.log(`DividendData table's data is inserted for ${symbol} !`);
 
-    } else {
-      console.log(`DividendData table's data is already exist for ${symbol} !`);
+      if (!(isDividendDataExist)) {
+
+        await this.prismaService.dividendData.createMany({
+          data: [
+            ...finalDividendData
+          ],
+          skipDuplicates: true,
+        })
+        console.log(`DividendData table's data is inserted for ${symbol} !`);
+
+      } else {
+        console.log(`DividendData table's data is already exist for ${symbol} !`);
+      }
+
     }
 
   }

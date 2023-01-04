@@ -41,7 +41,7 @@ export class OrderController {
     private readonly orderService: OrderService,
     @Inject(REQUEST) private readonly request: RequestWithUser,
     private readonly userService: UserService
-  ) {}
+  ) { }
 
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'))
@@ -124,6 +124,10 @@ export class OrderController {
         StatusCodes.FORBIDDEN
       );
     }
+    console.log('========================================================================');
+    console.log(`====================createOrderStarted =================================`);
+    console.log('========================================================================');
+
 
     return this.orderService.createOrder({
       ...data,
@@ -133,7 +137,7 @@ export class OrderController {
           create: {
             currency: data.currency,
             dataSource: data.dataSource,
-            symbol: data.symbol
+            symbol: data.symbol,
           },
           where: {
             dataSource_symbol: {

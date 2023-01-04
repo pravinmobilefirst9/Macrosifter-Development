@@ -204,6 +204,26 @@ export class DataGatheringService {
 
       }
 
+      console.log('This is final symbol profile data');
+
+      console.log({
+        assetClass,
+        assetSubClass,
+        countries,
+        currency,
+        dataSource,
+        dividend,
+        dataSource2,
+        dividend_period,
+        name,
+        sectors,
+        symbol,
+        dividendpershare,
+        dividendpershare_type,
+        url
+      });
+
+
 
       try {
         await this.prismaService.symbolProfile.upsert({
