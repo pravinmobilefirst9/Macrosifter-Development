@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import { AccountService } from '@ghostfolio/api/app/account/account.service';
 import { DataGatheringService } from '@ghostfolio/api/services/data-gathering.service';
 import { ExchangeRateDataService } from '@ghostfolio/api/services/exchange-rate-data.service';
@@ -144,8 +146,6 @@ export class OrderService {
       ]);
     }
 
-    data.SymbolProfile.connectOrCreate.create.assetClass = data.assetClass
-    data.SymbolProfile.connectOrCreate.create.assetSubClass = data.assetSubClass
 
     delete data.accountId;
     delete data.assetClass;
@@ -159,7 +159,6 @@ export class OrderService {
 
       const symbolDetail = await this.getSymbolDetail(data.symbol)
 
-      const { price, summaryDetail } = symbolDetail;
       if (!(symbolDetail)) {
 
         data['dividendpershare_at_cost'] = 0.0;

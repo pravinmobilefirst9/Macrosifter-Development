@@ -46,7 +46,7 @@ export const GATHER_ASSET_PROFILE_PROCESS_OPTIONS: JobOptions = {
   attempts: 10,
   backoff: {
     // delay: ms('1 minute'),
-    delay: 3000,
+    delay: 1000,
     type: 'exponential'
   },
   priority: DATA_GATHERING_QUEUE_PRIORITY_HIGH,
@@ -60,7 +60,7 @@ export const GATHER_HISTORICAL_MARKET_DATA_PROCESS_OPTIONS: JobOptions = {
   attempts: 10,
   backoff: {
     // delay: ms('1 minute'),
-    delay: 3000,
+    delay: 1000,
     type: 'exponential'
   },
   priority: DATA_GATHERING_QUEUE_PRIORITY_LOW,
