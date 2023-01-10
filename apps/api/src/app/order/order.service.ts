@@ -171,11 +171,23 @@ export class OrderService {
         // response = HistoricalDividendData.
         let response = await this.dataGatheringService.getHistoricalDividendData(data.symbol);
 
+        const lastPeriod = response[response.length - 1]['period'] ? response[response.length - 1]['period'] : { period: '' }
+
         // Logic for dividendpershare_at_cost
         if (!(response)) {
           // If HistoricalDividendData is null or undefined then dividendpershare_at_cost is null.
           data['dividendpershare_at_cost'] = null;
-        } else if (response && response.length > 1) {
+        }
+        else if (lastPeriod === "Quarterly" && response.length < 4) {
+          data['dividendpershare_at_cost'] = response[response.length - 1]['value'] * 4;
+        }
+        else if (lastPeriod === "SemiAnnual" && response.length < 2) {
+          data['dividendpershare_at_cost'] = response[response.length - 1]['value'] * 2;
+        }
+        else if (lastPeriod === "Monthly" && response.length < 12) {
+          data['dividendpershare_at_cost'] = response[response.length - 1]['value'] * 12;
+        }
+        else if (response && response.length > 1) {
 
           // frontendDate = A date which is Stock Buy, Sell or Dividend .
           // Add Activity form contains this frontendDate.
