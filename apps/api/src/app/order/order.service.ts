@@ -157,24 +157,35 @@ export class OrderService {
 
     if (!(data.type === 'ITEM')) {
 
+      // Getting summaryDetail for given symbol.
       const symbolDetail = await this.getSymbolDetail(data.symbol)
-
+      // Logic for dividendpershare_at_cost
       if (!(symbolDetail)) {
 
+        // If symbolDetail is null then dividendpershare_at_cost = 0.0.
         data['dividendpershare_at_cost'] = 0.0;
 
       } else {
 
+        // Getting HistoricalDividendData for given symbol & storing in it response variable.
+        // response = HistoricalDividendData.
         let response = await this.dataGatheringService.getHistoricalDividendData(data.symbol);
 
+        // Logic for dividendpershare_at_cost
         if (!(response)) {
+          // If HistoricalDividendData is null or undefined then dividendpershare_at_cost is null.
           data['dividendpershare_at_cost'] = null;
         } else if (response && response.length > 1) {
 
+          // frontendDate = A date which is Stock Buy, Sell or Dividend .
+          // Add Activity form contains this frontendDate.
           const frontendDate = format(new Date(data.date), 'yyyy-MM-dd')
+          // Getting HistoricalDividendData only lesser than or equal to frontendDate.
           response = response.filter((value) => value['date'] <= frontendDate)
-          const { period } = response[response.length - 1];
+          // Getting period of last record or dividend release after frontendDate filteration.
+          const { period } = (response[response.length - 1]) ? (response[response.length - 1]) : { period: '' };
           let sum = 0;
+          // Calculation logic for dividendpershare_at_cost field.
           if (period === 'Quarterly') {
             response.slice(response.length - 4, response.length).map(e => sum += e['value'])
           } else if (period === 'Annual') {
@@ -185,10 +196,12 @@ export class OrderService {
             response.slice(response.length - 1, response.length).map(e => sum += e['value'])
           }
 
+          // Setting sum variable to dividendpershare_at_cost field of order table.
           data['dividendpershare_at_cost'] = sum;
         }
       }
-
+      //   Set Historical Dividend Data for given symbol.
+      //   DividendData table's entry goes from this function.
       await this.setHistoricalDividendData(data.symbol);
     }
 
@@ -200,6 +213,7 @@ export class OrderService {
 
     const orderData: Prisma.OrderCreateInput = data;
 
+    // Creating order table entry.
     return this.prismaService.order.create({
       data: {
         ...orderData,

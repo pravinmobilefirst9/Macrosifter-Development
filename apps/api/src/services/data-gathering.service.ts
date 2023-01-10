@@ -162,6 +162,16 @@ export class DataGatheringService {
     await this.gatherSymbols(symbols);
   }
 
+  public isDate15MonthOld(date) {
+    date = new Date(date)
+    let months;
+    const d2 = new Date()
+    months = (d2.getFullYear() - date.getFullYear()) * 12;
+    months -= date.getMonth();
+    months += d2.getMonth();
+    return ((months > 15) ? true : false);
+  }
+
   public async gatherSymbolForDate({
     dataSource,
     date,
@@ -250,48 +260,87 @@ export class DataGatheringService {
         url
       } = assetProfiles[symbol];
 
+      // Gather Historical Dividend data for handling dividendpershare and type.
       const data = await this.getHistoricalDividendData(symbol);
 
       let dividendpershare = null;
       let dividendpershare_type = null;
 
+      // Getting Yahoo Quotes Summary details.
       const { summaryDetail } = await this.getSymbolDetail(symbol);
 
+      // Calculation of dividendpershare & dividendpershare_type logic 
       if (!(summaryDetail)) {
+        // If not summaryDetail then dividendpershare & dividendpershare_type is null.
         dividendpershare = null;
         dividendpershare_type = null;
       } else {
-
+        // dividendpershare = dividendRate, else search for trailingAnnualDividendRate otherwise null.
         dividendpershare = summaryDetail['dividendRate'] ? summaryDetail['dividendRate'] :
           (summaryDetail['trailingAnnualDividendRate']) ? summaryDetail['trailingAnnualDividendRate'] : null;
 
+        //dividendpershare_type = 1,when dividendRate exist else 0.
+        // dividendpershare_type = 0,when trailingAnnualDividendRate exist else null.
         dividendpershare_type = summaryDetail['dividendRate'] ? 1 : (summaryDetail['trailingAnnualDividendRate']) ? 0 : null;
       }
 
 
 
       let dividend = 0;
+      // This is dataSource2 for EOD_HISTORICAL_DATA
       const dataSource2 = {
         source1: 'EOD_HISTORICAL_DATA'
       }
       let dividend_period = null;
 
+      // Logic for dividend & dividend_period calculation
       if (!(data)) {
         dividend = 0;
-
       } else if (data && data.length === 0) {
         dividend = 0;
       } else {
         dividend = 1;
         dividend_period = data[data.length - 1]['period'] ? data[data.length - 1]['period'] : null;
 
+        // If dividend_period is null then logic to set dividend_period & dividend. 
         if (!(dividend_period)) {
-          dividend_period = this.calculatePeriod(data);
+
+          // If latest date is older than 15 Months then dividend_period = null & dividend = 0
+          // else calculate dividend_period
+          if (this.isDate15MonthOld(data[data.length - 1]['date'])) {
+            dividend_period = null;
+            dividend = 0;
+          } else {
+            // else calculate dividend_period
+            dividend_period = this.calculatePeriod(data);
+          }
+
+        }
+
+      }
+
+      //    Check if dividend is 1 & dividendpershare is null then logic for calculation of dividendpershare_type & dividendpershare
+      if (dividend === 1 && (!(dividendpershare))) {
+        dividendpershare_type = 0;
+
+        if (data[data.length - 1]['period'] === "Monthly") {
+          dividendpershare = data[data.length - 1]['value'] * 12;
+        }
+
+        if (data[data.length - 1]['period'] === "Quarterly") {
+          dividendpershare = data[data.length - 1]['value'] * 4;
+        }
+
+        if (data[data.length - 1]['period'] === "SemiAnnual") {
+          dividendpershare = data[data.length - 1]['value'] * 2;
+        }
+
+        if (data[data.length - 1]['period'] === "Annual") {
+          dividendpershare = data[data.length - 1]['value'] * 1;
         }
 
 
       }
-
 
 
 
