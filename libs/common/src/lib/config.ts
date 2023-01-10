@@ -47,7 +47,7 @@ export const GATHER_ASSET_PROFILE_PROCESS_OPTIONS: JobOptions = {
   backoff: {
     // delay: ms('1 minute'),
     delay: 1000,
-    type: 'exponential'
+    type: 'exponential',
   },
   priority: DATA_GATHERING_QUEUE_PRIORITY_HIGH,
   removeOnComplete: {

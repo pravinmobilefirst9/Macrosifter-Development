@@ -7,6 +7,9 @@ const {
 } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+// fehzan@macrosifter.com (Sandbox - 1 free sample account, Development 100/100 items).
+// The password is G%6#!q2S@s2K.
+
 async function main() {
   const platformBitcoinSuisse = await prisma.platform.upsert({
     create: {

@@ -1,5 +1,5 @@
 import { ConfigurationService } from '@ghostfolio/api/services/configuration.service';
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 
 @Injectable()
@@ -7,7 +7,7 @@ export class RedisCacheService {
   public constructor(
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
     private readonly configurationService: ConfigurationService
-  ) {}
+  ) { }
 
   public async get(key: string): Promise<string> {
     return await this.cache.get(key);
@@ -18,6 +18,7 @@ export class RedisCacheService {
   }
 
   public async reset() {
+    Logger.log("Redis Cache is Reset!");
     await this.cache.reset();
   }
 

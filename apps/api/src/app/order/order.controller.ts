@@ -124,10 +124,6 @@ export class OrderController {
         StatusCodes.FORBIDDEN
       );
     }
-    console.log('========================================================================');
-    console.log(`====================createOrderStarted =================================`);
-    console.log('========================================================================');
-
 
     return this.orderService.createOrder({
       ...data,

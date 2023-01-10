@@ -11,8 +11,9 @@ import {
 } from '@ghostfolio/common/config';
 import { Filter } from '@ghostfolio/common/interfaces';
 import { OrderWithAccount } from '@ghostfolio/common/types';
-import { Injectable } from '@nestjs/common';
-import { format, formatDistance, formatRelative, parseISO, subDays } from 'date-fns'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Injectable, Logger } from '@nestjs/common';
+import { format } from 'date-fns'
 import {
   AssetClass,
   AssetSubClass,
@@ -29,7 +30,6 @@ import { groupBy } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Activity } from './interfaces/activities.interface';
-import { log } from 'console';
 const axios = require('axios');
 
 @Injectable()
@@ -137,7 +137,7 @@ export class OrderService {
 
     if (!isDraft) {
       // Gather symbol data of order in the background, if not draft
-      this.dataGatheringService.gatherSymbols([
+      await this.dataGatheringService.gatherSymbols([
         {
           dataSource: data.SymbolProfile.connectOrCreate.create.dataSource,
           date: <Date>data.date,
@@ -185,17 +185,11 @@ export class OrderService {
             response.slice(response.length - 1, response.length).map(e => sum += e['value'])
           }
 
-          console.log("Sum = ", sum);
-
           data['dividendpershare_at_cost'] = sum;
-          // Previous Logic
-          // data['dividendpershare_at_cost'] = summaryDetail['dividendRate'] ? summaryDetail['dividendRate'] : (summaryDetail['trailingAnnualDividendRate']) ? (summaryDetail['trailingAnnualDividendRate']) : 0.0;
         }
       }
 
-      // --------------------------
       await this.setHistoricalDividendData(data.symbol);
-      // --------------------------
     }
 
     delete data.currency;
@@ -258,10 +252,25 @@ export class OrderService {
           ],
           skipDuplicates: true,
         })
-        console.log(`DividendData table's data is inserted for ${symbol} !`);
+        Logger.log(`DividendData is Inserted for ${symbol} !`);
 
       } else {
-        console.log(`DividendData table's data is already exist for ${symbol} !`);
+
+        await this.prismaService.dividendData.deleteMany({
+          where: {
+            symbol: symbol
+          }
+        })
+
+        await this.prismaService.dividendData.createMany({
+          data: [
+            ...finalDividendData
+          ],
+          skipDuplicates: true,
+        })
+        Logger.log(`DividendData is Updated for ${symbol} !`);
+
+
       }
 
     }

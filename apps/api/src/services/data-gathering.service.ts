@@ -12,6 +12,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DataSource } from '@prisma/client';
 import { JobOptions, Queue } from 'bull';
 import { format, subDays } from 'date-fns';
+import { OrderService } from '../app/order/order.service';
 const axios = require('axios');
 const yahooFinance = require('yahoo-finance2').default;
 import { DataProviderService } from './data-provider/data-provider.service';
@@ -32,7 +33,7 @@ export class DataGatheringService {
     private readonly exchangeRateDataService: ExchangeRateDataService,
     private readonly marketDataService: MarketDataService,
     private readonly prismaService: PrismaService,
-    private readonly symbolProfileService: SymbolProfileService
+    private readonly symbolProfileService: SymbolProfileService,
   ) { }
 
   public async addJobToQueue(name: string, data: any, options?: JobOptions) {
@@ -47,6 +48,97 @@ export class DataGatheringService {
       return this.dataGatheringQueue.add(name, data, options);
     }
   }
+
+  public async gatherDividendData() {
+    const symbols = await this.prismaService.symbolProfile.findMany({
+      where: {
+      },
+      select: {
+        symbol: true
+      }
+    })
+
+    symbols.map(async ({ symbol }) => {
+      await this.setHistoricalDividendData(symbol);
+    })
+
+  }
+
+  public async setHistoricalDividendData(symbol: string) {
+    const data = await this.getHistoricalDividendData(symbol);
+
+
+    if (data && (data.length > 0)) {
+      let finalDividendData = []
+      for (let i = 0; i < data.length; i++) {
+
+        const obj = {
+          dataSource: 'EOD_HISTORICAL_DATA',
+          symbol,
+          value: data[i]['value'],
+          unadjusted_value: data[i]['unadjustedValue'],
+          date: (data[i]['paymentDate']) ? (data[i]['paymentDate']) : (data[i]['date']),
+          currency: data[i]['currency'],
+        }
+
+        obj['date'] = new Date(obj['date']);
+
+        finalDividendData.push(obj);
+
+      }
+
+      const isDividendDataExist = await this.prismaService.dividendData.findMany({
+        where: {
+          symbol
+        }
+      })
+
+      if (isDividendDataExist && isDividendDataExist.length !== 0) {
+
+
+        if (isDividendDataExist.length < finalDividendData.length) {
+
+
+          isDividendDataExist.map((e) => {
+
+            const date = format(new Date(e['date']), 'yyyy-MM-dd')
+            finalDividendData = finalDividendData.filter((e1) => date !== e1['date'])
+
+          })
+
+          await this.prismaService.dividendData.createMany({
+            data: [
+              ...finalDividendData
+            ],
+            skipDuplicates: true,
+          })
+          Logger.log(`DividendData is Updated for ${symbol} !`);
+
+        } else {
+
+          Logger.log(`DividendData is Already Up to date for ${symbol} !`);
+
+        }
+
+
+
+      } else {
+
+        await this.prismaService.dividendData.createMany({
+          data: [
+            ...finalDividendData
+          ],
+          skipDuplicates: true,
+        })
+        Logger.log(`DividendData is Inserted for ${symbol} !`);
+
+
+      }
+
+    }
+
+  }
+
 
   public async gather7Days() {
     const dataGatheringItems = await this.getSymbols7D();
@@ -109,10 +201,6 @@ export class DataGatheringService {
   }
 
   public async gatherAssetProfiles(aUniqueAssets?: UniqueAsset[]) {
-    console.log('========================================================================');
-    console.log(`====================gatherAssetProfiles  =================================`);
-    console.log('========================================================================');
-
     let uniqueAssets = aUniqueAssets?.filter((dataGatheringItem) => {
       return dataGatheringItem.dataSource !== 'MANUAL';
     });
@@ -204,24 +292,6 @@ export class DataGatheringService {
 
       }
 
-      console.log('This is final symbol profile data');
-
-      console.log({
-        assetClass,
-        assetSubClass,
-        countries,
-        currency,
-        dataSource,
-        dividend,
-        dataSource2,
-        dividend_period,
-        name,
-        sectors,
-        symbol,
-        dividendpershare,
-        dividendpershare_type,
-        url
-      });
 
 
 

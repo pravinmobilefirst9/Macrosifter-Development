@@ -278,10 +278,13 @@ model DividendData{
     createdAt           DateTime     @default(now())
     dataSource          DataSource
     symbol              String
-    date                DateTime?
+    date                DateTime
     value               Float
     unadjusted_value    Float
     currency            String
+
+    @@unique([date, symbol])
+    @@index([symbol])
 }
 
 enum AccountType {

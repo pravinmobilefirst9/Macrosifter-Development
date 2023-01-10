@@ -47,9 +47,6 @@ export class DataGatheringProcessor {
 
   @Process(GATHER_HISTORICAL_MARKET_DATA_PROCESS)
   public async gatherHistoricalMarketData(job: Job<IDataGatheringItem>) {
-    console.log('========================================================================');
-    console.log(`==================== gatherHistoricalMarketData =================================`);
-    console.log('========================================================================');
     try {
       const { dataSource, date, symbol } = job.data;
 
