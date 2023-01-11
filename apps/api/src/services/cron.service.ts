@@ -38,7 +38,7 @@ export class CronService {
 
 
   // Macrosifter DividendData Cron
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   public async syncDividendData() {
     await this.dataGatheringService.gatherDividendData();
   }
@@ -96,7 +96,7 @@ export class CronService {
 
 
   // CRON AUTOMATION FOR Missing Data Inside the Symbol Profile, DividendData or MarketData Hourly
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   public async automation_SymbolProfile_DividendData_MarketData() {
     this.syncMarketData()
     this.syncSymbolProfile();

@@ -178,7 +178,7 @@ export class PlaidController {
               verification_status: bodyData.accounts[0].verification_status,
               currency: 'USD',
               plaidTokenId: plaidTokenSame.id,
-              name: bodyData.accounts[0].name,
+              name: bodyData[0]['subtype'] + " " + bodyData[0]['type'] + " Account " + bodyData[0]['mask'],
               account_id: bodyData.accounts[0].id,
               institutionId: same_day_institution.id,
               platformId: platform.id,
@@ -213,14 +213,13 @@ export class PlaidController {
 
           const data = [
             {
-
               userId: bodyData.userId,
               accountType: null,
               balance: 0,
               verification_status: bodyData.accounts[0].verification_status,
               currency: 'USD',
               plaidTokenId: plaidTokenSame.id,
-              name: bodyData.accounts[0].name,
+              name: bodyData[0]['subtype'] + " " + bodyData[0]['type'] + " Account " + bodyData[0]['mask'],
               account_id: bodyData.accounts[0].id,
               institutionId: same_day_institution.id,
               platformId: platform.id,
@@ -504,15 +503,18 @@ export class PlaidController {
           let verification_status = '';
           let account_id = '';
           let current_currency = null;
+          let account_name = null;
 
           for (let i = 0; i < plaidAccounts.length; i++) {
             if ((plaidAccounts[i].subtype === subtype) && (plaidAccounts[i].type === type) && (plaidAccounts[i].account_id === id)) {
-              current_balance = plaidAccounts[i].balances.current
+              current_balance = (plaidAccounts[i]['type'] === 'investment') ? 0 : plaidAccounts[i].balances.current
               current_currency = plaidAccounts[i].balances.iso_currency_code
               account_id = plaidAccounts[i].account_id
+              account_name = plaidAccounts[i]['subtype'] + " " + plaidAccounts[i]['type'] + " Account " + plaidAccounts[i]['mask']
               verification_status = plaidAccounts[i].verification_status ? plaidAccounts[i].verification_status : ''
             }
           }
+
 
           return {
             userId: bodyData.userId,
@@ -520,7 +522,7 @@ export class PlaidController {
             balance: current_balance,
             verification_status,
             currency: current_currency,
-            name: name,
+            name: account_name,
             plaidTokenId: plaidToken.id,
             account_id,
             institutionId: institution.id,

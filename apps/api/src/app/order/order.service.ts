@@ -205,6 +205,7 @@ export class OrderService {
           } else if (period === 'SemiAnnual') {
             response.slice(response.length - 2, response.length).map(e => sum += e['value'])
           } else {
+            // TFLO Symbol comes in this block
             response.slice(response.length - 1, response.length).map(e => sum += e['value'])
           }
 

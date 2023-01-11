@@ -100,7 +100,7 @@ export class PlaidService {
 
     public async updateBalance(account, userId: string) {
 
-        const { account_id, balances, verification_status } = account;
+        const { account_id, balances, verification_status, type } = account;
 
         const current_account = await this.prismaService.account.findFirst({
             where: {
@@ -118,7 +118,8 @@ export class PlaidService {
             },
             data: {
                 verification_status: verification_status,
-                balance: balances.current
+                // balance: balances.current // Previous Logic for balance
+                balance: (type === 'investment') ? 0 : balances.current // Current Logic for balance
             }
         })
 
