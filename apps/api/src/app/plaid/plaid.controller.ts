@@ -219,7 +219,7 @@ export class PlaidController {
               verification_status: bodyData.accounts[0].verification_status,
               currency: 'USD',
               plaidTokenId: plaidTokenSame.id,
-              name: bodyData[0]['subtype'] + " " + bodyData[0]['type'] + " Account " + bodyData[0]['mask'],
+              name: bodyData[0]['subtype'] + " " + bodyData[0]['type'] + " Account " + " Account (..." + bodyData[0]['mask'] + ")",
               account_id: bodyData.accounts[0].id,
               institutionId: same_day_institution.id,
               platformId: platform.id,
@@ -510,7 +510,7 @@ export class PlaidController {
               current_balance = (plaidAccounts[i]['type'] === 'investment') ? 0 : plaidAccounts[i].balances.current
               current_currency = plaidAccounts[i].balances.iso_currency_code
               account_id = plaidAccounts[i].account_id
-              account_name = plaidAccounts[i]['subtype'] + " " + plaidAccounts[i]['type'] + " Account " + plaidAccounts[i]['mask']
+              account_name = plaidAccounts[i]['subtype'] + " " + plaidAccounts[i]['type'] + " Account (..." + plaidAccounts[i]['mask'] + ")"
               verification_status = plaidAccounts[i].verification_status ? plaidAccounts[i].verification_status : ''
             }
           }
