@@ -1,3 +1,4 @@
+import { capitalizeFirstLetter } from '@ghostfolio/api/helper/string.helper';
 import { PrismaService } from '@ghostfolio/api/services/prisma.service';
 import { RequestWithUser } from '@ghostfolio/common/types';
 import {
@@ -55,7 +56,6 @@ export class PlaidController {
 
   @Post('on-plaid-success')
   public async onPlaidSuccess(@Body() bodyData: OnPlaidSuccessDto) {
-
     let platform = null;
     try {
 
@@ -219,7 +219,7 @@ export class PlaidController {
               verification_status: bodyData.accounts[0].verification_status,
               currency: 'USD',
               plaidTokenId: plaidTokenSame.id,
-              name: bodyData[0]['subtype'] + " " + bodyData[0]['type'] + " Account " + " Account (..." + bodyData[0]['mask'] + ")",
+              name: capitalizeFirstLetter(bodyData[0]['subtype']) + " " + capitalizeFirstLetter(bodyData[0]['type']) + " Account (..." + bodyData[0]['mask'] + ")",
               account_id: bodyData.accounts[0].id,
               institutionId: same_day_institution.id,
               platformId: platform.id,
@@ -354,6 +354,9 @@ export class PlaidController {
       const res = await axios(config);
       access_token = res.data.access_token;
       item_id = res.data.item_id;
+      console.log('access_token', access_token);
+      console.log('item_id', item_id);
+
     } catch (error) {
       console.log(error)
       throw new HttpException(
@@ -418,11 +421,13 @@ export class PlaidController {
       const res = await axios(config2);
       plaidAccounts = res.data.accounts;
     } catch (error) {
-      console.log(error)
-      throw new HttpException(
-        getReasonPhrase(StatusCodes.FORBIDDEN),
-        StatusCodes.FORBIDDEN
-      );
+      return {
+        status: error['response']['data']['error_code'],
+        statusCode: 201,
+        plaidToken: null,
+        access_token: access_token,
+        item_id: item_id
+      };
     }
 
     let isInstitutionExist = false;
@@ -510,7 +515,7 @@ export class PlaidController {
               current_balance = (plaidAccounts[i]['type'] === 'investment') ? 0 : plaidAccounts[i].balances.current
               current_currency = plaidAccounts[i].balances.iso_currency_code
               account_id = plaidAccounts[i].account_id
-              account_name = plaidAccounts[i]['subtype'] + " " + plaidAccounts[i]['type'] + " Account (..." + plaidAccounts[i]['mask'] + ")"
+              account_name = capitalizeFirstLetter(plaidAccounts[i]['subtype']) + " " + capitalizeFirstLetter(plaidAccounts[i]['type']) + " Account (..." + plaidAccounts[i]['mask'] + ")"
               verification_status = plaidAccounts[i].verification_status ? plaidAccounts[i].verification_status : ''
             }
           }

@@ -10,7 +10,7 @@ import { environment } from './environments/environment';
 
 (async () => {
   const response = await fetch('/api/v1/info');
-  await fetch('/api/v1/plaid/fetch-latest-balance', {
+  fetch('/api/v1/plaid/fetch-latest-balance', {
     headers: { Authorization: `Bearer ${window.localStorage.getItem('auth-token')}` }
   })
   const info: InfoItem = await response.json();

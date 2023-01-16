@@ -16,6 +16,7 @@ import { NgxPlaidLinkService, PlaidLinkHandler } from "ngx-plaid-link";
 import { Subject, takeUntil } from "rxjs";
 import { AccountDetailsToggleDialog } from "../account-details-toggle/account-details-toggle.component";
 import { ChoosePlaidStartMicroDepositDialog } from "../choose-plaid-start-micro-deposit/choose-plaid-start-micro-deposit.component";
+import { ChoosePlaidStartUpdateModeDialog } from '../choose-plaid-start-update-mode/choose-plaid-start-update-mode.component'
 
 @Component({
   selector: 'choose-plaid-start',
@@ -106,8 +107,24 @@ export class ChoosePlaidStartDialog implements OnInit {
 
     this.dataService.postPlaidAccountDetails(bodyData).subscribe(response => {
       this.dialogRef.close();
-      this.openAccountDetailsToggle(response)
+      console.log(response);
+      if (response['status'] === 'ITEM_LOGIN_REQUIRED') {
+        console.log("Update flow started.....1");
+        this.startUpdateModeToggle(response)
+      } else {
+        this.openAccountDetailsToggle(response)
+      }
     })
+  }
+
+  startUpdateModeToggle(status) {
+    console.log("Update flow started.....2");
+    const dialogRef = this.dialog.open(ChoosePlaidStartUpdateModeDialog, {
+      data: status,
+      height: this.deviceType === 'mobile' ? '97.5vh' : '80vh',
+      width: this.deviceType === 'mobile' ? '100vw' : '50rem'
+    });
+
   }
 
   openAccountDetailsToggle(status) {

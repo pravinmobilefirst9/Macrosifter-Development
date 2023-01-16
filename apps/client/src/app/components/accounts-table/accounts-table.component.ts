@@ -316,8 +316,8 @@ export class AccountsTableComponent implements OnChanges, OnDestroy, OnInit {
       dialogConfig.exitAnimationDuration = '0ms';
 
       dialogConfig.data = {
-        accessToken,
-        itemId
+        access_token: accessToken,
+        item_id: itemId
       };
 
       this.dialog.open(ChoosePlaidStartUpdateModeDialog, dialogConfig);

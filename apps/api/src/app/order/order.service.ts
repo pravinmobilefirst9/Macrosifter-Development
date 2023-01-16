@@ -170,8 +170,10 @@ export class OrderService {
         // Getting HistoricalDividendData for given symbol & storing in it response variable.
         // response = HistoricalDividendData.
         let response = await this.dataGatheringService.getHistoricalDividendData(data.symbol);
-
-        const lastPeriod = response[response.length - 1]['period'] ? response[response.length - 1]['period'] : { period: '' }
+        let lastPeriod = null;
+        if (response && response.length >= 1) {
+          lastPeriod = response[response.length - 1]['period'] ? response[response.length - 1]['period'] : { period: '' }
+        }
 
         // Logic for dividendpershare_at_cost
         if (!(response)) {

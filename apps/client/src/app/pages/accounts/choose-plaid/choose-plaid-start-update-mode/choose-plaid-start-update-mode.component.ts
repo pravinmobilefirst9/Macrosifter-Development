@@ -57,6 +57,7 @@ export class ChoosePlaidStartUpdateModeDialog implements OnInit {
     private plaidLinkService: NgxPlaidLinkService,
     @Inject(MAT_DIALOG_DATA) public data: ChoosePlaidStartUpdateModeDialog
   ) {
+    console.log("Update flow started.....3");
     this.btnClick();
   }
   ngOnInit(): void {
@@ -65,10 +66,14 @@ export class ChoosePlaidStartUpdateModeDialog implements OnInit {
 
 
   public btnClick = async () => {
+    console.log("Update flow started.....4");
+    console.log("Access token for update mode: ", this.data['access_token']);
 
     this.router.navigate(['/plaid-flow'], { relativeTo: this.route });
-    this.dataService.createPlaidLinkTokenUpdateMode(this.data['accessToken']).subscribe(data => {
+    this.dataService.createPlaidLinkTokenUpdateMode(this.data['access_token']).subscribe(data => {
       this.config.token = data['link_token']
+      console.log("link token created for update mode", data['link_token']);
+
       this.plaidLinkService
         .createPlaid(
           Object.assign({}, this.config, {
@@ -111,7 +116,7 @@ export class ChoosePlaidStartUpdateModeDialog implements OnInit {
     // }
     // this.openAccountDetailsToggle(response)
 
-    this.dataService.updateItemLoginRequiredStatus(this.data['itemId']).subscribe(response => {
+    this.dataService.updateItemLoginRequiredStatus(this.data['item_id']).subscribe(response => {
       // console.log('ITEM_LOGIN_REQUIRED_STATUS_CHANGED!');
     })
 

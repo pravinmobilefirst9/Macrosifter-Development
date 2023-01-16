@@ -321,6 +321,7 @@ export class DataGatheringService {
 
       //    Check if dividend is 1 & dividendpershare is null then logic for calculation of dividendpershare_type & dividendpershare
       if (dividend === 1 && (!(dividendpershare))) {
+
         dividendpershare_type = 0;
 
         if (data[data.length - 1]['period'] === "Monthly") {
@@ -342,6 +343,10 @@ export class DataGatheringService {
 
       }
 
+      if (dividend === 0 && dividendpershare != null) {
+        dividend = 1;
+        dividend_period = 'Other'
+      }
 
 
       try {
