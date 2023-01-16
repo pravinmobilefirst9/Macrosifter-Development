@@ -43,6 +43,12 @@ export class CronService {
     await this.dataGatheringService.gatherDividendData();
   }
 
+  // Macrosifter SplitData Cron
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  public async syncSplitData() {
+    await this.dataGatheringService.gatherSplitData();
+  }
+
   @Cron(CronExpression.EVERY_12_HOURS)
   public async runEveryTwelveHours() {
     await this.exchangeRateDataService.loadCurrencies();
@@ -101,6 +107,7 @@ export class CronService {
     this.syncMarketData()
     this.syncSymbolProfile();
     this.syncDividendData();
+    this.syncSplitData();
   }
 
 

@@ -9,7 +9,7 @@ import { DATE_FORMAT, resetHours } from '@ghostfolio/common/helper';
 import { UniqueAsset } from '@ghostfolio/common/interfaces';
 import { InjectQueue } from '@nestjs/bull';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { DataSource } from '@prisma/client';
+import { DataSource, Prisma, PrismaClient, SplitData } from '@prisma/client';
 import { JobOptions, Queue } from 'bull';
 import { format, subDays } from 'date-fns';
 import { OrderService } from '../app/order/order.service';
@@ -24,6 +24,7 @@ import { PrismaService } from './prisma.service';
 
 @Injectable()
 export class DataGatheringService {
+
   public constructor(
     @Inject('DataEnhancers')
     private readonly dataEnhancers: DataEnhancerInterface[],
@@ -64,6 +65,76 @@ export class DataGatheringService {
 
   }
 
+  public async gatherSplitData() {
+    const symbols = await this.prismaService.symbolProfile.findMany({
+      where: {
+      },
+      select: {
+        symbol: true
+      }
+    })
+
+    symbols.map(async ({ symbol }) => {
+      await this.setEODHistoricalSplitData(symbol);
+    })
+  }
+
+  public async setEODHistoricalSplitData(symbol: string) {
+    if (!symbol) return;
+    const data = await this.getHistoricalSplitData(symbol);
+    const splitData = [];
+    if (data && data.length > 0) {
+      for (let i = 0; i < data.length; i++) {
+        const obj: Prisma.SplitDataCreateInput = {
+          dataSource: 'EOD_HISTORICAL_DATA',
+          symbol,
+          date: new Date(data[i]['date']),
+          split: data[i]['split'],
+        }
+        splitData.push(obj);
+      }
+    }
+    const isSplitDataExist = await this.prismaService.splitData.findMany({
+      where: {
+        symbol
+      }
+    })
+
+    if (isSplitDataExist && isSplitDataExist.length > 0) {
+
+      if ((isSplitDataExist && isSplitDataExist.length) < (splitData && splitData.length)) {
+
+        await this.prismaService.splitData.createMany({
+          data: [
+            ...splitData
+          ],
+          skipDuplicates: true,
+        })
+        Logger.log(`SplitData is Updated for ${symbol} !`);
+
+      } else {
+        Logger.log(`SplitData is Already Up to date for ${symbol} !`);
+      }
+
+    } else {
+
+      if (splitData && splitData.length > 0) {
+
+        await this.prismaService.splitData.createMany({
+          data: [...splitData],
+          skipDuplicates: true,
+        })
+        Logger.log(`SplitData is Inserted for ${symbol} !`);
+      } else {
+        Logger.log(`SplitData is Not Found for ${symbol} !`);
+      }
+
+
+    }
+
+
+  }
+
   public async setHistoricalDividendData(symbol: string) {
     const data = await this.getHistoricalDividendData(symbol);
 
@@ -79,6 +150,9 @@ export class DataGatheringService {
           unadjusted_value: data[i]['unadjustedValue'],
           date: (data[i]['paymentDate']) ? (data[i]['paymentDate']) : (data[i]['date']),
           currency: data[i]['currency'],
+          declarationDate: (data[i]['declarationDate']) ? new Date((data[i]['declarationDate'])) : null,
+          paymentDate: (data[i]['paymentDate']) ? new Date((data[i]['paymentDate'])) : null,
+          recordDate: (data[i]['recordDate']) ? new Date((data[i]['recordDate'])) : null,
         }
 
         obj['date'] = new Date(obj['date']);
@@ -451,6 +525,17 @@ export class DataGatheringService {
     try {
 
       const url = `https://eodhistoricaldata.com/api/div/${symbol}?fmt=json&from=2000-01-01&api_token=633b608e2acf44.53707275`
+      const response = await axios.get(url)
+      return response.data;
+
+    } catch (error) {
+      return undefined;
+    }
+  }
+
+  public async getHistoricalSplitData(symbol) {
+    try {
+      const url = `https://eodhistoricaldata.com/api/splits/${symbol}?fmt=json&from=2000-01-01&api_token=633b608e2acf44.53707275`
       const response = await axios.get(url)
       return response.data;
 

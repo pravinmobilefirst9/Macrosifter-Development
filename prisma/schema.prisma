@@ -279,12 +279,27 @@ model DividendData{
     dataSource          DataSource
     symbol              String
     date                DateTime
+    declarationDate     DateTime?
+    paymentDate         DateTime?
+    recordDate          DateTime?
     value               Float
     unadjusted_value    Float
     currency            String
 
     @@unique([date, symbol])
     @@index([symbol])
+}
+
+model SplitData{
+      id                  String       @id @default(uuid())
+    createdAt           DateTime     @default(now())
+    dataSource          DataSource
+     symbol              String
+     split            String?
+     date             DateTime?
+    @@unique([date, symbol])
+    @@index([symbol])
+
 }
 
 enum AccountType {

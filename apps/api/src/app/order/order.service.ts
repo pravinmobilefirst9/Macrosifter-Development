@@ -216,8 +216,11 @@ export class OrderService {
         }
       }
       //   Set Historical Dividend Data for given symbol.
-      //   DividendData table's entry goes from this function.
+      //   DividendData table's entry goes from this call.
       await this.setHistoricalDividendData(data.symbol);
+
+      // SplitData table's entry goes fron this call
+      await this.setEODHistoricalSplitData(data.symbol);
     }
 
     delete data.currency;
@@ -259,6 +262,9 @@ export class OrderService {
           unadjusted_value: data[i]['unadjustedValue'],
           date: (data[i]['paymentDate']) ? (data[i]['paymentDate']) : (data[i]['date']),
           currency: data[i]['currency'],
+          declarationDate: (data[i]['declarationDate']) ? new Date((data[i]['declarationDate'])) : null,
+          paymentDate: (data[i]['paymentDate']) ? new Date((data[i]['paymentDate'])) : null,
+          recordDate: (data[i]['recordDate']) ? new Date((data[i]['recordDate'])) : null,
         }
 
         obj['date'] = new Date(obj['date']);
@@ -332,6 +338,75 @@ export class OrderService {
     }
 
   }
+
+  public async setEODHistoricalSplitData(symbol: string) {
+    if (!symbol) return;
+    const data = await this.getHistoricalSplitData(symbol);
+    const splitData = [];
+    if (data && data.length > 0) {
+      for (let i = 0; i < data.length; i++) {
+        const obj: Prisma.SplitDataCreateInput = {
+          dataSource: 'EOD_HISTORICAL_DATA',
+          symbol,
+          date: new Date(data[i]['date']),
+          split: data[i]['split'],
+        }
+        splitData.push(obj);
+      }
+    }
+    const isSplitDataExist = await this.prismaService.splitData.findMany({
+      where: {
+        symbol
+      }
+    })
+
+    if (isSplitDataExist && isSplitDataExist.length > 0) {
+
+      if ((isSplitDataExist && isSplitDataExist.length) < (splitData && splitData.length)) {
+
+        await this.prismaService.splitData.createMany({
+          data: [
+            ...splitData
+          ],
+          skipDuplicates: true,
+        })
+        Logger.log(`SplitData is Updated for ${symbol} !`);
+
+      } else {
+        Logger.log(`SplitData is Already Up to date for ${symbol} !`);
+      }
+
+    } else {
+
+      if (splitData && splitData.length > 0) {
+
+        await this.prismaService.splitData.createMany({
+          data: [...splitData],
+          skipDuplicates: true,
+        })
+        Logger.log(`SplitData is Inserted for ${symbol} !`);
+      } else {
+        Logger.log(`SplitData is Not Found for ${symbol} !`);
+      }
+
+
+    }
+
+
+  }
+
+
+  public async getHistoricalSplitData(symbol) {
+    try {
+      const url = `https://eodhistoricaldata.com/api/splits/${symbol}?fmt=json&from=2000-01-01&api_token=633b608e2acf44.53707275`
+      const response = await axios.get(url)
+      return response.data;
+
+    } catch (error) {
+      return undefined;
+    }
+  }
+
 
   public async deleteOrder(
     where: Prisma.OrderWhereUniqueInput
