@@ -1,5 +1,6 @@
+import { DataGatheringService } from "@ghostfolio/api/services/data-gathering.service";
 import { PrismaService } from "@ghostfolio/api/services/prisma.service";
-import { HttpException, Injectable } from "@nestjs/common";
+import { HttpException, Injectable, Logger } from "@nestjs/common";
 import { Institution, PlaidToken, Prisma } from "@prisma/client";
 import { getReasonPhrase, StatusCodes } from "http-status-codes";
 import { CreateTokenDto } from "./create-token-dto";
@@ -13,7 +14,7 @@ export class PlaidService {
     public PLAID_BASE_URI = process.env.PLAID_BASE_URI;
     public PLAID_CLIENT_ID = process.env.CLIENT_ID;
     public PLAID_SECRET_ID = process.env.SECRET_ID;
-    public constructor(private readonly prismaService: PrismaService) { }
+    public constructor(private readonly prismaService: PrismaService, private readonly dataGatheringService: DataGatheringService) { }
 
     public async createLinkToken(data) {
 
@@ -154,13 +155,21 @@ export class PlaidService {
         return 'updated with latest balance';
     }
 
+
     public async onPlaidSuccess(data: Prisma.AccountCreateManyInput[], plaidToken: any) {
+
 
         try {
 
             const result = await this.prismaService.account.createMany({
                 data
             });
+
+            // Background Update HoldingsInvestment 
+            console.log("Importing Holdings......")
+            await this.dataGatheringService.handleUpdateHoldingsInvestment(plaidToken['accessToken'])
+            console.log("Importing Holdings Done.....")
+
 
             if (data[0] && data[0].verification_status === 'pending_automatic_verification') {
                 return {
@@ -189,10 +198,7 @@ export class PlaidService {
 
         } catch (error) {
             console.log(error)
-            throw new HttpException(
-                getReasonPhrase(StatusCodes.FORBIDDEN),
-                StatusCodes.FORBIDDEN
-            );
+
         }
 
     }

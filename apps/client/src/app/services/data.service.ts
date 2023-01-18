@@ -430,7 +430,7 @@ export class DataService {
       user: {
         client_user_id: localStorage.getItem('local-user-id')
       },
-      products: ["transactions"]
+      products: ["transactions", "investments"]
     }
     const httpOptions = {
       headers: new HttpHeaders({

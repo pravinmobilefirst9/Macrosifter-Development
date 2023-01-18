@@ -84,7 +84,7 @@ export class CronService {
   }
 
   // Macrosifter SymbolProfile Cron
-  @Cron(CronExpression.EVERY_WEEKEND)
+  @Cron(CronExpression.EVERY_10_SECONDS)
   public async syncSymbolProfile() {
     const uniqueAssets = await this.dataGatheringService.getUniqueAssets();
 

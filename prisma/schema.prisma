@@ -43,6 +43,7 @@ model Account {
   PlaidToken          PlaidToken?      @relation(fields: [plaidTokenId], references: [id])
   User                User             @relation(fields: [userId], references: [id])
   Order               Order[]
+  PlaidHoldings       PlaidHoldings[]
 
   @@id([id, userId])
 }
@@ -78,25 +79,25 @@ model MarketData {
 }
 
 model Order {
-  accountId       String?
-  accountUserId   String?
-  comment         String?
-  createdAt       DateTime      @default(now())
-  date            DateTime
-  fee             Float
-  id              String        @id @default(uuid())
-  isDraft         Boolean       @default(false)
-  quantity        Float
+  accountId                String?
+  accountUserId            String?
+  comment                  String?
+  createdAt                DateTime      @default(now())
+  date                     DateTime
+  fee                      Float
+  id                       String        @id @default(uuid())
+  isDraft                  Boolean       @default(false)
+  quantity                 Float
   dividendpershare_at_cost Float?
-  symbolProfileId String
-  type            Type
-  unitPrice       Float
-  updatedAt       DateTime      @updatedAt
-  userId          String
-  Account         Account?      @relation(fields: [accountId, accountUserId], references: [id, userId])
-  SymbolProfile   SymbolProfile @relation(fields: [symbolProfileId], references: [id])
-  User            User          @relation(fields: [userId], references: [id])
-  tags            Tag[]
+  symbolProfileId          String
+  type                     Type
+  unitPrice                Float
+  updatedAt                DateTime      @updatedAt
+  userId                   String
+  Account                  Account?      @relation(fields: [accountId, accountUserId], references: [id, userId])
+  SymbolProfile            SymbolProfile @relation(fields: [symbolProfileId], references: [id])
+  User                     User          @relation(fields: [userId], references: [id])
+  tags                     Tag[]
 }
 
 model Platform {
@@ -131,10 +132,10 @@ model SymbolProfile {
   currency               String
   dataSource             DataSource
   dataSource2            Json?
-  dividend               Int?         @default(0)
-  dividend_period        String?   
+  dividend               Int?                    @default(0)
+  dividend_period        String?
   dividendpershare       Float?
-  dividendpershare_type  Int?          
+  dividendpershare_type  Int?
   id                     String                  @id @default(uuid())
   name                   String?
   updatedAt              DateTime                @updatedAt
@@ -145,6 +146,7 @@ model SymbolProfile {
   url                    String?
   Order                  Order[]
   SymbolProfileOverrides SymbolProfileOverrides?
+  PlaidHoldings          PlaidHoldings[]
 
   @@unique([dataSource, symbol])
 }
@@ -236,7 +238,7 @@ model ActivityType {
 
 model ActivitySubType {
   id      Int    @id @default(autoincrement())
-  subtype String 
+  subtype String
   type    String
   typeId  Int
 }
@@ -273,33 +275,52 @@ model PlaidMessages {
   plaidTokenId               Int?
 }
 
-model DividendData{
-    id                  String       @id @default(uuid())
-    createdAt           DateTime     @default(now())
-    dataSource          DataSource
-    symbol              String
-    date                DateTime
-    declarationDate     DateTime?
-    paymentDate         DateTime?
-    recordDate          DateTime?
-    value               Float
-    unadjusted_value    Float
-    currency            String
+model DividendData {
+  id               String     @id @default(uuid())
+  createdAt        DateTime   @default(now())
+  dataSource       DataSource
+  symbol           String
+  date             DateTime
+  declarationDate  DateTime?
+  paymentDate      DateTime?
+  recordDate       DateTime?
+  value            Float
+  unadjusted_value Float
+  currency         String
 
-    @@unique([date, symbol])
-    @@index([symbol])
+  @@unique([date, symbol])
+  @@index([symbol])
 }
 
-model SplitData{
-      id                  String       @id @default(uuid())
-    createdAt           DateTime     @default(now())
-    dataSource          DataSource
-     symbol              String
-     split            String?
-     date             DateTime?
-    @@unique([date, symbol])
-    @@index([symbol])
+model SplitData {
+  id         String     @id @default(uuid())
+  createdAt  DateTime   @default(now())
+  dataSource DataSource
+  symbol     String
+  split      String?
+  date       DateTime?
 
+  @@unique([date, symbol])
+  @@index([symbol])
+}
+
+model PlaidHoldings {
+  id                 String         @id @default(uuid())
+  createdAt          DateTime       @default(now())
+  accountId          String?
+  Account            Account?       @relation(fields: [accountId, accountUserId], references: [id, userId])
+  accountUserId      String?
+  lastUpdated        DateTime?
+  symbol             String?
+  symbolProfileId    String?
+  SymbolProfile      SymbolProfile? @relation(fields: [symbolProfileId], references: [id])
+  security_id        String?
+  currency           String?
+  quantity           Float?
+  cost_basis         Float?
+  is_cash_equivalent Boolean?
+
+  @@unique([accountId, security_id])
 }
 
 enum AccountType {

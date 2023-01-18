@@ -13,6 +13,7 @@ import { DataSource, Prisma, PrismaClient, SplitData } from '@prisma/client';
 import { JobOptions, Queue } from 'bull';
 import { format, subDays } from 'date-fns';
 import { OrderService } from '../app/order/order.service';
+import { PlaidService } from '../app/plaid/plaid.service';
 const axios = require('axios');
 const yahooFinance = require('yahoo-finance2').default;
 import { DataProviderService } from './data-provider/data-provider.service';
@@ -24,6 +25,10 @@ import { PrismaService } from './prisma.service';
 
 @Injectable()
 export class DataGatheringService {
+
+  public PLAID_BASE_URI = process.env.PLAID_BASE_URI;
+  public PLAID_CLIENT_ID = process.env.CLIENT_ID;
+  public PLAID_SECRET_ID = process.env.SECRET_ID;
 
   public constructor(
     @Inject('DataEnhancers')
@@ -285,6 +290,9 @@ export class DataGatheringService {
   }
 
   public async gatherAssetProfiles(aUniqueAssets?: UniqueAsset[]) {
+    console.log('aUniqueAssets');
+    console.log(aUniqueAssets);
+
     let uniqueAssets = aUniqueAssets?.filter((dataGatheringItem) => {
       return dataGatheringItem.dataSource !== 'MANUAL';
     });
@@ -544,6 +552,151 @@ export class DataGatheringService {
     }
   }
 
+  public async investmentsHoldingsGet(access_token: string) {
+    if (!access_token) return null;
+
+    const data = JSON.stringify({
+      "client_id": this.PLAID_CLIENT_ID,
+      "secret": this.PLAID_SECRET_ID,
+      "access_token": access_token
+    });
+
+    const config = {
+      method: 'post',
+      url: this.PLAID_BASE_URI + `/investments/holdings/get`,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      data: data
+    };
+
+    try {
+      const response = await axios(config)
+      return response.data;
+    } catch (error) {
+      return null;
+    }
+  }
+
+
+  public async handleUpdateHoldingsInvestment(access_token) {
+
+    if (!(access_token)) return;
+
+    const data = await this.investmentsHoldingsGet(access_token);
+
+    if (data) {
+
+      const investmentAccountId = [];
+      const accounts = data['accounts'] ? data['accounts'] : null;
+
+      if (!(accounts)) return;
+
+      for (let i = 0; i < accounts.length; i++) {
+        if (accounts[i] && accounts[i]['type'] === 'investment') {
+          investmentAccountId.push(accounts[i]['account_id']);
+        }
+      }
+
+      const plaidHolding = []; // This is final data that to be inserted into Database.
+
+      let holdings = []
+      let securities = null;
+
+      for (let i = 0; i < investmentAccountId.length; i++) {
+        holdings = data.holdings.filter((e) => e.account_id === investmentAccountId[i])
+
+        for (let j = 0; j < holdings.length; j++) {
+
+          securities = data.securities.filter((e) => (e.security_id === holdings[j]['security_id']))
+
+          const obj = {
+            symbol: securities[0].ticker_symbol,
+            security_id: securities[0].security_id,
+            currency: holdings[j]['iso_currency_code'],
+            quantity: holdings[j]['quantity'],
+            cost_basis: holdings[j]['cost_basis'],
+            is_cash_equivalent: securities[0]['is_cash_equivalent'],
+            accountId: 'Account table primary key here',
+            accountUserId: 'Account UserId primary key here',
+            lastUpdated: new Date(),
+            symbolProfileId: null,
+            account_id: holdings[j]['account_id']
+          }
+
+          plaidHolding.push(obj);
+
+        }
+
+
+      }
+
+      for (let i = 0; i < plaidHolding.length; i++) {
+
+        const { account_id } = plaidHolding[i];
+
+        // const { id, userId } = getAccountByAccount_id(account_id);
+
+        const { id, userId } = await this.prismaService.account.findFirst({
+          where: {
+            account_id
+          }
+        })
+
+        plaidHolding[i]['accountId'] = id;
+        plaidHolding[i]['accountUserId'] = userId;
+        delete plaidHolding[i]['account_id'];
+
+        if (plaidHolding[i]['symbol']) {
+
+          let symbolProfile = await this.prismaService.symbolProfile.findFirst({
+            where: {
+              symbol: plaidHolding[i]['symbol'],
+              dataSource: 'YAHOO'
+            }
+          })
+
+          if (!(symbolProfile)) {
+            // If symbol not exist then creating 
+            console.log("Creating symbol --->", plaidHolding[i]['symbol']);
+            symbolProfile = await this.prismaService.symbolProfile.create({
+              data: {
+                symbol: plaidHolding[i]['symbol'],
+                currency: 'USD',
+                dataSource: 'YAHOO'
+              }
+            })
+            try {
+              await this.gatherAssetProfiles([{ dataSource: 'YAHOO', symbol: plaidHolding[i]['symbol'] }])
+            } catch {
+
+            }
+          }
+          plaidHolding[i]['symbolProfileId'] = symbolProfile['id'];
+
+        }
+
+      }
+      try {
+
+        await this.prismaService.plaidHoldings.createMany({
+          data: [...plaidHolding],
+          skipDuplicates: true,
+        })
+
+      } catch (error) {
+
+      }
+
+    } else {
+      console.log('data is null');
+    }
+
+
+
+
+
+  }
 
   public async gatherSymbols(aSymbolsWithStartDate: IDataGatheringItem[]) {
     for (const { dataSource, date, symbol } of aSymbolsWithStartDate) {
