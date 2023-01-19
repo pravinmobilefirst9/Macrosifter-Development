@@ -312,6 +312,7 @@ model PlaidHoldings {
   accountUserId      String?
   lastUpdated        DateTime?
   symbol             String?
+  name               String?
   symbolProfileId    String?
   SymbolProfile      SymbolProfile? @relation(fields: [symbolProfileId], references: [id])
   security_id        String?

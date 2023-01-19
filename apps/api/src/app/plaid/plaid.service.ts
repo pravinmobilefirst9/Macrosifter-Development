@@ -11,10 +11,12 @@ const axios = require('axios');
 @Injectable()
 export class PlaidService {
 
+
     public PLAID_BASE_URI = process.env.PLAID_BASE_URI;
     public PLAID_CLIENT_ID = process.env.CLIENT_ID;
     public PLAID_SECRET_ID = process.env.SECRET_ID;
-    public constructor(private readonly prismaService: PrismaService, private readonly dataGatheringService: DataGatheringService) { }
+    public constructor(private readonly prismaService: PrismaService, private readonly dataGatheringService: DataGatheringService) {
+    }
 
     public async createLinkToken(data) {
 
@@ -158,10 +160,18 @@ export class PlaidService {
 
     public async onPlaidSuccess(data: Prisma.AccountCreateManyInput[], plaidToken: any) {
 
-
         try {
 
-            const result = await this.prismaService.account.createMany({
+            if (data && data.length === 0) {
+                return {
+                    status: 'success',
+                    statusCode: 201,
+                    plaidToken,
+                    msg: 'account is verified with plaid we are importing account details'
+                };
+            }
+
+            await this.prismaService.account.createMany({
                 data
             });
 
@@ -375,6 +385,33 @@ export class PlaidService {
         }
 
 
+    }
+
+
+    public async updateInvestmentsTransactions(bodyData) {
+        const { item_id } = bodyData;
+        const plaidToken = await this.prismaService.plaidToken.findFirst({
+            where: {
+                itemId: item_id
+            }
+        })
+        if (plaidToken && plaidToken['accessToken']) {
+            // Background Update HoldingsInvestment 
+            console.log("Importing Holdings (WEBHOOK)......")
+            await this.dataGatheringService.handleUpdateHoldingsInvestment(plaidToken['accessToken'])
+            console.log("Importing Holdings Done (WEBHOOK).....")
+        }
+
+
+    }
+
+    public async handleInvestmentsTransactionsWebhook(code: any, bodyData: any) {
+        switch (code) {
+            case "DEFAULT_UPDATE":
+                await this.updateInvestmentsTransactions(bodyData);
+                break;
+            default: break;
+        }
     }
 
     public async updateItemLoginRequiredStatus(itemId: string) {

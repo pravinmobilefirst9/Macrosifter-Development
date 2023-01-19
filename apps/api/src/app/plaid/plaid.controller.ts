@@ -476,7 +476,6 @@ export class PlaidController {
 
               if (((plaidAccountSubtype === subtype) && (plaidAccountType === type))) {
                 isCurrentAccountExist = true;
-                console.log("NOT EXIST BOTH TYPE AND SUBTYPE");
                 break;
               }
 
@@ -541,24 +540,13 @@ export class PlaidController {
     }
 
     try {
-      const data = await getData();
-      console.log('Final account data to be pushed inside Macrosifter DB', data);
-
-      console.log('========================on-plaid-success-end============================================================');
-      // return {
-      //   status: 'success',
-      //   statusCode: 201,
-      //   plaidToken,
-      //   msg: 'account is verified with plaid we are importing account details'
-      // };
-
+      let data = await getData();
+      data = data.filter((e) => e)
+      // console.log('Final account data to be pushed inside Macrosifter DB', data);
       return this.plaidService.onPlaidSuccess(data, plaidToken);
     } catch (error) {
       console.log(error)
-      throw new HttpException(
-        getReasonPhrase(StatusCodes.FORBIDDEN),
-        StatusCodes.FORBIDDEN
-      );
+
     }
 
 
@@ -583,6 +571,9 @@ export class PlaidController {
       // case "TRANSACTIONS":
       //   handleTransactionsWebhook(code, bodyData);
       //   break;
+      case "INVESTMENTS_TRANSACTIONS":
+        this.plaidService.handleInvestmentsTransactionsWebhook(code, bodyData);
+        break;
       default:
         console.log(`Can't handle webhook product ${product}`);
         break;

@@ -9,9 +9,9 @@ import { DATE_FORMAT, resetHours } from '@ghostfolio/common/helper';
 import { UniqueAsset } from '@ghostfolio/common/interfaces';
 import { InjectQueue } from '@nestjs/bull';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { DataSource, Prisma, PrismaClient, SplitData } from '@prisma/client';
+import { DataSource, PlaidHoldings, Prisma, PrismaClient, SplitData } from '@prisma/client';
 import { JobOptions, Queue } from 'bull';
-import { format, subDays } from 'date-fns';
+import { format, getDate, getMonth, getYear, isBefore, parseISO, subDays } from 'date-fns';
 import { OrderService } from '../app/order/order.service';
 import { PlaidService } from '../app/plaid/plaid.service';
 const axios = require('axios');
@@ -218,10 +218,102 @@ export class DataGatheringService {
 
   }
 
+  public async gatherHistoricalMarketData(symbol) {
+    try {
+
+      if (!(symbol)) {
+        return;
+      }
+      console.log('New Function started....', symbol);
+
+      const dataSource = 'YAHOO';
+      const date = new Date().toISOString()
+
+      const historicalData = await this.dataProviderService.getHistoricalRaw(
+        [{ dataSource, symbol }],
+        parseISO(<string>(<unknown>date)),
+        new Date()
+      );
+
+      let currentDate = parseISO(<string>(<unknown>date));
+      let lastMarketPrice: number;
+
+      while (
+        isBefore(
+          currentDate,
+          new Date(
+            Date.UTC(
+              getYear(new Date()),
+              getMonth(new Date()),
+              getDate(new Date()),
+              0
+            )
+          )
+        )
+      ) {
+        if (
+          historicalData[symbol]?.[format(currentDate, DATE_FORMAT)]
+            ?.marketPrice
+        ) {
+          lastMarketPrice =
+            historicalData[symbol]?.[format(currentDate, DATE_FORMAT)]
+              ?.marketPrice;
+        }
+
+        if (lastMarketPrice) {
+          try {
+            await this.prismaService.marketData.create({
+              data: {
+                dataSource,
+                symbol,
+                date: new Date(
+                  Date.UTC(
+                    getYear(currentDate),
+                    getMonth(currentDate),
+                    getDate(currentDate),
+                    0
+                  )
+                ),
+                marketPrice: lastMarketPrice
+              }
+            });
+          } catch { }
+        }
+
+        // Count month one up for iteration
+        currentDate = new Date(
+          Date.UTC(
+            getYear(currentDate),
+            getMonth(currentDate),
+            getDate(currentDate) + 1,
+            0
+          )
+        );
+      }
+
+      Logger.log(
+        `Historical market data gathering has been completed for ${symbol} (${dataSource}).`,
+        `DataGatheringProcessor (${GATHER_HISTORICAL_MARKET_DATA_PROCESS})`
+      );
+    } catch (error) {
+      Logger.error(
+        error,
+        `DataGatheringProcessor (${GATHER_HISTORICAL_MARKET_DATA_PROCESS})`
+      );
+
+      throw new Error(error);
+    }
+    console.log('New Function ended....', symbol);
+  }
+
 
   public async gather7Days() {
+    console.log('gather7Days Start');
     const dataGatheringItems = await this.getSymbols7D();
+    console.log('dataGatheringItems');
+    console.log(dataGatheringItems);
     await this.gatherSymbols(dataGatheringItems);
+    console.log('gather7Days End');
   }
 
   public async gatherMax() {
@@ -581,6 +673,7 @@ export class DataGatheringService {
 
   public async handleUpdateHoldingsInvestment(access_token) {
 
+
     if (!(access_token)) return;
 
     const data = await this.investmentsHoldingsGet(access_token);
@@ -616,6 +709,7 @@ export class DataGatheringService {
             currency: holdings[j]['iso_currency_code'],
             quantity: holdings[j]['quantity'],
             cost_basis: holdings[j]['cost_basis'],
+            name: securities[0].name,
             is_cash_equivalent: securities[0]['is_cash_equivalent'],
             accountId: 'Account table primary key here',
             accountUserId: 'Account UserId primary key here',
@@ -636,15 +730,21 @@ export class DataGatheringService {
         const { account_id } = plaidHolding[i];
 
         // const { id, userId } = getAccountByAccount_id(account_id);
+        try {
 
-        const { id, userId } = await this.prismaService.account.findFirst({
-          where: {
-            account_id
-          }
-        })
+          const { id, userId } = await this.prismaService.account.findFirst({
+            where: {
+              account_id
+            }
+          })
 
-        plaidHolding[i]['accountId'] = id;
-        plaidHolding[i]['accountUserId'] = userId;
+          plaidHolding[i]['accountId'] = id;
+          plaidHolding[i]['accountUserId'] = userId;
+
+        } catch (error) {
+          console.log("Could not find Account for account_id = ", account_id + " in account table!");
+        }
+
         delete plaidHolding[i]['account_id'];
 
         if (plaidHolding[i]['symbol']) {
@@ -666,11 +766,22 @@ export class DataGatheringService {
                 dataSource: 'YAHOO'
               }
             })
-            try {
-              await this.gatherAssetProfiles([{ dataSource: 'YAHOO', symbol: plaidHolding[i]['symbol'] }])
-            } catch {
+          }
+          try {
+            // For market Data
+            // await this.gather7Days();
+            await this.gatherHistoricalMarketData(plaidHolding[i]['symbol']);
+            //   Set Historical Dividend Data for given symbol.
+            //   DividendData table's entry goes from this call.
+            await this.setHistoricalDividendData(plaidHolding[i]['symbol']);
 
-            }
+            // SplitData table's entry goes fron this call
+            await this.setEODHistoricalSplitData(plaidHolding[i]['symbol']);
+            // SymbolProfile Entry
+            await this.gatherAssetProfiles([{ dataSource: 'YAHOO', symbol: plaidHolding[i]['symbol'] }])
+
+          } catch {
+            console.log('getting error');
           }
           plaidHolding[i]['symbolProfileId'] = symbolProfile['id'];
 
@@ -679,12 +790,44 @@ export class DataGatheringService {
       }
       try {
 
-        await this.prismaService.plaidHoldings.createMany({
-          data: [...plaidHolding],
-          skipDuplicates: true,
-        })
+        for (let i = 0; i < plaidHolding.length; i++) {
+
+          const { security_id, name, symbol, currency, quantity, cost_basis, is_cash_equivalent,
+            accountId, accountUserId, lastUpdated, symbolProfileId } = plaidHolding[i];
+
+          try {
+
+
+            await this.prismaService.plaidHoldings.upsert({
+              create: {
+                accountId, security_id, symbol, currency, quantity, cost_basis, is_cash_equivalent,
+                accountUserId, lastUpdated, symbolProfileId, name
+              },
+              update: {
+                accountId, security_id, symbol, currency, quantity, cost_basis, is_cash_equivalent,
+                accountUserId, lastUpdated, symbolProfileId, name
+              },
+              where: {
+                accountId_security_id: {
+                  accountId,
+                  security_id,
+                }
+              },
+            })
+
+          } catch (error) {
+            console.log("Upsert Error");
+            console.log(error);
+
+
+          }
+
+        }
+
+
 
       } catch (error) {
+        console.log('getting error');
 
       }
 
