@@ -243,6 +243,7 @@ export class AccountService {
 
     try {
 
+      // Account Deletion
       await this.prismaService.account.deleteMany({
         where: {
           userId: userId,
@@ -259,6 +260,24 @@ export class AccountService {
         }
       })
 
+      // Deleting Order
+      await this.prismaService.order.deleteMany({
+        where: {
+          userId: userId,
+          accountId: null
+        }
+      })
+
+      // Deleting PlaidHolding
+      await this.prismaService.plaidHoldings.deleteMany({
+        where: {
+          accountId: null,
+          accountUserId: null,
+        }
+      })
+
+
+      // Deleting PlaidToken
       await this.prismaService.plaidToken.delete({
         where: {
           id: plaidToken.id,

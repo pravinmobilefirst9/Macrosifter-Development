@@ -25,7 +25,7 @@ export class CronService {
   }
 
   // Macrosifter MarketData Cron
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_YEAR)
   public async syncMarketData() {
     await this.dataGatheringService.gather7Days();
   }
@@ -38,13 +38,13 @@ export class CronService {
 
 
   // Macrosifter DividendData Cron
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_YEAR)
   public async syncDividendData() {
     await this.dataGatheringService.gatherDividendData();
   }
 
   // Macrosifter SplitData Cron
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_YEAR)
   public async syncSplitData() {
     await this.dataGatheringService.gatherSplitData();
   }
@@ -55,12 +55,12 @@ export class CronService {
   }
 
   // Macrosifter Test Cron
-  @Cron(CronExpression.EVERY_10_MINUTES)
-  public async test() {
-    Logger.log({
-      name: 'vaibhav'
-    });
-  }
+  // @Cron(CronExpression.EVERY_10_MINUTES)
+  // public async test() {
+  //   Logger.log({
+  //     name: 'vaibhav'
+  //   });
+  // }
 
   @Cron(CronExpression.EVERY_DAY_AT_5PM)
   public async runEveryDayAtFivePM() {
@@ -84,7 +84,7 @@ export class CronService {
   }
 
   // Macrosifter SymbolProfile Cron
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_YEAR)
   public async syncSymbolProfile() {
     const uniqueAssets = await this.dataGatheringService.getUniqueAssets();
 
@@ -102,7 +102,7 @@ export class CronService {
 
 
   // CRON AUTOMATION FOR Missing Data Inside the Symbol Profile, DividendData or MarketData Hourly
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_YEAR)
   public async automation_SymbolProfile_DividendData_MarketData() {
     this.syncMarketData()
     this.syncSymbolProfile();

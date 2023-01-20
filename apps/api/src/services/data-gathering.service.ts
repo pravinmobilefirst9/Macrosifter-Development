@@ -768,20 +768,20 @@ export class DataGatheringService {
             })
           }
           try {
-            // For market Data
-            // await this.gather7Days();
-            await this.gatherHistoricalMarketData(plaidHolding[i]['symbol']);
+            // await this.gatherHistoricalMarketData(plaidHolding[i]['symbol']);
             //   Set Historical Dividend Data for given symbol.
             //   DividendData table's entry goes from this call.
             await this.setHistoricalDividendData(plaidHolding[i]['symbol']);
-
             // SplitData table's entry goes fron this call
             await this.setEODHistoricalSplitData(plaidHolding[i]['symbol']);
             // SymbolProfile Entry
             await this.gatherAssetProfiles([{ dataSource: 'YAHOO', symbol: plaidHolding[i]['symbol'] }])
+            // For market Data
+            await this.gather7Days();
 
-          } catch {
+          } catch (error) {
             console.log('getting error');
+            console.log(error);
           }
           plaidHolding[i]['symbolProfileId'] = symbolProfile['id'];
 
