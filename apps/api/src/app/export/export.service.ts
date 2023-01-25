@@ -25,6 +25,7 @@ export class ExportService {
         quantity: true,
         SymbolProfile: true,
         type: true,
+        subtype: true,
         dividendpershare_at_cost: true,
         unitPrice: true
       },
@@ -50,6 +51,7 @@ export class ExportService {
           quantity,
           SymbolProfile,
           type,
+          subtype,
           unitPrice,
         }) => {
           return {
@@ -60,6 +62,7 @@ export class ExportService {
             quantity,
             dividendpershare_at_cost,
             type,
+            subtype,
             unitPrice,
             currency: SymbolProfile.currency,
             dataSource: SymbolProfile.dataSource,

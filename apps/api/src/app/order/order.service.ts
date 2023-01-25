@@ -161,60 +161,13 @@ export class OrderService {
       const symbolDetail = await this.getSymbolDetail(data.symbol)
       // Logic for dividendpershare_at_cost
       if (!(symbolDetail)) {
-
         // If symbolDetail is null then dividendpershare_at_cost = 0.0.
         data['dividendpershare_at_cost'] = 0.0;
-
       } else {
-
-        // Getting HistoricalDividendData for given symbol & storing in it response variable.
-        // response = HistoricalDividendData.
-        let response = await this.dataGatheringService.getHistoricalDividendData(data.symbol);
-        let lastPeriod = null;
-        if (response && response.length >= 1) {
-          lastPeriod = response[response.length - 1]['period'] ? response[response.length - 1]['period'] : { period: '' }
-        }
-
-        // Logic for dividendpershare_at_cost
-        if (!(response)) {
-          // If HistoricalDividendData is null or undefined then dividendpershare_at_cost is null.
-          data['dividendpershare_at_cost'] = null;
-        }
-        else if (lastPeriod === "Quarterly" && response.length < 4) {
-          data['dividendpershare_at_cost'] = response[response.length - 1]['value'] * 4;
-        }
-        else if (lastPeriod === "SemiAnnual" && response.length < 2) {
-          data['dividendpershare_at_cost'] = response[response.length - 1]['value'] * 2;
-        }
-        else if (lastPeriod === "Monthly" && response.length < 12) {
-          data['dividendpershare_at_cost'] = response[response.length - 1]['value'] * 12;
-        }
-        else if (response && response.length > 1) {
-
-          // frontendDate = A date which is Stock Buy, Sell or Dividend .
-          // Add Activity form contains this frontendDate.
-          const frontendDate = format(new Date(data.date), 'yyyy-MM-dd')
-          // Getting HistoricalDividendData only lesser than or equal to frontendDate.
-          response = response.filter((value) => value['date'] <= frontendDate)
-          // Getting period of last record or dividend release after frontendDate filteration.
-          const { period } = (response[response.length - 1]) ? (response[response.length - 1]) : { period: '' };
-          let sum = 0;
-          // Calculation logic for dividendpershare_at_cost field.
-          if (period === 'Quarterly') {
-            response.slice(response.length - 4, response.length).map(e => sum += e['value'])
-          } else if (period === 'Annual') {
-            response.slice(response.length - 1, response.length).map(e => sum += e['value'])
-          } else if (period === 'SemiAnnual') {
-            response.slice(response.length - 2, response.length).map(e => sum += e['value'])
-          } else {
-            // TFLO Symbol comes in this block
-            response.slice(response.length - 1, response.length).map(e => sum += e['value'])
-          }
-
-          // Setting sum variable to dividendpershare_at_cost field of order table.
-          data['dividendpershare_at_cost'] = sum;
-        }
+        // dividendpershare_at_cost getting from function
+        data['dividendpershare_at_cost'] = await this.dataGatheringService.getDividendpershareAtCost(data.symbol, data.date);
       }
+
       //   Set Historical Dividend Data for given symbol.
       //   DividendData table's entry goes from this call.
       await this.setHistoricalDividendData(data.symbol);

@@ -91,6 +91,7 @@ model Order {
   dividendpershare_at_cost Float?
   symbolProfileId          String
   type                     Type
+  subtype                  String?   
   unitPrice                Float
   updatedAt                DateTime      @updatedAt
   userId                   String
@@ -385,4 +386,9 @@ enum Type {
   DIVIDEND
   ITEM
   SELL
+  TAX
+  FEES
+  CANCEL
+  TRANSFER
+  CASH
 }

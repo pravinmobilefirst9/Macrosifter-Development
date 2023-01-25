@@ -14,7 +14,7 @@ import { Account as AccountModel, AccountType } from '@prisma/client';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-
+import { parse as csvToJson } from 'papaparse';
 import { CreateOrUpdateAccountDialog } from './create-or-update-account-dialog/create-or-update-account-dialog.component';
 import { ChoosePlaidDialog } from './choose-plaid/choose-plaid.component';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,6 +24,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { AccountPageComponent } from '../account/account-page.component';
 import { ChoosePlaidStartDialog } from './choose-plaid/choose-plaid-start/choose-plaid-start.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   host: { class: 'page' },
@@ -55,6 +56,7 @@ export class AccountsPageComponent implements OnDestroy, OnInit {
     private impersonationStorageService: ImpersonationStorageService,
     private route: ActivatedRoute,
     private router: Router,
+    private snackBar: MatSnackBar,
     private userService: UserService
   ) {
     this.route.queryParams

@@ -84,106 +84,162 @@ export class DataGatheringService {
     })
   }
 
-  public async setEODHistoricalSplitData(symbol: string) {
-    if (!symbol) return;
-    const data = await this.getHistoricalSplitData(symbol);
-    const splitData = [];
-    if (data && data.length > 0) {
-      for (let i = 0; i < data.length; i++) {
-        const obj: Prisma.SplitDataCreateInput = {
-          dataSource: 'EOD_HISTORICAL_DATA',
+  public async getSymbolProfileId(symbol) {
+    try {
+
+      const isSymbol = await this.prismaService.symbolProfile.findFirst({
+        where: {
           symbol,
-          date: new Date(data[i]['date']),
-          split: data[i]['split'],
         }
-        splitData.push(obj);
-      }
-    }
-    const isSplitDataExist = await this.prismaService.splitData.findMany({
-      where: {
-        symbol
-      }
-    })
+      })
 
-    if (isSplitDataExist && isSplitDataExist.length > 0) {
-
-      if ((isSplitDataExist && isSplitDataExist.length) < (splitData && splitData.length)) {
-
-        await this.prismaService.splitData.createMany({
-          data: [
-            ...splitData
-          ],
-          skipDuplicates: true,
-        })
-        Logger.log(`SplitData is Updated for ${symbol} !`);
-
+      if (isSymbol) {
+        return isSymbol.id;
       } else {
-        Logger.log(`SplitData is Already Up to date for ${symbol} !`);
-      }
 
-    } else {
-
-      if (splitData && splitData.length > 0) {
-
-        await this.prismaService.splitData.createMany({
-          data: [...splitData],
-          skipDuplicates: true,
+        const newSymbol = await this.prismaService.symbolProfile.create({
+          data: {
+            symbol,
+            currency: 'USD',
+            dataSource: 'EOD_HISTORICAL_DATA',
+          }
         })
-        Logger.log(`SplitData is Inserted for ${symbol} !`);
-      } else {
-        Logger.log(`SplitData is Not Found for ${symbol} !`);
+
+        return newSymbol.id;
       }
 
+    } catch (error) {
+
+      return null;
 
     }
-
-
   }
 
-  public async setHistoricalDividendData(symbol: string) {
-    const data = await this.getHistoricalDividendData(symbol);
+  public async setEODHistoricalSplitData(symbol: string) {
+    if (!symbol) return;
+    try {
 
 
-    if (data && (data.length > 0)) {
-      let finalDividendData = []
-      for (let i = 0; i < data.length; i++) {
-
-        const obj = {
-          dataSource: 'EOD_HISTORICAL_DATA',
-          symbol,
-          value: data[i]['value'],
-          unadjusted_value: data[i]['unadjustedValue'],
-          date: (data[i]['paymentDate']) ? (data[i]['paymentDate']) : (data[i]['date']),
-          currency: data[i]['currency'],
-          declarationDate: (data[i]['declarationDate']) ? new Date((data[i]['declarationDate'])) : null,
-          paymentDate: (data[i]['paymentDate']) ? new Date((data[i]['paymentDate'])) : null,
-          recordDate: (data[i]['recordDate']) ? new Date((data[i]['recordDate'])) : null,
+      const data = await this.getHistoricalSplitData(symbol);
+      const splitData = [];
+      if (data && data.length > 0) {
+        for (let i = 0; i < data.length; i++) {
+          const obj: Prisma.SplitDataCreateInput = {
+            dataSource: 'EOD_HISTORICAL_DATA',
+            symbol,
+            date: new Date(data[i]['date']),
+            split: data[i]['split'],
+          }
+          splitData.push(obj);
         }
-
-        obj['date'] = new Date(obj['date']);
-
-        finalDividendData.push(obj);
-
       }
-
-      const isDividendDataExist = await this.prismaService.dividendData.findMany({
+      const isSplitDataExist = await this.prismaService.splitData.findMany({
         where: {
           symbol
         }
       })
 
-      if (isDividendDataExist && isDividendDataExist.length !== 0) {
+      if (isSplitDataExist && isSplitDataExist.length > 0) {
 
+        if ((isSplitDataExist && isSplitDataExist.length) < (splitData && splitData.length)) {
 
-        if (isDividendDataExist.length < finalDividendData.length) {
-
-
-          isDividendDataExist.map((e) => {
-
-            const date = format(new Date(e['date']), 'yyyy-MM-dd')
-            finalDividendData = finalDividendData.filter((e1) => date !== e1['date'])
-
+          await this.prismaService.splitData.createMany({
+            data: [
+              ...splitData
+            ],
+            skipDuplicates: true,
           })
+          Logger.log(`SplitData is Updated for ${symbol} !`);
+
+        } else {
+          Logger.log(`SplitData is Already Up to date for ${symbol} !`);
+        }
+
+      } else {
+
+        if (splitData && splitData.length > 0) {
+
+          await this.prismaService.splitData.createMany({
+            data: [...splitData],
+            skipDuplicates: true,
+          })
+          Logger.log(`SplitData is Inserted for ${symbol} !`);
+        } else {
+          Logger.log(`SplitData is Not Found for ${symbol} !`);
+        }
+
+
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
+  }
+
+  public async setHistoricalDividendData(symbol: string) {
+
+    try {
+
+      const data = await this.getHistoricalDividendData(symbol);
+
+      if (data && (data.length > 0)) {
+        let finalDividendData = []
+        for (let i = 0; i < data.length; i++) {
+
+          const obj = {
+            dataSource: 'EOD_HISTORICAL_DATA',
+            symbol,
+            value: data[i]['value'],
+            unadjusted_value: data[i]['unadjustedValue'],
+            date: (data[i]['paymentDate']) ? (data[i]['paymentDate']) : (data[i]['date']),
+            currency: data[i]['currency'],
+            declarationDate: (data[i]['declarationDate']) ? new Date((data[i]['declarationDate'])) : null,
+            paymentDate: (data[i]['paymentDate']) ? new Date((data[i]['paymentDate'])) : null,
+            recordDate: (data[i]['recordDate']) ? new Date((data[i]['recordDate'])) : null,
+          }
+
+          obj['date'] = new Date(obj['date']);
+
+          finalDividendData.push(obj);
+
+        }
+
+        const isDividendDataExist = await this.prismaService.dividendData.findMany({
+          where: {
+            symbol
+          }
+        })
+
+        if (isDividendDataExist && isDividendDataExist.length !== 0) {
+
+
+          if (isDividendDataExist.length < finalDividendData.length) {
+
+
+            isDividendDataExist.map((e) => {
+
+              const date = format(new Date(e['date']), 'yyyy-MM-dd')
+              finalDividendData = finalDividendData.filter((e1) => date !== e1['date'])
+
+            })
+
+            await this.prismaService.dividendData.createMany({
+              data: [
+                ...finalDividendData
+              ],
+              skipDuplicates: true,
+            })
+            Logger.log(`DividendData is Updated for ${symbol} !`);
+
+          } else {
+
+            Logger.log(`DividendData is Already Up to date for ${symbol} !`);
+
+          }
+
+
+
+        } else {
 
           await this.prismaService.dividendData.createMany({
             data: [
@@ -191,28 +247,15 @@ export class DataGatheringService {
             ],
             skipDuplicates: true,
           })
-          Logger.log(`DividendData is Updated for ${symbol} !`);
+          Logger.log(`DividendData is Inserted for ${symbol} !`);
 
-        } else {
-
-          Logger.log(`DividendData is Already Up to date for ${symbol} !`);
 
         }
 
-
-
-      } else {
-
-        await this.prismaService.dividendData.createMany({
-          data: [
-            ...finalDividendData
-          ],
-          skipDuplicates: true,
-        })
-        Logger.log(`DividendData is Inserted for ${symbol} !`);
-
-
       }
+
+    } catch (error) {
+      console.log(error);
 
     }
 
@@ -308,12 +351,14 @@ export class DataGatheringService {
 
 
   public async gather7Days() {
-    console.log('gather7Days Start');
-    const dataGatheringItems = await this.getSymbols7D();
-    console.log('dataGatheringItems');
-    console.log(dataGatheringItems);
-    await this.gatherSymbols(dataGatheringItems);
-    console.log('gather7Days End');
+    try {
+
+      const dataGatheringItems = await this.getSymbols7D();
+      await this.gatherSymbols(dataGatheringItems);
+    } catch (error) {
+      console.log(error);
+
+    }
   }
 
   public async gatherMax() {
@@ -382,203 +427,214 @@ export class DataGatheringService {
   }
 
   public async gatherAssetProfiles(aUniqueAssets?: UniqueAsset[]) {
-    console.log('aUniqueAssets');
-    console.log(aUniqueAssets);
 
-    let uniqueAssets = aUniqueAssets?.filter((dataGatheringItem) => {
-      return dataGatheringItem.dataSource !== 'MANUAL';
-    });
+    try {
 
-    if (!uniqueAssets) {
-      uniqueAssets = await this.getUniqueAssets();
-    }
 
-    const assetProfiles = await this.dataProviderService.getAssetProfiles(
-      uniqueAssets
-    );
-    const symbolProfiles =
-      await this.symbolProfileService.getSymbolProfilesBySymbols(
-        uniqueAssets.map(({ symbol }) => {
-          return symbol;
-        })
+      let uniqueAssets = aUniqueAssets?.filter((dataGatheringItem) => {
+        return dataGatheringItem.dataSource !== 'MANUAL';
+      });
+
+      if (!uniqueAssets) {
+        uniqueAssets = await this.getUniqueAssets();
+      }
+
+      const assetProfiles = await this.dataProviderService.getAssetProfiles(
+        uniqueAssets
       );
+      const symbolProfiles =
+        await this.symbolProfileService.getSymbolProfilesBySymbols(
+          uniqueAssets.map(({ symbol }) => {
+            return symbol;
+          })
+        );
 
-    for (const [symbol, assetProfile] of Object.entries(assetProfiles)) {
-      const symbolMapping = symbolProfiles.find((symbolProfile) => {
-        return symbolProfile.symbol === symbol;
-      })?.symbolMapping;
+      for (const [symbol, assetProfile] of Object.entries(assetProfiles)) {
+        const symbolMapping = symbolProfiles.find((symbolProfile) => {
+          return symbolProfile.symbol === symbol;
+        })?.symbolMapping;
 
-      for (const dataEnhancer of this.dataEnhancers) {
+        for (const dataEnhancer of this.dataEnhancers) {
+          try {
+            assetProfiles[symbol] = await dataEnhancer.enhance({
+              response: assetProfile,
+              symbol: symbolMapping?.[dataEnhancer.getName()] ?? symbol
+            });
+          } catch (error) {
+            Logger.error(
+              `Failed to enhance data for symbol ${symbol} by ${dataEnhancer.getName()}`,
+              error,
+              'DataGatheringService'
+            );
+          }
+        }
+
+        const {
+          assetClass,
+          assetSubClass,
+          countries,
+          currency,
+          dataSource,
+          name,
+          sectors,
+          url
+        } = assetProfiles[symbol];
+
+        if (!(currency) || !(dataSource)) {
+          continue;
+        }
+
+        // Gather Historical Dividend data for handling dividendpershare and type.
+        const data = await this.getHistoricalDividendData(symbol);
+
+        let dividendpershare = null;
+        let dividendpershare_type = null;
+
+        // Getting Yahoo Quotes Summary details.
+        const { summaryDetail } = await this.getSymbolDetail(symbol);
+
+        // Calculation of dividendpershare & dividendpershare_type logic 
+        if (!(summaryDetail)) {
+          // If not summaryDetail then dividendpershare & dividendpershare_type is null.
+          dividendpershare = null;
+          dividendpershare_type = null;
+        } else {
+          // dividendpershare = dividendRate, else search for trailingAnnualDividendRate otherwise null.
+          dividendpershare = summaryDetail['dividendRate'] ? summaryDetail['dividendRate'] :
+            (summaryDetail['trailingAnnualDividendRate']) ? summaryDetail['trailingAnnualDividendRate'] : null;
+
+          //dividendpershare_type = 1,when dividendRate exist else 0.
+          // dividendpershare_type = 0,when trailingAnnualDividendRate exist else null.
+          dividendpershare_type = summaryDetail['dividendRate'] ? 1 : (summaryDetail['trailingAnnualDividendRate']) ? 0 : null;
+        }
+
+
+
+        let dividend = 0;
+        // This is dataSource2 for EOD_HISTORICAL_DATA
+        const dataSource2 = {
+          source1: 'EOD_HISTORICAL_DATA'
+        }
+        let dividend_period = null;
+
+        // Logic for dividend & dividend_period calculation
+        if (!(data)) {
+          dividend = 0;
+        } else if (data && data.length === 0) {
+          dividend = 0;
+        } else {
+          dividend = 1;
+          dividend_period = data[data.length - 1]['period'] ? data[data.length - 1]['period'] : null;
+
+          // If dividend_period is null then logic to set dividend_period & dividend. 
+          if (!(dividend_period)) {
+
+            // If latest date is older than 15 Months then dividend_period = null & dividend = 0
+            // else calculate dividend_period
+            if (this.isDate15MonthOld(data[data.length - 1]['date'])) {
+              dividend_period = null;
+              dividend = 0;
+            } else {
+              // else calculate dividend_period
+              dividend_period = this.calculatePeriod(data);
+            }
+
+          }
+
+        }
+
+        //    Check if dividend is 1 & dividendpershare is null then logic for calculation of dividendpershare_type & dividendpershare
+        if (dividend === 1 && (!(dividendpershare))) {
+
+          dividendpershare_type = 0;
+
+          if (data[data.length - 1]['period'] === "Monthly") {
+            dividendpershare = data[data.length - 1]['value'] * 12;
+          }
+
+          if (data[data.length - 1]['period'] === "Quarterly") {
+            dividendpershare = data[data.length - 1]['value'] * 4;
+          }
+
+          if (data[data.length - 1]['period'] === "SemiAnnual") {
+            dividendpershare = data[data.length - 1]['value'] * 2;
+          }
+
+          if (data[data.length - 1]['period'] === "Annual") {
+            dividendpershare = data[data.length - 1]['value'] * 1;
+          }
+
+
+        }
+
+        if (dividend === 0 && dividendpershare != null) {
+          dividend = 1;
+          dividend_period = 'Other'
+        }
+
+
         try {
-          assetProfiles[symbol] = await dataEnhancer.enhance({
-            response: assetProfile,
-            symbol: symbolMapping?.[dataEnhancer.getName()] ?? symbol
+          await this.prismaService.symbolProfile.upsert({
+            create: {
+              assetClass,
+              assetSubClass,
+              countries,
+              currency,
+              dataSource,
+              dividend,
+              dataSource2,
+              dividend_period,
+              name,
+              sectors,
+              symbol,
+              dividendpershare,
+              dividendpershare_type,
+              url
+            },
+            update: {
+              assetClass,
+              assetSubClass,
+              countries,
+              dividend,
+              dataSource2,
+              dividendpershare,
+              dividendpershare_type,
+              dividend_period,
+              currency,
+              name,
+              sectors,
+              url
+            },
+            where: {
+              dataSource_symbol: {
+                dataSource,
+                symbol
+              }
+            }
           });
         } catch (error) {
           Logger.error(
-            `Failed to enhance data for symbol ${symbol} by ${dataEnhancer.getName()}`,
+            `${symbol}: ${error?.meta?.cause}`,
             error,
             'DataGatheringService'
           );
         }
       }
 
-      const {
-        assetClass,
-        assetSubClass,
-        countries,
-        currency,
-        dataSource,
-        name,
-        sectors,
-        url
-      } = assetProfiles[symbol];
-
-      // Gather Historical Dividend data for handling dividendpershare and type.
-      const data = await this.getHistoricalDividendData(symbol);
-
-      let dividendpershare = null;
-      let dividendpershare_type = null;
-
-      // Getting Yahoo Quotes Summary details.
-      const { summaryDetail } = await this.getSymbolDetail(symbol);
-
-      // Calculation of dividendpershare & dividendpershare_type logic 
-      if (!(summaryDetail)) {
-        // If not summaryDetail then dividendpershare & dividendpershare_type is null.
-        dividendpershare = null;
-        dividendpershare_type = null;
-      } else {
-        // dividendpershare = dividendRate, else search for trailingAnnualDividendRate otherwise null.
-        dividendpershare = summaryDetail['dividendRate'] ? summaryDetail['dividendRate'] :
-          (summaryDetail['trailingAnnualDividendRate']) ? summaryDetail['trailingAnnualDividendRate'] : null;
-
-        //dividendpershare_type = 1,when dividendRate exist else 0.
-        // dividendpershare_type = 0,when trailingAnnualDividendRate exist else null.
-        dividendpershare_type = summaryDetail['dividendRate'] ? 1 : (summaryDetail['trailingAnnualDividendRate']) ? 0 : null;
-      }
+      Logger.log(
+        `Asset profile data gathering has been completed for ${uniqueAssets
+          .map(({ dataSource, symbol }) => {
+            return `${symbol} (${dataSource})`;
+          })
+          .join(',')}.`,
+        'DataGatheringService'
+      );
 
 
-
-      let dividend = 0;
-      // This is dataSource2 for EOD_HISTORICAL_DATA
-      const dataSource2 = {
-        source1: 'EOD_HISTORICAL_DATA'
-      }
-      let dividend_period = null;
-
-      // Logic for dividend & dividend_period calculation
-      if (!(data)) {
-        dividend = 0;
-      } else if (data && data.length === 0) {
-        dividend = 0;
-      } else {
-        dividend = 1;
-        dividend_period = data[data.length - 1]['period'] ? data[data.length - 1]['period'] : null;
-
-        // If dividend_period is null then logic to set dividend_period & dividend. 
-        if (!(dividend_period)) {
-
-          // If latest date is older than 15 Months then dividend_period = null & dividend = 0
-          // else calculate dividend_period
-          if (this.isDate15MonthOld(data[data.length - 1]['date'])) {
-            dividend_period = null;
-            dividend = 0;
-          } else {
-            // else calculate dividend_period
-            dividend_period = this.calculatePeriod(data);
-          }
-
-        }
-
-      }
-
-      //    Check if dividend is 1 & dividendpershare is null then logic for calculation of dividendpershare_type & dividendpershare
-      if (dividend === 1 && (!(dividendpershare))) {
-
-        dividendpershare_type = 0;
-
-        if (data[data.length - 1]['period'] === "Monthly") {
-          dividendpershare = data[data.length - 1]['value'] * 12;
-        }
-
-        if (data[data.length - 1]['period'] === "Quarterly") {
-          dividendpershare = data[data.length - 1]['value'] * 4;
-        }
-
-        if (data[data.length - 1]['period'] === "SemiAnnual") {
-          dividendpershare = data[data.length - 1]['value'] * 2;
-        }
-
-        if (data[data.length - 1]['period'] === "Annual") {
-          dividendpershare = data[data.length - 1]['value'] * 1;
-        }
-
-
-      }
-
-      if (dividend === 0 && dividendpershare != null) {
-        dividend = 1;
-        dividend_period = 'Other'
-      }
-
-
-      try {
-        await this.prismaService.symbolProfile.upsert({
-          create: {
-            assetClass,
-            assetSubClass,
-            countries,
-            currency,
-            dataSource,
-            dividend,
-            dataSource2,
-            dividend_period,
-            name,
-            sectors,
-            symbol,
-            dividendpershare,
-            dividendpershare_type,
-            url
-          },
-          update: {
-            assetClass,
-            assetSubClass,
-            countries,
-            dividend,
-            dataSource2,
-            dividendpershare,
-            dividendpershare_type,
-            dividend_period,
-            currency,
-            name,
-            sectors,
-            url
-          },
-          where: {
-            dataSource_symbol: {
-              dataSource,
-              symbol
-            }
-          }
-        });
-      } catch (error) {
-        Logger.error(
-          `${symbol}: ${error?.meta?.cause}`,
-          error,
-          'DataGatheringService'
-        );
-      }
+    } catch (error) {
+      console.log(error);
     }
 
-    Logger.log(
-      `Asset profile data gathering has been completed for ${uniqueAssets
-        .map(({ dataSource, symbol }) => {
-          return `${symbol} (${dataSource})`;
-        })
-        .join(',')}.`,
-      'DataGatheringService'
-    );
   }
 
   public async getSymbolDetail(symbol) {
@@ -591,7 +647,7 @@ export class DataGatheringService {
 
     } catch (error) {
       console.log(error);
-      return undefined;
+      return { summaryDetail: null };
     }
 
   }
@@ -673,171 +729,240 @@ export class DataGatheringService {
 
   public async handleUpdateHoldingsInvestment(access_token) {
 
+    try {
 
-    if (!(access_token)) return;
+      if (!(access_token)) return;
 
-    const data = await this.investmentsHoldingsGet(access_token);
+      const data = await this.investmentsHoldingsGet(access_token);
 
-    if (data) {
+      if (data) {
 
-      const investmentAccountId = [];
-      const accounts = data['accounts'] ? data['accounts'] : null;
+        const investmentAccountId = [];
+        const accounts = data['accounts'] ? data['accounts'] : null;
 
-      if (!(accounts)) return;
+        if (!(accounts)) return;
 
-      for (let i = 0; i < accounts.length; i++) {
-        if (accounts[i] && accounts[i]['type'] === 'investment') {
-          investmentAccountId.push(accounts[i]['account_id']);
-        }
-      }
-
-      const plaidHolding = []; // This is final data that to be inserted into Database.
-
-      let holdings = []
-      let securities = null;
-
-      for (let i = 0; i < investmentAccountId.length; i++) {
-        holdings = data.holdings.filter((e) => e.account_id === investmentAccountId[i])
-
-        for (let j = 0; j < holdings.length; j++) {
-
-          securities = data.securities.filter((e) => (e.security_id === holdings[j]['security_id']))
-
-          const obj = {
-            symbol: securities[0].ticker_symbol,
-            security_id: securities[0].security_id,
-            currency: holdings[j]['iso_currency_code'],
-            quantity: holdings[j]['quantity'],
-            cost_basis: holdings[j]['cost_basis'],
-            name: securities[0].name,
-            is_cash_equivalent: securities[0]['is_cash_equivalent'],
-            accountId: 'Account table primary key here',
-            accountUserId: 'Account UserId primary key here',
-            lastUpdated: new Date(),
-            symbolProfileId: null,
-            account_id: holdings[j]['account_id']
+        for (let i = 0; i < accounts.length; i++) {
+          if (accounts[i] && accounts[i]['type'] === 'investment') {
+            investmentAccountId.push(accounts[i]['account_id']);
           }
-
-          plaidHolding.push(obj);
-
         }
 
+        const plaidHolding = []; // This is final data that to be inserted into Database.
 
-      }
+        let holdings = []
+        let securities = null;
 
-      for (let i = 0; i < plaidHolding.length; i++) {
+        for (let i = 0; i < investmentAccountId.length; i++) {
+          holdings = data.holdings.filter((e) => e.account_id === investmentAccountId[i])
 
-        const { account_id } = plaidHolding[i];
+          for (let j = 0; j < holdings.length; j++) {
 
-        // const { id, userId } = getAccountByAccount_id(account_id);
-        try {
+            securities = data.securities.filter((e) => (e.security_id === holdings[j]['security_id']))
 
-          const { id, userId } = await this.prismaService.account.findFirst({
-            where: {
-              account_id
+            const obj = {
+              symbol: securities[0].ticker_symbol,
+              security_id: securities[0].security_id,
+              currency: holdings[j]['iso_currency_code'],
+              quantity: holdings[j]['quantity'],
+              cost_basis: holdings[j]['cost_basis'],
+              name: securities[0].name,
+              is_cash_equivalent: securities[0]['is_cash_equivalent'],
+              accountId: 'Account table primary key here',
+              accountUserId: 'Account UserId primary key here',
+              lastUpdated: new Date(),
+              symbolProfileId: null,
+              account_id: holdings[j]['account_id']
             }
-          })
 
-          plaidHolding[i]['accountId'] = id;
-          plaidHolding[i]['accountUserId'] = userId;
+            plaidHolding.push(obj);
 
-        } catch (error) {
-          console.log("Could not find Account for account_id = ", account_id + " in account table!");
-        }
-
-        delete plaidHolding[i]['account_id'];
-
-        if (plaidHolding[i]['symbol']) {
-
-          let symbolProfile = await this.prismaService.symbolProfile.findFirst({
-            where: {
-              symbol: plaidHolding[i]['symbol'],
-              dataSource: 'YAHOO'
-            }
-          })
-
-          if (!(symbolProfile)) {
-            // If symbol not exist then creating 
-            console.log("Creating symbol --->", plaidHolding[i]['symbol']);
-            symbolProfile = await this.prismaService.symbolProfile.create({
-              data: {
-                symbol: plaidHolding[i]['symbol'],
-                currency: 'USD',
-                dataSource: 'YAHOO'
-              }
-            })
           }
-          try {
-            // await this.gatherHistoricalMarketData(plaidHolding[i]['symbol']);
-            //   Set Historical Dividend Data for given symbol.
-            //   DividendData table's entry goes from this call.
-            await this.setHistoricalDividendData(plaidHolding[i]['symbol']);
-            // SplitData table's entry goes fron this call
-            await this.setEODHistoricalSplitData(plaidHolding[i]['symbol']);
-            // SymbolProfile Entry
-            await this.gatherAssetProfiles([{ dataSource: 'YAHOO', symbol: plaidHolding[i]['symbol'] }])
-            // For market Data
-            await this.gather7Days();
 
-          } catch (error) {
-            console.log('getting error');
-            console.log(error);
-          }
-          plaidHolding[i]['symbolProfileId'] = symbolProfile['id'];
 
         }
-
-      }
-      try {
 
         for (let i = 0; i < plaidHolding.length; i++) {
 
-          const { security_id, name, symbol, currency, quantity, cost_basis, is_cash_equivalent,
-            accountId, accountUserId, lastUpdated, symbolProfileId } = plaidHolding[i];
+          const { account_id } = plaidHolding[i];
 
+          // const { id, userId } = getAccountByAccount_id(account_id);
           try {
 
-
-            await this.prismaService.plaidHoldings.upsert({
-              create: {
-                accountId, security_id, symbol, currency, quantity, cost_basis, is_cash_equivalent,
-                accountUserId, lastUpdated, symbolProfileId, name
-              },
-              update: {
-                accountId, security_id, symbol, currency, quantity, cost_basis, is_cash_equivalent,
-                accountUserId, lastUpdated, symbolProfileId, name
-              },
+            const { id, userId } = await this.prismaService.account.findFirst({
               where: {
-                accountId_security_id: {
-                  accountId,
-                  security_id,
-                }
-              },
+                account_id
+              }
             })
 
-          } catch (error) {
-            console.log("Upsert Error");
-            console.log(error);
+            plaidHolding[i]['accountId'] = id;
+            plaidHolding[i]['accountUserId'] = userId;
 
+          } catch (error) {
+            console.log("Could not find Account for account_id = ", account_id + " in account table!");
+          }
+
+          delete plaidHolding[i]['account_id'];
+
+          if (plaidHolding[i]['symbol']) {
+
+            let symbolProfile = null;
+            try {
+
+
+              symbolProfile = await this.prismaService.symbolProfile.findFirst({
+                where: {
+                  symbol: plaidHolding[i]['symbol'],
+                  dataSource: 'YAHOO'
+                }
+              })
+
+              if (!(symbolProfile)) {
+                // If symbol not exist then creating 
+                console.log("Creating symbol --->", plaidHolding[i]['symbol']);
+                symbolProfile = await this.prismaService.symbolProfile.create({
+                  data: {
+                    symbol: plaidHolding[i]['symbol'],
+                    currency: 'USD',
+                    dataSource: 'YAHOO'
+                  }
+                })
+              }
+
+            } catch (error) {
+              console.log(error);
+            }
+
+            try {
+              // await this.gatherHistoricalMarketData(plaidHolding[i]['symbol']);
+              //   Set Historical Dividend Data for given symbol.
+              //   DividendData table's entry goes from this call.
+              await this.setHistoricalDividendData(plaidHolding[i]['symbol']);
+              // SplitData table's entry goes fron this call
+              await this.setEODHistoricalSplitData(plaidHolding[i]['symbol']);
+              // SymbolProfile Entry
+              await this.gatherAssetProfiles([{ dataSource: 'YAHOO', symbol: plaidHolding[i]['symbol'] }])
+
+
+            } catch (error) {
+              console.log('getting error');
+              console.log(error);
+            }
+            plaidHolding[i]['symbolProfileId'] = symbolProfile['id'];
 
           }
 
         }
+        try {
+
+          for (let i = 0; i < plaidHolding.length; i++) {
+
+            const { security_id, name, symbol, currency, quantity, cost_basis, is_cash_equivalent,
+              accountId, accountUserId, lastUpdated, symbolProfileId } = plaidHolding[i];
+
+            try {
 
 
+              await this.prismaService.plaidHoldings.upsert({
+                create: {
+                  accountId, security_id, symbol, currency, quantity, cost_basis, is_cash_equivalent,
+                  accountUserId, lastUpdated, symbolProfileId, name
+                },
+                update: {
+                  accountId, security_id, symbol, currency, quantity, cost_basis, is_cash_equivalent,
+                  accountUserId, lastUpdated, symbolProfileId, name
+                },
+                where: {
+                  accountId_security_id: {
+                    accountId,
+                    security_id,
+                  }
+                },
+              })
 
-      } catch (error) {
-        console.log('getting error');
+            } catch (error) {
+              console.log("Upsert Error");
+              console.log(error);
 
+
+            }
+
+          }
+
+          // For market Data
+          await this.gather7Days();
+
+        } catch (error) {
+          console.log('getting error');
+
+        }
+
+      } else {
+        console.log('data is null');
       }
 
-    } else {
-      console.log('data is null');
+
+    } catch (error) {
+      console.log(error);
+
     }
 
 
+  }
 
+  public async getDividendpershareAtCost(symbol, actionDate) {
+    if (!(symbol)) return 0.0;
 
+    // Getting HistoricalDividendData for given symbol & storing in it response variable.
+    // response = HistoricalDividendData.
+    let response = await this.getHistoricalDividendData(symbol);
+    let dividendpershare_at_cost = 0.0;
+    let lastPeriod = null;
+    if (response && response.length >= 1) {
+      lastPeriod = response[response.length - 1]['period'] ? response[response.length - 1]['period'] : { period: '' }
+    }
+
+    // Logic for dividendpershare_at_cost
+    if (!(response)) {
+      // If HistoricalDividendData is null or undefined then dividendpershare_at_cost is null.
+      dividendpershare_at_cost = null;
+    }
+    else if (lastPeriod === "Quarterly" && response.length < 4) {
+      dividendpershare_at_cost = response[response.length - 1]['value'] * 4;
+    }
+    else if (lastPeriod === "SemiAnnual" && response.length < 2) {
+      dividendpershare_at_cost = response[response.length - 1]['value'] * 2;
+    }
+    else if (lastPeriod === "Monthly" && response.length < 12) {
+      dividendpershare_at_cost = response[response.length - 1]['value'] * 12;
+    }
+    else if (response && response.length > 1) {
+
+      // frontendDate = A date which is Stock Buy, Sell or Dividend .
+      // Add Activity form contains this frontendDate.
+      const frontendDate = format(new Date(actionDate), 'yyyy-MM-dd')
+      // Getting HistoricalDividendData only lesser than or equal to frontendDate.
+      response = response.filter((value) => value['date'] <= frontendDate)
+      // Getting period of last record or dividend release after frontendDate filteration.
+      const { period } = (response[response.length - 1]) ? (response[response.length - 1]) : { period: '' };
+      let sum = 0;
+      // Calculation logic for dividendpershare_at_cost field.
+      if (period === 'Quarterly') {
+        response.slice(response.length - 4, response.length).map(e => sum += e['value'])
+      } else if (period === 'Annual') {
+        response.slice(response.length - 1, response.length).map(e => sum += e['value'])
+      } else if (period === 'SemiAnnual') {
+        response.slice(response.length - 2, response.length).map(e => sum += e['value'])
+      } else {
+        // TFLO Symbol comes in this block
+        response.slice(response.length - 1, response.length).map(e => sum += e['value'])
+      }
+
+      // Setting sum variable to dividendpershare_at_cost field of order table.
+      dividendpershare_at_cost = sum;
+    }
+
+    return dividendpershare_at_cost;
 
   }
 

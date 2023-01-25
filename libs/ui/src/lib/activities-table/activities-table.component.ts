@@ -46,6 +46,7 @@ export class ActivitiesTableComponent implements OnChanges, OnDestroy {
   @Output() export = new EventEmitter<string[]>();
   @Output() exportDrafts = new EventEmitter<string[]>();
   @Output() import = new EventEmitter<void>();
+  @Output() importCSV = new EventEmitter<void>();
 
   @ViewChild(MatSort) sort: MatSort;
 
@@ -169,6 +170,10 @@ export class ActivitiesTableComponent implements OnChanges, OnDestroy {
 
   public onImport() {
     this.import.emit();
+  }
+
+  public onImportCSV() {
+    this.importCSV.emit();
   }
 
   public onOpenComment(aComment: string) {

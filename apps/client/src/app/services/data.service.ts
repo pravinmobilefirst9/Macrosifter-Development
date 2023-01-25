@@ -461,6 +461,10 @@ export class DataService {
     return this.http.post(`/api/v1/account/delete-account-by-institution/${institutionId}`, {})
   }
 
+  public importCSV(data) {
+    return this.http.post(`/api/v1/import/csv`, data)
+  }
+
   public getPlaidMessages() {
     return this.http.get('/api/v1/plaid/get-plaid-messages');
   }

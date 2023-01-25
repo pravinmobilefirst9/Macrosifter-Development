@@ -18,6 +18,7 @@ import { hasPermission, permissions } from '@ghostfolio/common/permissions';
 import { DataSource, Order as OrderModel } from '@prisma/client';
 import { format, parseISO } from 'date-fns';
 import { isArray } from 'lodash';
+import { parse as csvToJson } from 'papaparse';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -174,9 +175,8 @@ export class TransactionsPageComponent implements OnDestroy, OnInit {
             data.activities
           ),
           contentType: 'text/calendar',
-          fileName: `ghostfolio-draft${
-            data.activities.length > 1 ? 's' : ''
-          }-${format(parseISO(data.meta.date), 'yyyyMMddHHmmss')}.ics`,
+          fileName: `ghostfolio-draft${data.activities.length > 1 ? 's' : ''
+            }-${format(parseISO(data.meta.date), 'yyyyMMddHHmmss')}.ics`,
           format: 'string'
         });
       });
@@ -263,6 +263,80 @@ export class TransactionsPageComponent implements OnDestroy, OnInit {
         }
       };
     };
+
+    input.click();
+  }
+
+  public onImportCSV() {
+
+    const input = document.createElement('input');
+    input.accept = 'application/JSON, .csv';
+    input.type = 'file';
+
+    input.onchange = (event) => {
+      this.snackBar.open('⏳ ' + $localize`Importing data...`);
+
+      // Getting the file reference
+      const file = (event.target as HTMLInputElement).files[0];
+      console.log(file);
+
+      // Setting up the reader
+      const reader = new FileReader();
+      reader.readAsText(file, 'UTF-8');
+
+      reader.onload = async (readerEvent) => {
+
+        const fileContent = readerEvent.target.result as string;
+
+        try {
+
+          if (file.name.endsWith('.json')) {
+          } else if (file.name.endsWith('.csv')) {
+
+            const content = csvToJson(fileContent, {
+              dynamicTyping: true,
+              header: true,
+              skipEmptyLines: true
+            }).data;
+
+            if (content.length > 500) {
+              this.snackBar.dismiss();
+              this.snackBar.open('⏳ ' + $localize`Too Large file...`)._dismissAfter(4000);
+            }
+
+            this.dataService.importCSV(content).subscribe({
+              next: (e) => {
+                this.snackBar.dismiss()
+                this.snackBar.open('⏳ ' + $localize`Imported Successfully...`)._dismissAfter(4000);
+                this.fetchActivities();
+                console.log('next block');
+
+              },
+              error(err) {
+                this.snackBar.dismiss()
+                this.snackBar.open('⏳ ' + $localize`Import Failed...`)._dismissAfter(4000);
+                console.log('error block');
+
+              },
+            })
+
+          } else {
+            this.snackBar.dismiss();
+            this.snackBar.open('⏳ ' + $localize`Wrong Format...`)._dismissAfter(4000);
+          }
+
+
+
+        } catch (error) {
+          console.log('error');
+          this.snackBar.dismiss()
+
+        }
+
+      }
+
+
+    }
 
     input.click();
   }

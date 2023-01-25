@@ -140,7 +140,7 @@ export class YahooFinanceService implements DataProviderInterface {
           if (code) {
             response.countries = [{ code, weight: 1 }];
           }
-        } catch {}
+        } catch { }
 
         if (assetProfile.summaryProfile?.sector) {
           response.sectors = [
@@ -154,9 +154,8 @@ export class YahooFinanceService implements DataProviderInterface {
         response.url = url;
       }
     } catch (error) {
-      throw new Error(
-        `Could not get asset profile for ${aSymbol} (${this.getName()}): [${
-          error.name
+      Logger.log(
+        `Could not get asset profile for ${aSymbol} (${this.getName()}): [${error.name
         }] ${error.message}`
       );
     }
@@ -257,7 +256,7 @@ export class YahooFinanceService implements DataProviderInterface {
           dataSource: this.getName(),
           marketState:
             quote.marketState === 'REGULAR' ||
-            this.cryptocurrencyService.isCryptocurrency(symbol)
+              this.cryptocurrencyService.isCryptocurrency(symbol)
               ? 'open'
               : 'closed',
           marketPrice: quote.regularMarketPrice || 0

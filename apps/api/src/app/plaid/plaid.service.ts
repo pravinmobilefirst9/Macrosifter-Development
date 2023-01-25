@@ -177,7 +177,7 @@ export class PlaidService {
 
             // Background Update HoldingsInvestment 
             console.log("Importing Holdings......")
-            await this.dataGatheringService.handleUpdateHoldingsInvestment(plaidToken['accessToken'])
+            this.dataGatheringService.handleUpdateHoldingsInvestment(plaidToken['accessToken'])
             console.log("Importing Holdings Done.....")
 
 

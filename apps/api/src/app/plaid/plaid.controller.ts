@@ -12,7 +12,8 @@ import {
   Param,
   Post,
   Put,
-  UseGuards
+  UseGuards,
+  UseInterceptors
 } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
@@ -76,10 +77,7 @@ export class PlaidController {
       }
     } catch (error) {
       console.log(error)
-      throw new HttpException(
-        getReasonPhrase(StatusCodes.FORBIDDEN),
-        StatusCodes.FORBIDDEN
-      );
+
     }
 
     // This is for same_day
@@ -128,10 +126,7 @@ export class PlaidController {
         item_id_same = res.data.item_id;
       } catch (error) {
         console.log(error)
-        throw new HttpException(
-          getReasonPhrase(StatusCodes.FORBIDDEN),
-          StatusCodes.FORBIDDEN
-        );
+
       }
 
       let plaidTokenSame
@@ -234,10 +229,7 @@ export class PlaidController {
 
       } catch (error) {
         console.log(error);
-        throw new HttpException(
-          getReasonPhrase(StatusCodes.FORBIDDEN),
-          StatusCodes.FORBIDDEN
-        );
+
       }
 
 
@@ -270,10 +262,7 @@ export class PlaidController {
       }
     } catch (error) {
       console.log(error)
-      throw new HttpException(
-        getReasonPhrase(StatusCodes.FORBIDDEN),
-        StatusCodes.FORBIDDEN
-      );
+
     }
 
     let institution = null;
@@ -328,10 +317,7 @@ export class PlaidController {
 
     } catch (error) {
       console.log(error)
-      throw new HttpException(
-        getReasonPhrase(StatusCodes.FORBIDDEN),
-        StatusCodes.FORBIDDEN
-      );
+
     }
 
     // Getting access_token from public_token
@@ -359,10 +345,7 @@ export class PlaidController {
 
     } catch (error) {
       console.log(error)
-      throw new HttpException(
-        getReasonPhrase(StatusCodes.FORBIDDEN),
-        StatusCodes.FORBIDDEN
-      );
+
     }
 
     let plaidToken: PlaidToken;
@@ -397,10 +380,7 @@ export class PlaidController {
 
     } catch (error) {
       console.log(error);
-      throw new HttpException(
-        getReasonPhrase(StatusCodes.FORBIDDEN),
-        StatusCodes.FORBIDDEN
-      );
+
     }
 
     const config2 = {
@@ -550,6 +530,14 @@ export class PlaidController {
     }
 
 
+  }
+
+  @Post('extract-csv')
+  public async extractFromCsv() {
+
+
+
+    return "Working"
   }
 
   @Post('receive_webhook')
