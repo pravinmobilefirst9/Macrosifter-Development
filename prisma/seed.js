@@ -431,7 +431,8 @@ async function main() {
       { type: 'CASH', subtype: 'Pending Credit', typeId: 9, id: 49 },
       { type: 'CASH', subtype: 'Pending Debit', typeId: 9, id: 50 },
       { type: 'CASH', subtype: 'Unqualified Gain', typeId: 9, id: 51 },
-      { type: 'CASH', subtype: 'Withdrawal', typeId: 9, id: 52 }
+      { type: 'CASH', subtype: 'Withdrawal', typeId: 9, id: 52 },
+      { type: 'CASH', subtype: 'INTEST', typeId: 9, id: 53 }
     ],
     skipDuplicates: true
   });

@@ -3,6 +3,7 @@ import { CreateOrderDto } from '@ghostfolio/api/app/order/create-order.dto';
 import { OrderService } from '@ghostfolio/api/app/order/order.service';
 import { ConfigurationService } from '@ghostfolio/api/services/configuration.service';
 import { DataProviderService } from '@ghostfolio/api/services/data-provider/data-provider.service';
+import { PrismaService } from '@ghostfolio/api/services/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { isSameDay, parseISO } from 'date-fns';
 
@@ -12,8 +13,9 @@ export class ImportService {
     private readonly accountService: AccountService,
     private readonly configurationService: ConfigurationService,
     private readonly dataProviderService: DataProviderService,
-    private readonly orderService: OrderService
-  ) {}
+    private readonly orderService: OrderService,
+    private readonly prismaService: PrismaService,
+  ) { }
 
   public async import({
     activities,
@@ -85,6 +87,23 @@ export class ImportService {
         User: { connect: { id: userId } }
       });
     }
+  }
+
+  public async getActivitySubTypeId(subtype) {
+    try {
+
+      const data = await this.prismaService.activitySubType.findFirst({
+        where: {
+          subtype,
+        }
+      })
+
+      return (data && data.id) ? data.id : null;
+
+    } catch (error) {
+      return null;
+    }
+
   }
 
   private async validateActivities({

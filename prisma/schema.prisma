@@ -91,7 +91,7 @@ model Order {
   dividendpershare_at_cost Float?
   symbolProfileId          String
   type                     Type
-  subtype                  String?   
+  subtype                  Int?   
   unitPrice                Float
   updatedAt                DateTime      @updatedAt
   userId                   String

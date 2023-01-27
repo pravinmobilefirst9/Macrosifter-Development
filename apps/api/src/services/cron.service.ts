@@ -31,7 +31,7 @@ export class CronService {
   }
 
   // Macrosifter Cache Reset Cron
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_WEEKDAY)
   public async resetRedisCache() {
     await this.redisCacheService.reset();
   }
@@ -102,7 +102,7 @@ export class CronService {
 
 
   // CRON AUTOMATION FOR Missing Data Inside the Symbol Profile, DividendData or MarketData Hourly
-  @Cron(CronExpression.EVERY_YEAR)
+  @Cron(CronExpression.EVERY_12_HOURS)
   public async automation_SymbolProfile_DividendData_MarketData() {
     this.syncMarketData()
     this.syncSymbolProfile();

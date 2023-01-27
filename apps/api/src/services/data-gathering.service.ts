@@ -101,7 +101,7 @@ export class DataGatheringService {
           data: {
             symbol,
             currency: 'USD',
-            dataSource: 'EOD_HISTORICAL_DATA',
+            dataSource: 'YAHOO',
           }
         })
 
@@ -261,16 +261,9 @@ export class DataGatheringService {
 
   }
 
-  public async gatherHistoricalMarketData(symbol) {
+  public async gatherHistoricalMarketData(data) {
     try {
-
-      if (!(symbol)) {
-        return;
-      }
-      console.log('New Function started....', symbol);
-
-      const dataSource = 'YAHOO';
-      const date = new Date().toISOString()
+      const { dataSource, date, symbol } = data;
 
       const historicalData = await this.dataProviderService.getHistoricalRaw(
         [{ dataSource, symbol }],
@@ -344,9 +337,8 @@ export class DataGatheringService {
         `DataGatheringProcessor (${GATHER_HISTORICAL_MARKET_DATA_PROCESS})`
       );
 
-      throw new Error(error);
+      // throw new Error(error);
     }
-    console.log('New Function ended....', symbol);
   }
 
 

@@ -77,30 +77,24 @@ export class ImportController {
   public async importCSV(@Body() bodyData, @Res() res: Response) {
     try {
 
-      console.log(bodyData);
-
-
       if (bodyData && bodyData.length !== 0) {
 
-        const orders = []
+        const orders = [];
+        const symbols = [];
 
         for (let i = 0; i < bodyData.length; i++) {
 
           if (!(Object.prototype.hasOwnProperty.call(bodyData[i], "TRANSACTION ID"))) {
             continue;
           }
+          console.log('Symbol =>', bodyData[i]['SYMBOL']);
 
           if (!(bodyData[i]["SYMBOL"])) {
             continue;
           }
 
-          console.log('Symbol =>', bodyData[i]['SYMBOL']);
 
           const description = bodyData[i]['DESCRIPTION'];
-
-          if (description.includes('ELECTRONIC NEW ACCOUNT FUNDING')) {
-            continue;
-          }
 
           if (description.includes('ELECTRONIC NEW ACCOUNT FUNDING')) {
             continue;
@@ -112,59 +106,56 @@ export class ImportController {
             continue;
           }
 
-
-
-
           let type = null;
           let subtype = null;
           let comment = null;
 
           if (description.includes('Bought')) {
             type = 'BUY'
+            subtype = await this.importService.getActivitySubTypeId('Buy')
           } else if (description.includes('DIVIDEND')) {
             type = 'DIVIDEND'
+            subtype = await this.importService.getActivitySubTypeId('Ordinary Dividend')
           } else if (description.includes('Sold')) {
             type = 'SELL'
+            subtype = await this.importService.getActivitySubTypeId('Sell')
           } else {
             type = 'ITEM'
+            subtype = await this.importService.getActivitySubTypeId('ITEM')
           }
 
 
           if (description.includes('FREE BALANCE INTEREST ADJUSTMENT')) {
             type = 'CASH'
-            subtype = 'INTEST'
+            subtype = await this.importService.getActivitySubTypeId('INTEST')
             comment = 'FREE BALANCE INTEREST ADJUSTMENT'
           }
           if (description.includes('OFF-CYCLE INTEREST (MMDA10)')) {
             type = 'CASH'
-            subtype = 'INTEST'
+            subtype = await this.importService.getActivitySubTypeId('INTEST')
             comment = 'OFF-CYCLE INTEREST (MMDA10)'
           }
 
           if (description.includes('REBATE')) {
             type = 'CASH'
-            subtype = 'DEPOSIT'
+            subtype = await this.importService.getActivitySubTypeId('DEPOSIT')
             comment = 'REBATE'
           }
 
           if (description.includes('MANDATORY - NAME CHANGE')) {
             type = 'TRANSFER'
-            subtype = 'TRANSFER'
+            subtype = await this.importService.getActivitySubTypeId('TRANSFER')
             comment = 'MANDATORY - NAME CHANGE'
           }
 
           if (description.includes('MARGIN INTEREST ADJUSTMENT')) {
             type = 'FEES'
-            subtype = 'Margin Expense'
+            subtype = await this.importService.getActivitySubTypeId('Margin Expense')
             comment = 'MARGIN INTEREST ADJUSTMENT'
           }
 
-
-
-
-
-          const symbolProfileId = await this.dataGatheringService.getSymbolProfileId(bodyData[i]['SYMBOL']);
-          const dividendpershare_at_cost = await this.dataGatheringService.getDividendpershareAtCost(bodyData[i]['SYMBOL'], new Date(bodyData[i]['DATE']));
+          const symbolProfileId = ((bodyData[i]["SYMBOL"])) ? await this.dataGatheringService.getSymbolProfileId(bodyData[i]['SYMBOL']) : null;
+          const dividendpershare_at_cost = ((bodyData[i]["SYMBOL"])) ? await this.dataGatheringService.getDividendpershareAtCost(bodyData[i]['SYMBOL'], new Date(bodyData[i]['DATE'])) : null;
 
           let fee = 0;
 
@@ -178,6 +169,7 @@ export class ImportController {
             fee += bodyData[i]['FUND REDEMPTION FEE'];
           }
 
+          symbols.push(bodyData[i]["SYMBOL"]);
 
           const obj = {
 
@@ -188,12 +180,12 @@ export class ImportController {
             unitPrice: bodyData[i]['PRICE'] ? bodyData[i]['PRICE'] : 0,
             dividendpershare_at_cost,
             userId: this.request.user.id,
+            accountUserId: this.request.user.id,
             symbolProfileId,
             subtype,
             comment,
 
           }
-
 
           orders.push(obj);
 
@@ -201,12 +193,25 @@ export class ImportController {
 
         try {
 
-          const result = await this.prismaService.order.createMany({
+          await this.prismaService.order.createMany({
             data: [
               ...orders
             ],
             skipDuplicates: true
           })
+          // Gathering SymbolProfile Table Data
+          for (let i = 0; i < symbols.length; i++) {
+
+            this.dataGatheringService.gatherAssetProfiles([{
+              dataSource: 'YAHOO',
+              symbol: symbols[i]
+            }]);
+
+            this.dataGatheringService.gatherHistoricalMarketData(
+              { dataSource: 'YAHOO', date: new Date('01-01-2010').toISOString(), symbol: symbols[i] }
+            )
+
+          }
           console.log('imported csv successfully!');
           return res.status(HttpStatus.CREATED).json({ msg: 'imported csv successfully!' })
         } catch (error) {
@@ -217,6 +222,7 @@ export class ImportController {
       }
 
     } catch (error) {
+      console.log(error);
       return res.status(HttpStatus.BAD_REQUEST).json({ error: true, msg: 'Import Failed 3!' });
     }
   }

@@ -278,8 +278,6 @@ export class TransactionsPageComponent implements OnDestroy, OnInit {
 
       // Getting the file reference
       const file = (event.target as HTMLInputElement).files[0];
-      console.log(file);
-
       // Setting up the reader
       const reader = new FileReader();
       reader.readAsText(file, 'UTF-8');
@@ -299,24 +297,15 @@ export class TransactionsPageComponent implements OnDestroy, OnInit {
               skipEmptyLines: true
             }).data;
 
-            if (content.length > 500) {
-              this.snackBar.dismiss();
-              this.snackBar.open('⏳ ' + $localize`Too Large file...`)._dismissAfter(4000);
-            }
-
             this.dataService.importCSV(content).subscribe({
               next: (e) => {
                 this.snackBar.dismiss()
                 this.snackBar.open('⏳ ' + $localize`Imported Successfully...`)._dismissAfter(4000);
                 this.fetchActivities();
-                console.log('next block');
-
               },
-              error(err) {
+              error: (err) => {
                 this.snackBar.dismiss()
-                this.snackBar.open('⏳ ' + $localize`Import Failed...`)._dismissAfter(4000);
-                console.log('error block');
-
+                this.snackBar.open('⏳ ' + $localize`Import Error...`)._dismissAfter(4000);
               },
             })
 
@@ -328,9 +317,8 @@ export class TransactionsPageComponent implements OnDestroy, OnInit {
 
 
         } catch (error) {
-          console.log('error');
           this.snackBar.dismiss()
-
+          this.snackBar.open('⏳ ' + $localize`Import Error...`)._dismissAfter(4000);
         }
 
       }
