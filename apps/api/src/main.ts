@@ -1,7 +1,7 @@
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-
+import * as bodyParser from 'body-parser';
 import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
 
@@ -24,6 +24,8 @@ async function bootstrap() {
     defaultVersion: '1',
     type: VersioningType.URI
   });
+  app.use(bodyParser.json({ limit: '50mb' }));
+  app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({

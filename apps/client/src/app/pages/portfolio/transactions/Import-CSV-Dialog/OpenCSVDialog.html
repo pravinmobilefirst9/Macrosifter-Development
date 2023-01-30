@@ -1,0 +1,32 @@
+<div>
+  <h3>Upload CSV [in-progress not working]</h3>
+
+  <h5>Select Institution</h5>
+  <select
+    [(ngModel)]="institutionId"
+    (change)="handleInstitutionSelect($event.target.value)"
+  >
+    <option *ngFor="let institution of institution">
+      {{institution.institutionName}}
+    </option>
+  </select>
+  <br />
+  <br />
+  <br />
+
+  <h5>Select Account</h5>
+  <select>
+    <option *ngFor="let account of accounts" value="{{account.id}}">
+      {{account.name}}
+    </option>
+  </select>
+
+  <br />
+  <br />
+  <br />
+  <input type="file" />
+  <br />
+  <br />
+  <br />
+  <button>Upload</button>
+</div>

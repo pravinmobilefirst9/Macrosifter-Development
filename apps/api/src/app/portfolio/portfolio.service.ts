@@ -599,6 +599,7 @@ export class PortfolioService {
         withExcludedAccounts: true
       })
     ).filter(({ SymbolProfile }) => {
+      if (!(SymbolProfile)) return false;
       return (
         SymbolProfile.dataSource === aDataSource &&
         SymbolProfile.symbol === aSymbol

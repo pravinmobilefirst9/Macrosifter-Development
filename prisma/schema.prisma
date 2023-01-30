@@ -89,14 +89,15 @@ model Order {
   isDraft                  Boolean       @default(false)
   quantity                 Float
   dividendpershare_at_cost Float?
-  symbolProfileId          String
+  symbolProfileId          String?
+  transactionId            String?
   type                     Type
   subtype                  Int?   
   unitPrice                Float
   updatedAt                DateTime      @updatedAt
   userId                   String
   Account                  Account?      @relation(fields: [accountId, accountUserId], references: [id, userId])
-  SymbolProfile            SymbolProfile @relation(fields: [symbolProfileId], references: [id])
+  SymbolProfile            SymbolProfile? @relation(fields: [symbolProfileId], references: [id])
   User                     User          @relation(fields: [userId], references: [id])
   tags                     Tag[]
 }

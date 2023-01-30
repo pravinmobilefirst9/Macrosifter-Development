@@ -85,11 +85,11 @@
       </th>
       <td *matCellDef="let element" class="px-1" mat-cell>
         <div class="d-flex align-items-center">
-          <span *ngIf="isUUID(element.SymbolProfile.symbol); else symbol">
-            {{ element.SymbolProfile.name }}
+          <span *ngIf="isUUID(element.SymbolProfile?.symbol); else symbol">
+            {{ element.SymbolProfile?.name }}
           </span>
           <ng-template #symbol>
-            {{ element.SymbolProfile.symbol | gfSymbol }}
+            {{ element.SymbolProfile?.symbol | gfSymbol }}
           </ng-template>
           <span *ngIf="element.isDraft" class="badge badge-secondary ml-1" i18n
             >Draft</span
@@ -113,7 +113,7 @@
         class="d-none d-lg-table-cell px-1"
         mat-cell
       >
-        {{ element.SymbolProfile.currency }}
+        {{ element.SymbolProfile?.currency }}
       </td>
       <td *matFooterCellDef class="d-none d-lg-table-cell px-1" mat-footer-cell>
         {{ baseCurrency }}
@@ -313,19 +313,28 @@
             *ngIf="hasPermissionToImportActivities"
             class="align-items-center d-flex"
             mat-menu-item
-            (click)="onImport()"
-          >
-            <ion-icon class="mr-2" name="cloud-upload-outline"></ion-icon>
-            <span i18n>Import Activities</span>
-          </button>
-          <button
-            *ngIf="hasPermissionToImportActivities"
-            class="align-items-center d-flex"
-            mat-menu-item
             (click)="onImportCSV()"
           >
             <ion-icon class="mr-2" name="cloud-upload-outline"></ion-icon>
             <span i18n>Import CSV</span>
+          </button>
+          <!-- <button
+            *ngIf="hasPermissionToImportActivities"
+            class="align-items-center d-flex"
+            mat-menu-item
+            (click)="onImportCSV2()"
+          >
+            <ion-icon class="mr-2" name="cloud-upload-outline"></ion-icon>
+            <span i18n>Import CSV 2</span>
+          </button> -->
+          <button
+            *ngIf="hasPermissionToImportActivities"
+            class="align-items-center d-flex"
+            mat-menu-item
+            (click)="onImport()"
+          >
+            <ion-icon class="mr-2" name="cloud-upload-outline"></ion-icon>
+            <span i18n>Import Activities</span>
           </button>
           <button
             *ngIf="hasPermissionToExportActivities"
@@ -407,8 +416,8 @@
           !row.isDraft &&
           row.type !== 'ITEM' &&
           onOpenPositionDialog({
-            dataSource: row.SymbolProfile.dataSource,
-            symbol: row.SymbolProfile.symbol
+            dataSource: row.SymbolProfile?.dataSource,
+            symbol: row.SymbolProfile?.symbol ? row.SymbolProfile?.symbol : null
           })
       "
     ></tr>

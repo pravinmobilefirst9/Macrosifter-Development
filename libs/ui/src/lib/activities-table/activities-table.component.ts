@@ -17,6 +17,7 @@ import { Filter, UniqueAsset } from '@ghostfolio/common/interfaces';
 import { OrderWithAccount } from '@ghostfolio/common/types';
 import Big from 'big.js';
 import { isUUID } from 'class-validator';
+import { log } from 'console';
 import { endOfToday, format, isAfter } from 'date-fns';
 import { isNumber } from 'lodash';
 import { Subject, Subscription, distinctUntilChanged, takeUntil } from 'rxjs';
@@ -47,6 +48,7 @@ export class ActivitiesTableComponent implements OnChanges, OnDestroy {
   @Output() exportDrafts = new EventEmitter<string[]>();
   @Output() import = new EventEmitter<void>();
   @Output() importCSV = new EventEmitter<void>();
+  @Output() importCSV2 = new EventEmitter<void>();
 
   @ViewChild(MatSort) sort: MatSort;
 
@@ -176,6 +178,10 @@ export class ActivitiesTableComponent implements OnChanges, OnDestroy {
     this.importCSV.emit();
   }
 
+  public onImportCSV2() {
+    this.importCSV2.emit();
+  }
+
   public onOpenComment(aComment: string) {
     alert(aComment);
   }
@@ -207,18 +213,33 @@ export class ActivitiesTableComponent implements OnChanges, OnDestroy {
       };
     }
 
-    fieldValueMap[activity.SymbolProfile.currency] = {
-      id: activity.SymbolProfile.currency,
-      label: activity.SymbolProfile.currency,
-      type: 'TAG'
-    };
+    try {
 
-    if (!isUUID(activity.SymbolProfile.symbol)) {
-      fieldValueMap[activity.SymbolProfile.symbol] = {
-        id: activity.SymbolProfile.symbol,
-        label: activity.SymbolProfile.symbol,
-        type: 'SYMBOL'
-      };
+
+      if (activity.SymbolProfile) {
+
+
+        fieldValueMap[activity.SymbolProfile?.currency] = {
+          id: activity.SymbolProfile?.currency,
+          label: activity.SymbolProfile?.currency,
+          type: 'TAG'
+        };
+
+        if (!isUUID(activity.SymbolProfile.symbol)) {
+          fieldValueMap[activity.SymbolProfile.symbol] = {
+            id: activity.SymbolProfile.symbol,
+            label: activity.SymbolProfile.symbol,
+            type: 'SYMBOL'
+          };
+        }
+
+      } else {
+
+      }
+    } catch (error) {
+      console.log("ERROR 235");
+      console.log(error);
+
     }
 
     fieldValueMap[activity.type] = {

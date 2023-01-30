@@ -489,12 +489,12 @@ export class OrderService {
           value,
           feeInBaseCurrency: this.exchangeRateDataService.toCurrency(
             order.fee,
-            order.SymbolProfile.currency,
+            (order.SymbolProfile?.currency) ? (order.SymbolProfile?.currency) : null,
             userCurrency
           ),
           valueInBaseCurrency: this.exchangeRateDataService.toCurrency(
             value,
-            order.SymbolProfile.currency,
+            (order.SymbolProfile?.currency) ? (order.SymbolProfile?.currency) : null,
             userCurrency
           )
         };

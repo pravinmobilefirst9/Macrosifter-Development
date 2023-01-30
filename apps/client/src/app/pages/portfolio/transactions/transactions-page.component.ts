@@ -25,6 +25,7 @@ import { takeUntil } from 'rxjs/operators';
 
 import { CreateOrUpdateTransactionDialog } from './create-or-update-transaction-dialog/create-or-update-transaction-dialog.component';
 import { ImportTransactionDialog } from './import-transaction-dialog/import-transaction-dialog.component';
+import { OpenCSVDialog } from './Import-CSV-Dialog/OpenCSVDialog';
 
 @Component({
   host: { class: 'page' },
@@ -327,6 +328,19 @@ export class TransactionsPageComponent implements OnDestroy, OnInit {
     }
 
     input.click();
+  }
+
+  public onImportCSV2() {
+    const dialogRef = this.dialog.open(OpenCSVDialog, {
+      height: this.deviceType === 'mobile' ? '97.5vh' : '75vh',
+      width: this.deviceType === 'mobile' ? '100vw' : '50rem'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log(`Dialog result: ${result}`);
+    });
+
+
   }
 
   public onUpdateTransaction(aTransaction: OrderModel) {
