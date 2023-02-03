@@ -662,176 +662,182 @@ export class PortfolioService {
 
     portfolioCalculator.computeTransactionPoints();
     const transactionPoints = portfolioCalculator.getTransactionPoints();
+    try {
 
-    const portfolioStart = parseDate(transactionPoints[0].date);
-    const currentPositions = await portfolioCalculator.getCurrentPositions(
-      portfolioStart
-    );
-
-    const position = currentPositions.positions.find(
-      (item) => item.symbol === aSymbol
-    );
-
-    if (position) {
-      const {
-        averagePrice,
-        currency,
-        dataSource,
-        firstBuyDate,
-        marketPrice,
-        quantity,
-        transactionCount
-      } = position;
-
-      // Convert investment, gross and net performance to currency of user
-      const investment = this.exchangeRateDataService.toCurrency(
-        position.investment?.toNumber(),
-        currency,
-        userCurrency
-      );
-      const grossPerformance = this.exchangeRateDataService.toCurrency(
-        position.grossPerformance?.toNumber(),
-        currency,
-        userCurrency
-      );
-      const netPerformance = this.exchangeRateDataService.toCurrency(
-        position.netPerformance?.toNumber(),
-        currency,
-        userCurrency
+      const portfolioStart = parseDate(transactionPoints[0].date);
+      const currentPositions = await portfolioCalculator.getCurrentPositions(
+        portfolioStart
       );
 
-      const historicalData = await this.dataProviderService.getHistorical(
-        [{ dataSource, symbol: aSymbol }],
-        'day',
-        parseISO(firstBuyDate),
-        new Date()
+
+      const position = currentPositions.positions.find(
+        (item) => item.symbol === aSymbol
       );
 
-      const historicalDataArray: HistoricalDataItem[] = [];
-      let maxPrice = Math.max(orders[0].unitPrice, marketPrice);
-      let minPrice = Math.min(orders[0].unitPrice, marketPrice);
 
-      if (!historicalData?.[aSymbol]?.[firstBuyDate]) {
-        // Add historical entry for buy date, if no historical data available
-        historicalDataArray.push({
-          averagePrice: orders[0].unitPrice,
-          date: firstBuyDate,
-          value: orders[0].unitPrice
-        });
-      }
+      if (position) {
+        const {
+          averagePrice,
+          currency,
+          dataSource,
+          firstBuyDate,
+          marketPrice,
+          quantity,
+          transactionCount
+        } = position;
 
-      if (historicalData[aSymbol]) {
-        let j = -1;
+        // Convert investment, gross and net performance to currency of user
+        const investment = this.exchangeRateDataService.toCurrency(
+          position.investment?.toNumber(),
+          currency,
+          userCurrency
+        );
+        const grossPerformance = this.exchangeRateDataService.toCurrency(
+          position.grossPerformance?.toNumber(),
+          currency,
+          userCurrency
+        );
+        const netPerformance = this.exchangeRateDataService.toCurrency(
+          position.netPerformance?.toNumber(),
+          currency,
+          userCurrency
+        );
+
+        const historicalData = await this.dataProviderService.getHistorical(
+          [{ dataSource, symbol: aSymbol }],
+          'day',
+          parseISO(firstBuyDate),
+          new Date()
+        );
+
+        const historicalDataArray: HistoricalDataItem[] = [];
+        let maxPrice = Math.max(orders[0].unitPrice, marketPrice);
+        let minPrice = Math.min(orders[0].unitPrice, marketPrice);
+
+        if (!historicalData?.[aSymbol]?.[firstBuyDate]) {
+          // Add historical entry for buy date, if no historical data available
+          historicalDataArray.push({
+            averagePrice: orders[0].unitPrice,
+            date: firstBuyDate,
+            value: orders[0].unitPrice
+          });
+        }
+
+        if (historicalData[aSymbol]) {
+          let j = -1;
+          for (const [date, { marketPrice }] of Object.entries(
+            historicalData[aSymbol]
+          )) {
+            while (
+              j + 1 < transactionPoints.length &&
+              !isAfter(parseDate(transactionPoints[j + 1].date), parseDate(date))
+            ) {
+              j++;
+            }
+            let currentAveragePrice = 0;
+            const currentSymbol = transactionPoints[j].items.find(
+              (item) => item.symbol === aSymbol
+            );
+            if (currentSymbol) {
+              currentAveragePrice = currentSymbol.quantity.eq(0)
+                ? 0
+                : currentSymbol.investment.div(currentSymbol.quantity).toNumber();
+            }
+
+            historicalDataArray.push({
+              date,
+              averagePrice: currentAveragePrice,
+              value: marketPrice
+            });
+
+            maxPrice = Math.max(marketPrice ?? 0, maxPrice);
+            minPrice = Math.min(marketPrice ?? Number.MAX_SAFE_INTEGER, minPrice);
+          }
+        }
+
+        return {
+          firstBuyDate,
+          grossPerformance,
+          investment,
+          marketPrice,
+          maxPrice,
+          minPrice,
+          netPerformance,
+          orders,
+          SymbolProfile,
+          tags,
+          transactionCount,
+          averagePrice: averagePrice.toNumber(),
+          grossPerformancePercent:
+            position.grossPerformancePercentage?.toNumber(),
+          historicalData: historicalDataArray,
+          netPerformancePercent: position.netPerformancePercentage?.toNumber(),
+          quantity: quantity.toNumber(),
+          value: this.exchangeRateDataService.toCurrency(
+            quantity.mul(marketPrice ?? 0).toNumber(),
+            currency,
+            userCurrency
+          )
+        };
+      } else {
+        const currentData = await this.dataProviderService.getQuotes([
+          { dataSource: DataSource.YAHOO, symbol: aSymbol }
+        ]);
+        const marketPrice = currentData[aSymbol]?.marketPrice;
+
+        let historicalData = await this.dataProviderService.getHistorical(
+          [{ dataSource: DataSource.YAHOO, symbol: aSymbol }],
+          'day',
+          portfolioStart,
+          new Date()
+        );
+
+        if (isEmpty(historicalData)) {
+          historicalData = await this.dataProviderService.getHistoricalRaw(
+            [{ dataSource: DataSource.YAHOO, symbol: aSymbol }],
+            portfolioStart,
+            new Date()
+          );
+        }
+
+        const historicalDataArray: HistoricalDataItem[] = [];
+        let maxPrice = marketPrice;
+        let minPrice = marketPrice;
+
         for (const [date, { marketPrice }] of Object.entries(
           historicalData[aSymbol]
         )) {
-          while (
-            j + 1 < transactionPoints.length &&
-            !isAfter(parseDate(transactionPoints[j + 1].date), parseDate(date))
-          ) {
-            j++;
-          }
-          let currentAveragePrice = 0;
-          const currentSymbol = transactionPoints[j].items.find(
-            (item) => item.symbol === aSymbol
-          );
-          if (currentSymbol) {
-            currentAveragePrice = currentSymbol.quantity.eq(0)
-              ? 0
-              : currentSymbol.investment.div(currentSymbol.quantity).toNumber();
-          }
-
           historicalDataArray.push({
             date,
-            averagePrice: currentAveragePrice,
             value: marketPrice
           });
 
           maxPrice = Math.max(marketPrice ?? 0, maxPrice);
           minPrice = Math.min(marketPrice ?? Number.MAX_SAFE_INTEGER, minPrice);
         }
+
+        return {
+          marketPrice,
+          maxPrice,
+          minPrice,
+          orders,
+          SymbolProfile,
+          tags,
+          averagePrice: 0,
+          firstBuyDate: undefined,
+          grossPerformance: undefined,
+          grossPerformancePercent: undefined,
+          historicalData: historicalDataArray,
+          investment: 0,
+          netPerformance: undefined,
+          netPerformancePercent: undefined,
+          quantity: 0,
+          transactionCount: undefined,
+          value: 0
+        };
       }
+    } catch (error) {
 
-      return {
-        firstBuyDate,
-        grossPerformance,
-        investment,
-        marketPrice,
-        maxPrice,
-        minPrice,
-        netPerformance,
-        orders,
-        SymbolProfile,
-        tags,
-        transactionCount,
-        averagePrice: averagePrice.toNumber(),
-        grossPerformancePercent:
-          position.grossPerformancePercentage?.toNumber(),
-        historicalData: historicalDataArray,
-        netPerformancePercent: position.netPerformancePercentage?.toNumber(),
-        quantity: quantity.toNumber(),
-        value: this.exchangeRateDataService.toCurrency(
-          quantity.mul(marketPrice ?? 0).toNumber(),
-          currency,
-          userCurrency
-        )
-      };
-    } else {
-      const currentData = await this.dataProviderService.getQuotes([
-        { dataSource: DataSource.YAHOO, symbol: aSymbol }
-      ]);
-      const marketPrice = currentData[aSymbol]?.marketPrice;
-
-      let historicalData = await this.dataProviderService.getHistorical(
-        [{ dataSource: DataSource.YAHOO, symbol: aSymbol }],
-        'day',
-        portfolioStart,
-        new Date()
-      );
-
-      if (isEmpty(historicalData)) {
-        historicalData = await this.dataProviderService.getHistoricalRaw(
-          [{ dataSource: DataSource.YAHOO, symbol: aSymbol }],
-          portfolioStart,
-          new Date()
-        );
-      }
-
-      const historicalDataArray: HistoricalDataItem[] = [];
-      let maxPrice = marketPrice;
-      let minPrice = marketPrice;
-
-      for (const [date, { marketPrice }] of Object.entries(
-        historicalData[aSymbol]
-      )) {
-        historicalDataArray.push({
-          date,
-          value: marketPrice
-        });
-
-        maxPrice = Math.max(marketPrice ?? 0, maxPrice);
-        minPrice = Math.min(marketPrice ?? Number.MAX_SAFE_INTEGER, minPrice);
-      }
-
-      return {
-        marketPrice,
-        maxPrice,
-        minPrice,
-        orders,
-        SymbolProfile,
-        tags,
-        averagePrice: 0,
-        firstBuyDate: undefined,
-        grossPerformance: undefined,
-        grossPerformancePercent: undefined,
-        historicalData: historicalDataArray,
-        investment: 0,
-        netPerformance: undefined,
-        netPerformancePercent: undefined,
-        quantity: 0,
-        transactionCount: undefined,
-        value: 0
-      };
     }
   }
 

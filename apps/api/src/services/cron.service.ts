@@ -31,7 +31,7 @@ export class CronService {
   }
 
   // Macrosifter Cache Reset Cron
-  @Cron(CronExpression.EVERY_WEEKDAY)
+  @Cron(CronExpression.EVERY_12_HOURS)
   public async resetRedisCache() {
     await this.redisCacheService.reset();
   }

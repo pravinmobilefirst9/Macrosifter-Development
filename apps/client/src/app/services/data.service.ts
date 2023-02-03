@@ -469,6 +469,14 @@ export class DataService {
     return this.http.get('/api/v1/plaid/get-plaid-messages');
   }
 
+  public getInstitutionForCSVUpload() {
+    return this.http.get('/api/v1/csv/get-institution-for-csv-upload');
+  }
+
+  public postCSVFileUpload(bodyData) {
+    return this.http.post('/api/v1/csv/post-csv-file-upload', bodyData);
+  }
+
   public updateItemLoginRequiredStatus(itemId: string) {
     return this.http.post(`/api/v1/plaid/update-item-login-required-status/${itemId}`, {});
   }

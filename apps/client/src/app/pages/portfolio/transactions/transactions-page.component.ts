@@ -204,7 +204,6 @@ export class TransactionsPageComponent implements OnDestroy, OnInit {
         try {
           if (file.name.endsWith('.json')) {
             const content = JSON.parse(fileContent);
-
             if (!isArray(content.activities)) {
               if (isArray(content.orders)) {
                 this.handleImportError({
@@ -289,14 +288,22 @@ export class TransactionsPageComponent implements OnDestroy, OnInit {
 
         try {
 
-          if (file.name.endsWith('.json')) {
-          } else if (file.name.endsWith('.csv')) {
+          if (file.name.endsWith('.csv')) {
 
-            const content = csvToJson(fileContent, {
+            let content = csvToJson(fileContent, {
               dynamicTyping: true,
               header: true,
               skipEmptyLines: true
             }).data;
+
+            content = content.filter((e) => e['TRANSACTION ID'])
+
+            content = content.map((e) => {
+              const obj = e;
+              obj['DATE'] = new Date(e['DATE']).toISOString()
+              return obj;
+            })
+
 
             this.dataService.importCSV(content).subscribe({
               next: (e) => {
@@ -305,8 +312,9 @@ export class TransactionsPageComponent implements OnDestroy, OnInit {
                 this.fetchActivities();
               },
               error: (err) => {
+                console.log(err);
                 this.snackBar.dismiss()
-                this.snackBar.open('⏳ ' + $localize`Import Error...`)._dismissAfter(4000);
+                this.snackBar.open('⏳ ' + err?.error?.msg)._dismissAfter(4000);
               },
             })
 
@@ -318,8 +326,9 @@ export class TransactionsPageComponent implements OnDestroy, OnInit {
 
 
         } catch (error) {
+          console.log(error);
           this.snackBar.dismiss()
-          this.snackBar.open('⏳ ' + $localize`Import Error...`)._dismissAfter(4000);
+          this.snackBar.open('⏳ ' + error.toString())._dismissAfter(4000);
         }
 
       }

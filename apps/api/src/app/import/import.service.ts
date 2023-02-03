@@ -9,6 +9,8 @@ import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { isSameDay, parseISO } from 'date-fns';
 import { REQUEST } from '@nestjs/core';
 import { RequestWithUser } from '@ghostfolio/common/types';
+import { v4 as uuidv4 } from 'uuid';
+import { getDateWithTimeFormatString } from '../../../../../libs/common/src/lib/helper';
 
 @Injectable()
 export class ImportService {
@@ -114,22 +116,14 @@ export class ImportService {
   public async isDuplicateActivity(bodyData) {
     try {
 
-      const orders = await this.prismaService.order.findMany({
+      const order = await this.prismaService.order.findFirst({
         where: {
           userId: this.request.user.id,
+          transactionId: bodyData['TRANSACTION ID']
         }
       })
 
-      const transactionIds = orders.map((value) => {
-        return value['transactionId']
-      })
-
-      console.log('Id:', bodyData['TRANSACTION ID']);
-      console.log((transactionIds.includes(bodyData['TRANSACTION ID'])));
-      console.log(transactionIds);
-
-      return (transactionIds.includes(bodyData['TRANSACTION ID']))
-
+      return order ? true : false;
 
     } catch (error) {
       console.log(error);
@@ -137,15 +131,32 @@ export class ImportService {
     }
   }
 
+  public isCSVFileOK(bodyData) {
+    console.log(bodyData);
+
+    if ((!bodyData) && bodyData.length === 0) {
+      return false;
+    }
+    return true;
+  }
+
   public async importCSV(bodyData, res) {
+
     try {
 
-      if (bodyData && bodyData.length !== 0) {
+      if (!(this.isCSVFileOK(bodyData))) {
+        return res.status(HttpStatus.BAD_REQUEST).json({ error: true, msg: 'CSV FORMAT ERROR!' });
+      }
 
+      if (bodyData && bodyData.length !== 0) {
         const orders = [];
         const symbols = [];
 
         for (let i = 0; i < bodyData.length; i++) {
+
+          if (!(bodyData[i]['TRANSACTION ID'])) {
+            continue;
+          }
 
           bodyData[i]['TRANSACTION ID'] = bodyData[i]['TRANSACTION ID'].toString()
 
@@ -230,12 +241,6 @@ export class ImportService {
           const symbolProfileId = ((bodyData[i]["SYMBOL"])) ? await this.dataGatheringService.getSymbolProfileId(bodyData[i]['SYMBOL']) : null;
           const dividendpershare_at_cost = ((bodyData[i]["SYMBOL"])) ? await this.dataGatheringService.getDividendpershareAtCost(bodyData[i]['SYMBOL'], new Date(bodyData[i]['DATE'])) : null;
 
-          if (!(bodyData[i]['SYMBOL'])) {
-            type = 'CASH';
-            subtype = await this.getActivitySubTypeId('Deposit')
-            comment = description;
-
-          }
 
           if (description && description.includes('QUALIFIED DIVIDEND')) {
             type = 'DIVIDEND';
@@ -266,15 +271,19 @@ export class ImportService {
             fee += bodyData[i]['FUND REDEMPTION FEE'];
           }
 
-          if (bodyData[i]["SYMBOL"])
+          if (bodyData[i]['COMMISSION']) {
+            fee += bodyData[i]['COMMISSION'];
+          }
+
+          if (bodyData[i]["SYMBOL"]) {
             symbols.push(bodyData[i]["SYMBOL"]);
+          }
 
-
-
+          const date = parseISO(bodyData[i]['DATE'])
 
           const obj = {
 
-            date: new Date(bodyData[i]['DATE']),
+            date: date,
             fee,
             quantity: bodyData[i]['QUANTITY'] ? bodyData[i]['QUANTITY'] : 1,
             type,
@@ -288,6 +297,44 @@ export class ImportService {
             transactionId: bodyData[i]['TRANSACTION ID']
 
           }
+
+
+          if (!(bodyData[i]['SYMBOL'])) {
+
+            type = 'CASH';
+            subtype = await this.getActivitySubTypeId('Deposit')
+            comment = description;
+            const id = uuidv4();
+
+            await this.prismaService.order.create({
+              data: {
+                date: date,
+                fee,
+                quantity: bodyData[i]['QUANTITY'] ? bodyData[i]['QUANTITY'] : 1,
+                type,
+                subtype,
+                unitPrice: bodyData[i]['PRICE'] ? bodyData[i]['PRICE'] : bodyData[i]['AMOUNT'],
+                transactionId: bodyData[i]['TRANSACTION ID'],
+                comment,
+                User: {
+                  connect: {
+                    id: this.request.user.id
+                  }
+                },
+                SymbolProfile: {
+                  create: {
+                    currency: 'USD',
+                    dataSource: 'MANUAL',
+                    symbol: id,
+                  }
+                }
+              }
+            })
+
+
+            continue;
+          }
+
 
           orders.push(obj);
 
@@ -325,7 +372,7 @@ export class ImportService {
 
     } catch (error) {
       console.log(error);
-      return res.status(HttpStatus.BAD_REQUEST).json({ error: true, msg: 'Import Failed 3!' });
+      return res.status(HttpStatus.BAD_REQUEST).json({ error: true, msg: 'CSV FORMAT ERROR!' });
     }
   }
 

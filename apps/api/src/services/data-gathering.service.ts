@@ -7,8 +7,10 @@ import {
 } from '@ghostfolio/common/config';
 import { DATE_FORMAT, resetHours } from '@ghostfolio/common/helper';
 import { UniqueAsset } from '@ghostfolio/common/interfaces';
+import { RequestWithUser } from '@ghostfolio/common/types';
 import { InjectQueue } from '@nestjs/bull';
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
 import { DataSource, PlaidHoldings, Prisma, PrismaClient, SplitData } from '@prisma/client';
 import { JobOptions, Queue } from 'bull';
 import { format, getDate, getMonth, getYear, isBefore, parseISO, subDays } from 'date-fns';
@@ -881,6 +883,9 @@ export class DataGatheringService {
 
           }
 
+          // Sync Cash Balance for Plaid-linked Investment Type Accounts based on PlaidHoldings table
+          await this.syncCashBalanceForPlaidLinkedInvestment(plaidHolding, access_token);
+
           // For market Data
           await this.gather7Days();
 
@@ -900,6 +905,60 @@ export class DataGatheringService {
     }
 
 
+  }
+
+  public async syncCashBalanceForPlaidLinkedInvestment(data, access_token) {
+    console.log('syncCashBalanceForPlaidLinkedInvestment started...');
+    try {
+
+      data = data.filter((e) => e.is_cash_equivalent)
+
+      const set = new Set<string>()
+
+      data.map(e => set.add(e.accountId));
+
+      const plaidToken = await this.prismaService.plaidToken.findFirst({
+        where: {
+          accessToken: access_token
+        }
+      })
+
+      if (!plaidToken) {
+        return;
+      }
+
+      const userId = plaidToken.userId;
+      for (const item of set.values()) {
+
+        const accountId: string = item;
+
+        let sum = 0;
+        const temp = data.filter((e) => e.accountId === accountId)
+        temp.forEach((e) => sum += e.quantity);
+
+        await this.prismaService.account.update({
+          where: {
+            id_userId: {
+              id: accountId,
+              userId: userId
+            }
+          },
+          data: {
+            balance: sum
+          }
+        })
+
+
+      }
+
+
+    } catch (error) {
+      console.log(error);
+
+    }
+
+
+    console.log('syncCashBalanceForPlaidLinkedInvestment Ended...');
   }
 
   public async getDividendpershareAtCost(symbol, actionDate) {

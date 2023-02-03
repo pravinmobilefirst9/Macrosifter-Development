@@ -1,6 +1,8 @@
 import { DataGatheringService } from "@ghostfolio/api/services/data-gathering.service";
 import { PrismaService } from "@ghostfolio/api/services/prisma.service";
-import { HttpException, Injectable, Logger } from "@nestjs/common";
+import { RequestWithUser } from "@ghostfolio/common/types";
+import { HttpException, Inject, Injectable, Logger } from "@nestjs/common";
+import { REQUEST } from "@nestjs/core";
 import { Institution, PlaidToken, Prisma } from "@prisma/client";
 import { getReasonPhrase, StatusCodes } from "http-status-codes";
 import { CreateTokenDto } from "./create-token-dto";
@@ -15,7 +17,9 @@ export class PlaidService {
     public PLAID_BASE_URI = process.env.PLAID_BASE_URI;
     public PLAID_CLIENT_ID = process.env.CLIENT_ID;
     public PLAID_SECRET_ID = process.env.SECRET_ID;
-    public constructor(private readonly prismaService: PrismaService, private readonly dataGatheringService: DataGatheringService) {
+
+    public constructor(private readonly prismaService: PrismaService, private readonly dataGatheringService: DataGatheringService,
+    ) {
     }
 
     public async createLinkToken(data) {
@@ -104,6 +108,10 @@ export class PlaidService {
     public async updateBalance(account, userId: string) {
 
         const { account_id, balances, verification_status, type } = account;
+
+        if (type === 'investment') {
+            return;
+        }
 
         const current_account = await this.prismaService.account.findFirst({
             where: {
@@ -401,6 +409,8 @@ export class PlaidService {
             await this.dataGatheringService.handleUpdateHoldingsInvestment(plaidToken['accessToken'])
             console.log("Importing Holdings Done (WEBHOOK).....")
         }
+
+
 
 
     }

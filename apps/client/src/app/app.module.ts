@@ -28,6 +28,8 @@ import { authInterceptorProviders } from './core/auth.interceptor';
 import { httpResponseInterceptorProviders } from './core/http-response.interceptor';
 import { LanguageService } from './core/language.service';
 import { NgxPlaidLinkModule } from "ngx-plaid-link";
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 export function NgxStripeFactory(): string {
   return environment.stripePublicKey;
@@ -52,6 +54,8 @@ export function NgxStripeFactory(): string {
     }),
     MatNativeDateModule,
     MatSnackBarModule,
+    MatFormFieldModule,
+    MatInputModule,
     NgxSkeletonLoaderModule,
     NgxStripeModule.forRoot(environment.stripePublicKey)
   ],
