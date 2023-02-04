@@ -44,6 +44,7 @@ model Account {
   User                User             @relation(fields: [userId], references: [id])
   Order               Order[]
   PlaidHoldings       PlaidHoldings[]
+  OrderCSV            OrderCSV[]
 
   @@id([id, userId])
 }
@@ -82,26 +83,42 @@ model Order {
   accountId                String?
   accountUserId            String?
   comment                  String?
-  createdAt                DateTime      @default(now())
+  createdAt                DateTime       @default(now())
   date                     DateTime
   fee                      Float
-  id                       String        @id @default(uuid())
-  isDraft                  Boolean       @default(false)
+  id                       String         @id @default(uuid())
+  isDraft                  Boolean        @default(false)
   quantity                 Float
   dividendpershare_at_cost Float?
   symbolProfileId          String?
   transactionId            String?
   type                     Type
-  subtype                  Int?   
+  subtype                  Int?
   unitPrice                Float
-  updatedAt                DateTime      @updatedAt
+  updatedAt                DateTime       @updatedAt
   userId                   String
-  Account                  Account?      @relation(fields: [accountId, accountUserId], references: [id, userId])
+  Account                  Account?       @relation(fields: [accountId, accountUserId], references: [id, userId])
   SymbolProfile            SymbolProfile? @relation(fields: [symbolProfileId], references: [id])
-  User                     User          @relation(fields: [userId], references: [id])
+  User                     User           @relation(fields: [userId], references: [id])
   tags                     Tag[]
 
   @@unique([transactionId, userId])
+}
+
+model OrderCSV {
+  id             String      @id @default(uuid())
+  fileName       String?
+  createdAt      DateTime    @default(now())
+  totalOrder     Int
+  completedOrder Int
+  status         String
+  userId         String
+  User           User        @relation(fields: [userId], references: [id])
+  institutionId  String
+  Institution    Institution @relation(fields: [institutionId], references: [id])
+  accountId      String
+  accountUserId  String
+  Account        Account     @relation(fields: [accountId, accountUserId], references: [id, userId])
 }
 
 model Platform {
@@ -201,6 +218,7 @@ model User {
   Subscription    Subscription[]
   ThirdPartyCreds ThirdPartyCreds[]
   PlaidToken      PlaidToken[]
+  OrderCSV        OrderCSV[]
 }
 
 model Institution {
@@ -215,6 +233,7 @@ model Institution {
   Account             Account[]
   Platform            Platform?    @relation(fields: [platformId], references: [id])
   PlaidToken          PlaidToken[]
+  OrderCSV            OrderCSV[]
 }
 
 model AccountSubTypes {

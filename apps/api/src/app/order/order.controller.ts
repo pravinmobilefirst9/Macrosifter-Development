@@ -94,8 +94,6 @@ export class OrderController {
       userId: impersonationUserId || this.request.user.id,
       withExcludedAccounts: true
     });
-    console.log(activities);
-
 
     if (
       impersonationUserId ||

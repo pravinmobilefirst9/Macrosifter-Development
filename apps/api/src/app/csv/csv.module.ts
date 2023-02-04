@@ -9,7 +9,7 @@ import { CSVService } from "./csv.service";
 
 @Module({
     controllers: [CSVController],
-    exports: [],
+    exports: [CSVService],
     imports: [PrismaModule, CSVDataGatheringModule],
     providers: [CSVService]
 })

@@ -19,6 +19,7 @@ import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 @Component({
     selector: 'open-csv-dialog',
     templateUrl: './OpenCSVDialog.html',
+    styleUrls: ['./OpenCSVDialog.css'],
     imports: [
         MatButtonModule,
         MatCheckboxModule,
@@ -48,7 +49,17 @@ export class OpenCSVDialog implements OnInit {
     public institutions: { institutionId: string, institutionName: string, accounts: { accountId: string, accountName: string }[] }[]
     public accounts: { accountId: string, accountName: string }[]
     public isFormOk: boolean;
-
+    public fileName: string;
+    public orders: {
+        accountId: string,
+        completedOrder: number,
+        createdAt: Date,
+        fileName: string,
+        id: string,
+        institutionId: string,
+        status: string,
+        totalOrder: number,
+    }[];
 
 
     constructor(public dialogRef: MatDialogRef<OpenCSVDialog>,
@@ -66,6 +77,40 @@ export class OpenCSVDialog implements OnInit {
         this.selectedFileName = null;
         this.handleInstitutionSelect();
         this.isFormOk = false;
+        this.getInititalCSVOrderData();
+
+    }
+
+    getInititalCSVOrderData() {
+        this.isLoading = true;
+        this.dataService.getInititalCSVOrderData().subscribe({
+            next: (response: any) => {
+
+                const sanitizedData = response.map((e) => {
+
+                    const obj = {
+                        accountId: e['accountId'],
+                        completedOrder: e['completedOrder'],
+                        createdAt: e['createdAt'],
+                        fileName: e['fileName'],
+                        id: e['id'],
+                        institutionId: e['institutionId'],
+                        status: e['status'],
+                        totalOrder: e['totalOrder'],
+                    }
+
+                    return obj;
+                })
+
+                this.orders = sanitizedData;
+
+            }, error: (err) => {
+                this.isLoading = false;
+                console.log(err);
+            }
+        }).add(() => {
+            this.isLoading = false;
+        })
     }
 
     handleInstitutionSelect() {
@@ -147,6 +192,7 @@ export class OpenCSVDialog implements OnInit {
 
                         if (this.selectedAccountId && this.selectedInstitutionId && this.csvData) {
                             this.isFormOk = true;
+                            this.fileName = file.name;
                         } else {
                             this.isFormOk = false;
                         }
@@ -186,14 +232,42 @@ export class OpenCSVDialog implements OnInit {
             console.log('institutionId=', this.selectedInstitutionId);
             console.log('accountId=', this.selectedAccountId);
             console.log('csv data ', this.csvData);
+            console.log('file Name ', this.fileName);
 
             this.dataService.postCSVFileUpload({
                 institutionId: this.selectedInstitutionId,
                 accountId: this.selectedAccountId,
-                csv_data: this.csvData
+                csv_data: this.csvData,
+                fileName: this.fileName,
             }).subscribe({
                 next: (response) => {
-                    console.log(response);
+
+                    if (response['status'] === 'IN_PROGRESS') {
+                        alert('Uploaded')
+
+                        const sanitizedData = response['data'].map((e) => {
+
+                            const obj = {
+                                accountId: e['accountId'],
+                                completedOrder: e['completedOrder'],
+                                createdAt: e['createdAt'],
+                                fileName: e['fileName'],
+                                id: e['id'],
+                                institutionId: e['institutionId'],
+                                status: e['status'],
+                                totalOrder: e['totalOrder'],
+                            }
+
+                            return obj;
+                        })
+
+                        this.orders = sanitizedData;
+                        console.log(this.orders);
+
+                    } else {
+                        alert(response['status'])
+                    }
+
                 }, error: (err) => {
                     console.log(err);
                 }

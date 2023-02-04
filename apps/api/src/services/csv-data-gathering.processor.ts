@@ -17,11 +17,11 @@ export class CSVDataGatheringProcessor {
 
 
     @Process(CSV_IMPORT_DATA_PROCESS)
-    public async xyz(job: Job<{ institutionId: string, accountId: string, csv_data: [] }>) {
+    public async xyz(job: Job<{ institutionId: string, accountId: string, csv_data: [], userId: string, fileName: string }>) {
 
-        const data: { institutionId: string, accountId: string, csv_data: [] } = job.data;
+        const data: { institutionId: string, accountId: string, csv_data: [], userId, fileName: string } = job.data;
 
-        await this.csvDataGatheringService.uploadCSV(data);
+        await this.csvDataGatheringService.uploadCSV(data, data['userId']);
 
 
 

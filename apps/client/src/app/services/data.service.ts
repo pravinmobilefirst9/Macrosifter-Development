@@ -469,6 +469,10 @@ export class DataService {
     return this.http.get('/api/v1/plaid/get-plaid-messages');
   }
 
+  public getInititalCSVOrderData() {
+    return this.http.get('/api/v1/csv/get-csv-order');
+  }
+
   public getInstitutionForCSVUpload() {
     return this.http.get('/api/v1/csv/get-institution-for-csv-upload');
   }

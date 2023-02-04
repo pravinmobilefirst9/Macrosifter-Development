@@ -77,13 +77,11 @@ export const CSV_IMPORT_DATA_PROCESS_OPTIONS: JobOptions = {
   attempts: 10,
   backoff: {
     // delay: ms('1 minute'),
-    delay: 1000,
+    delay: 100,
     type: 'exponential'
   },
   priority: 1, // 1 means HIGH
-  removeOnComplete: {
-    age: ms('2 weeks') / 1000
-  }
+  removeOnComplete: true,
 };
 
 

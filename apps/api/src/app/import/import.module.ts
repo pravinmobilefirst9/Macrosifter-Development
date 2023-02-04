@@ -23,6 +23,7 @@ import { ImportService } from './import.service';
     PrismaModule,
     RedisCacheModule
   ],
-  providers: [ImportService]
+  providers: [ImportService],
+  exports: [ImportService]
 })
-export class ImportModule {}
+export class ImportModule { }

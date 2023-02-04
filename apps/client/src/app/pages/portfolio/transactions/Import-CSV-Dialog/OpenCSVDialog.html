@@ -56,6 +56,28 @@
   </div>
   <hr />
 </div>
+<!-- ORDER DATA  -->
+
+<table id="table">
+  <thead>
+    <tr>
+      <td>No</td>
+      <td>File Name</td>
+      <td>Total Quantity</td>
+      <td>Completed</td>
+      <td>Status</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let order of orders; index as i">
+      <td>{{i+1}}</td>
+      <td>{{order.fileName}}</td>
+      <td>{{order.totalOrder}}</td>
+      <td>{{order.completedOrder}}</td>
+      <td>{{order.status}}</td>
+    </tr>
+  </tbody>
+</table>
 
 <!-- Loader -->
 

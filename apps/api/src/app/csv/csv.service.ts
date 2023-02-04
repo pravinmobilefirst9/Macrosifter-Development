@@ -9,18 +9,18 @@ export class CSVService {
 
     constructor(public readonly csvDataGatheringService: CSVDataGatheringService) { }
 
-    public async postCSVFileUpload(bodyData) {
+    public async postCSVFileUpload(bodyData, userId) {
 
         try {
 
-            const { institutionId, accountId, csv_data } = bodyData;
+            const { institutionId, accountId, csv_data, fileName } = bodyData;
 
             for (const order of csv_data) {
                 console.log(' Adding to Queue-------> ', order['SYMBOL']);
                 await this.csvDataGatheringService.addJobToQueue(
                     CSV_IMPORT_DATA_PROCESS,
                     {
-                        csv_data: { ...order }, accountId, institutionId
+                        csv_data: { ...order }, accountId, institutionId, userId, fileName
                     },
                     CSV_IMPORT_DATA_PROCESS_OPTIONS
                 );

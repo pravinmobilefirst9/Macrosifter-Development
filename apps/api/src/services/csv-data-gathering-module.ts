@@ -9,6 +9,7 @@ import { Module } from '@nestjs/common';
 import ms from 'ms';
 import { CSVDataGatheringProcessor } from './csv-data-gathering.processor';
 import { CSVDataGatheringService } from './csv-data-gathering.service';
+import { DataGatheringModule } from './data-gathering.module';
 
 import { DataGatheringProcessor } from './data-gathering.processor';
 import { ExchangeRateDataModule } from './exchange-rate-data.module';
@@ -30,7 +31,8 @@ import { SymbolProfileModule } from './symbol-profile.module';
         ExchangeRateDataModule,
         MarketDataModule,
         PrismaModule,
-        SymbolProfileModule
+        SymbolProfileModule,
+        DataGatheringModule
     ],
     providers: [CSVDataGatheringProcessor, CSVDataGatheringService],
     exports: [BullModule, DataEnhancerModule, CSVDataGatheringService]
