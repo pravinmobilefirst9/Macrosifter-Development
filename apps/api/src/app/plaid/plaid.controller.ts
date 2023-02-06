@@ -1,6 +1,6 @@
 import { capitalizeFirstLetter } from '@ghostfolio/api/helper/string.helper';
 import { PrismaService } from '@ghostfolio/api/services/prisma.service';
-import { RequestWithUser } from '@ghostfolio/common/types';
+import type { RequestWithUser } from '@ghostfolio/common/types';
 import {
   Body,
   Controller,

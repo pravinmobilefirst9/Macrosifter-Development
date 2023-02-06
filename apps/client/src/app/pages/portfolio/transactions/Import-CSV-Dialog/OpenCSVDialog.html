@@ -58,7 +58,7 @@
 </div>
 <!-- ORDER DATA  -->
 
-<table id="table">
+<table *ngIf="!isLoading" id="table">
   <thead>
     <tr>
       <td>No</td>
@@ -85,6 +85,16 @@
   *ngIf="isLoading"
   animation="pulse"
   class="px-4 py-3"
+  [theme]="{
+    height: '3.5rem',
+    width: '100%'
+  }"
+></ngx-skeleton-loader>
+
+<ngx-skeleton-loader
+  *ngIf="isLoading"
+  animation="pulse"
+  class="px-4 py-3 mt-4"
   [theme]="{
     height: '3.5rem',
     width: '100%'

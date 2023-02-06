@@ -33,4 +33,4 @@ import { SymbolProfileModule } from './symbol-profile.module';
   providers: [DataGatheringProcessor, DataGatheringService],
   exports: [BullModule, DataEnhancerModule, DataGatheringService]
 })
-export class DataGatheringModule {}
+export class DataGatheringModule { }

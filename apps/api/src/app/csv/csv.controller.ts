@@ -1,12 +1,11 @@
-import { CSVDataGatheringService } from "@ghostfolio/api/services/csv-data-gathering.service";
 import { PrismaService } from "@ghostfolio/api/services/prisma.service";
-import { CSV_IMPORT_DATA_PROCESS, CSV_IMPORT_DATA_PROCESS_OPTIONS } from "@ghostfolio/common/config";
-import { RequestWithUser } from "@ghostfolio/common/types";
+import type { RequestWithUser } from '@ghostfolio/common/types';
 import { Body, Controller, Get, Inject, Post, UseGuards } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { AuthGuard } from "@nestjs/passport";
 import { JobOptions, Queue } from 'bull';
 import { CSVService } from "./csv.service";
+import { PostFileCsvUploadDto } from "./dto/postCsvUploadDto";
 
 
 
@@ -16,18 +15,14 @@ export class CSVController {
     public constructor(
         @Inject(REQUEST) private readonly request: RequestWithUser,
         public readonly prismaService: PrismaService,
-        public readonly csvDataGatheringService: CSVDataGatheringService,
-        public readonly csvService: CSVService,
+        public readonly csvService: CSVService
 
-    ) {
-
-
-    }
+    ) { }
 
 
     @UseGuards(AuthGuard('jwt'))
     @Get('get-institution-for-csv-upload')
-    public async createLinkToken() {
+    public async getInstitutionForCSVUpload() {
 
         try {
 
@@ -83,6 +78,7 @@ export class CSVController {
             return orders;
 
         } catch (error) {
+            console.log(error);
 
         }
     }
@@ -91,7 +87,7 @@ export class CSVController {
 
     @UseGuards(AuthGuard('jwt'))
     @Post('post-csv-file-upload')
-    public async postCSVFileUpload(@Body() bodyData) {
+    public async postCSVFileUpload(@Body() bodyData: PostFileCsvUploadDto) {
 
         try {
 
@@ -99,7 +95,6 @@ export class CSVController {
                 where: {
                     fileName: bodyData['fileName'],
                     userId: this.request.user.id,
-                    // status: 'IN_PROGRESS'
                 }
             })
 
@@ -109,12 +104,17 @@ export class CSVController {
                 }
             } else {
 
+                let totalOrder = 0;
+                for (const [, value] of Object.entries(bodyData['csv_data'])) {
+                    totalOrder += value.length;
+                }
+
                 await this.prismaService.orderCSV.create({
                     data: {
                         fileName: bodyData['fileName'],
                         completedOrder: 0,
                         status: 'IN_PROGRESS',
-                        totalOrder: bodyData['csv_data'].length,
+                        totalOrder: totalOrder,
                         Account: {
                             connect: {
                                 id_userId: {
@@ -143,6 +143,7 @@ export class CSVController {
                 })
 
                 this.csvService.postCSVFileUpload(bodyData, this.request.user.id);
+
 
                 return {
                     status: 'IN_PROGRESS',

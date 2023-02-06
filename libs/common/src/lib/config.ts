@@ -69,21 +69,6 @@ export const GATHER_HISTORICAL_MARKET_DATA_PROCESS_OPTIONS: JobOptions = {
   }
 };
 
-export const CSV_DATA_GATHERING_QUEUE = 'CSV_DATA_GATHERING_QUEUE';
-
-
-export const CSV_IMPORT_DATA_PROCESS = 'CSV_IMPORT_DATA_PROCESS';
-export const CSV_IMPORT_DATA_PROCESS_OPTIONS: JobOptions = {
-  attempts: 10,
-  backoff: {
-    // delay: ms('1 minute'),
-    delay: 100,
-    type: 'exponential'
-  },
-  priority: 1, // 1 means HIGH
-  removeOnComplete: true,
-};
-
 
 
 export const MAX_CHART_ITEMS = 365;

@@ -416,7 +416,6 @@ export class DataGatheringService {
     } catch (error) {
       Logger.error(error, 'DataGatheringService');
     } finally {
-      return undefined;
     }
   }
 

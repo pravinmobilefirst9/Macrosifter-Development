@@ -14,6 +14,7 @@ import { BrowserModule } from '@angular/platform-browser'
 import { DataService } from "@ghostfolio/client/services/data.service";
 import { parse as csvToJson } from 'papaparse';
 import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
+import { groupBy } from "lodash";
 
 
 @Component({
@@ -44,12 +45,14 @@ export class OpenCSVDialog implements OnInit {
     public isLoading: boolean;
     public selectedInstitutionId: string;
     public selectedAccountId: string;
+    // For frontend to backend
     public csvData: any;
     public selectedFileName: string;
     public institutions: { institutionId: string, institutionName: string, accounts: { accountId: string, accountName: string }[] }[]
     public accounts: { accountId: string, accountName: string }[]
     public isFormOk: boolean;
     public fileName: string;
+    // this array for display table data.
     public orders: {
         accountId: string,
         completedOrder: number,
@@ -229,21 +232,16 @@ export class OpenCSVDialog implements OnInit {
 
 
         if (this.selectedAccountId && this.selectedInstitutionId && this.csvData) {
-            console.log('institutionId=', this.selectedInstitutionId);
-            console.log('accountId=', this.selectedAccountId);
-            console.log('csv data ', this.csvData);
-            console.log('file Name ', this.fileName);
 
             this.dataService.postCSVFileUpload({
                 institutionId: this.selectedInstitutionId,
                 accountId: this.selectedAccountId,
-                csv_data: this.csvData,
+                csv_data: groupBy(this.csvData, 'SYMBOL'),
                 fileName: this.fileName,
             }).subscribe({
                 next: (response) => {
 
                     if (response['status'] === 'IN_PROGRESS') {
-                        alert('Uploaded')
 
                         const sanitizedData = response['data'].map((e) => {
 
@@ -262,7 +260,6 @@ export class OpenCSVDialog implements OnInit {
                         })
 
                         this.orders = sanitizedData;
-                        console.log(this.orders);
 
                     } else {
                         alert(response['status'])
@@ -272,7 +269,6 @@ export class OpenCSVDialog implements OnInit {
                     console.log(err);
                 }
             })
-
 
         }
 

@@ -8,7 +8,7 @@ import { PrismaService } from '@ghostfolio/api/services/prisma.service';
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { isSameDay, parseISO } from 'date-fns';
 import { REQUEST } from '@nestjs/core';
-import { RequestWithUser } from '@ghostfolio/common/types';
+import type { RequestWithUser } from '@ghostfolio/common/types';
 import { v4 as uuidv4 } from 'uuid';
 import { getDateWithTimeFormatString } from '../../../../../libs/common/src/lib/helper';
 

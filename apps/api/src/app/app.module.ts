@@ -33,7 +33,6 @@ import { SymbolModule } from './symbol/symbol.module';
 import { UserModule } from './user/user.module';
 import { PlaidModule } from './plaid/plaid.module';
 import { CSVModule } from './csv/csv.module';
-import { CSVDataGatheringModule } from '../services/csv-data-gathering-module';
 
 @Module({
   imports: [
@@ -57,7 +56,6 @@ import { CSVDataGatheringModule } from '../services/csv-data-gathering-module';
     ConfigurationModule,
     DataGatheringModule,
     DataProviderModule,
-    CSVDataGatheringModule,
     ExchangeRateDataModule,
     ExportModule,
     ImportModule,
