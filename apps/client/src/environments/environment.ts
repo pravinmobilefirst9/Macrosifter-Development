@@ -9,12 +9,12 @@ export const environment = {
   stripePublicKey: '',
   version: 'dev',
 
-  plaid_client_id : '62fe6b548e95650013d54b06',
-  plaid_secret: '0d2fc4b2595c065156dabc2e99bf6a',
-  plaid_institution: 'MacroSifter', 
-  PLAID_ENV : 'development',
-  client_name: "Macrosifter",
-  country_codes: ["US"],
+  plaid_client_id: '610ba50cc5c2c100116eb9d5',
+  plaid_secret: 'ab0499cac310beb056d759af917f3e',
+  plaid_institution: 'MacroSifter',
+  PLAID_ENV: 'sandbox',
+  client_name: 'Macrosifter',
+  country_codes: ['US'],
   webhook: 'https://macrosifter.com/api/v1/plaid/receive_webhook',
   redirect_uri: 'https://macrosifter.com/plaid-oauth-redirect'
 };
