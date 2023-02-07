@@ -25,6 +25,7 @@ import { StatusCodes, getReasonPhrase } from 'http-status-codes';
 import { size } from 'lodash';
 
 import { UserItem } from './interfaces/user-item.interface';
+import { RetrieveBalanceDto } from './retrieve-balance-dto';
 import { UpdateUserSettingDto } from './update-user-setting.dto';
 import { UserService } from './user.service';
 
@@ -36,7 +37,7 @@ export class UserController {
     private readonly propertyService: PropertyService,
     @Inject(REQUEST) private readonly request: RequestWithUser,
     private readonly userService: UserService
-  ) {}
+  ) { }
 
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'))
@@ -133,5 +134,10 @@ export class UserController {
       userSettings,
       userId: this.request.user.id
     });
+  }
+
+  @Post('/retrieve-balance')
+  public async retrieveBalance(@Body() data: RetrieveBalanceDto) {
+    return this.userService.retrieveBalance(data)
   }
 }

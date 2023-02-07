@@ -279,9 +279,9 @@ export class PortfolioCalculator {
       const netPerformanceInPercentage = totalInvestmentValues[date].eq(0)
         ? 0
         : totalNetPerformanceValues[date]
-            .div(totalInvestmentValues[date])
-            .mul(100)
-            .toNumber();
+          .div(totalInvestmentValues[date])
+          .mul(100)
+          .toNumber();
 
       return {
         date,
@@ -597,7 +597,7 @@ export class PortfolioCalculator {
             return current;
           }
         });
-    } catch {}
+    } catch { }
 
     const timelinePeriods = timelineInfoInterfaces.map(
       (timelineInfo) => timelineInfo.timelinePeriods
@@ -1033,13 +1033,14 @@ export class PortfolioCalculator {
         valueAtStartDate = valueOfInvestmentBeforeTransaction;
       }
 
+
       const transactionInvestment =
         order.type === 'BUY'
           ? order.quantity.mul(order.unitPrice).mul(this.getFactor(order.type))
           : totalInvestment
-              .div(totalUnits)
-              .mul(order.quantity)
-              .mul(this.getFactor(order.type));
+            .div(totalUnits.gt(0) ? totalUnits : 1)
+            .mul(order.quantity)
+            .mul(this.getFactor(order.type));
 
       if (PortfolioCalculator.ENABLE_LOGGING) {
         console.log('totalInvestment', totalInvestment.toNumber());
@@ -1204,21 +1205,21 @@ export class PortfolioCalculator {
 
     const grossPerformancePercentage =
       PortfolioCalculator.CALCULATE_PERCENTAGE_PERFORMANCE_WITH_MAX_INVESTMENT ||
-      averagePriceAtStartDate.eq(0) ||
-      averagePriceAtEndDate.eq(0) ||
-      orders[indexOfStartOrder].unitPrice.eq(0)
+        averagePriceAtStartDate.eq(0) ||
+        averagePriceAtEndDate.eq(0) ||
+        orders[indexOfStartOrder].unitPrice.eq(0)
         ? maxInvestmentBetweenStartAndEndDate.gt(0)
           ? totalGrossPerformance.div(maxInvestmentBetweenStartAndEndDate)
           : new Big(0)
         : // This formula has the issue that buying more units with a price
-          // lower than the average buying price results in a positive
-          // performance even if the market price stays constant
-          unitPriceAtEndDate
-            .div(averagePriceAtEndDate)
-            .div(
-              orders[indexOfStartOrder].unitPrice.div(averagePriceAtStartDate)
-            )
-            .minus(1);
+        // lower than the average buying price results in a positive
+        // performance even if the market price stays constant
+        unitPriceAtEndDate
+          .div(averagePriceAtEndDate)
+          .div(
+            orders[indexOfStartOrder].unitPrice.div(averagePriceAtStartDate)
+          )
+          .minus(1);
 
     const feesPerUnit = totalUnits.gt(0)
       ? fees.minus(feesAtStartDate).div(totalUnits)
@@ -1226,22 +1227,22 @@ export class PortfolioCalculator {
 
     const netPerformancePercentage =
       PortfolioCalculator.CALCULATE_PERCENTAGE_PERFORMANCE_WITH_MAX_INVESTMENT ||
-      averagePriceAtStartDate.eq(0) ||
-      averagePriceAtEndDate.eq(0) ||
-      orders[indexOfStartOrder].unitPrice.eq(0)
+        averagePriceAtStartDate.eq(0) ||
+        averagePriceAtEndDate.eq(0) ||
+        orders[indexOfStartOrder].unitPrice.eq(0)
         ? maxInvestmentBetweenStartAndEndDate.gt(0)
           ? totalNetPerformance.div(maxInvestmentBetweenStartAndEndDate)
           : new Big(0)
         : // This formula has the issue that buying more units with a price
-          // lower than the average buying price results in a positive
-          // performance even if the market price stays constant
-          unitPriceAtEndDate
-            .minus(feesPerUnit)
-            .div(averagePriceAtEndDate)
-            .div(
-              orders[indexOfStartOrder].unitPrice.div(averagePriceAtStartDate)
-            )
-            .minus(1);
+        // lower than the average buying price results in a positive
+        // performance even if the market price stays constant
+        unitPriceAtEndDate
+          .minus(feesPerUnit)
+          .div(averagePriceAtEndDate)
+          .div(
+            orders[indexOfStartOrder].unitPrice.div(averagePriceAtStartDate)
+          )
+          .minus(1);
 
     if (PortfolioCalculator.ENABLE_LOGGING) {
       console.log(

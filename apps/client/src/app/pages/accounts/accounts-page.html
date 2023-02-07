@@ -3,17 +3,21 @@
     <div class="col">
       <h3 class="d-flex justify-content-center mb-3" i18n>Accounts</h3>
       <div class="accounts">
+        <!-- <gf-accounts-table-new> </gf-accounts-table-new> -->
         <gf-accounts-table
           [accounts]="accounts"
+          [accountTypes]="accountTypes"
           [baseCurrency]="user?.settings?.baseCurrency"
           [deviceType]="deviceType"
           [locale]="user?.settings?.locale"
+          [plaidMessages]="plaidMessages"
           [showActions]="!hasImpersonationId && hasPermissionToDeleteAccount && !user.settings.isRestrictedView"
           [totalBalanceInBaseCurrency]="totalBalanceInBaseCurrency"
           [totalValueInBaseCurrency]="totalValueInBaseCurrency"
           [transactionCount]="transactionCount"
           (accountDeleted)="onDeleteAccount($event)"
           (accountToUpdate)="onUpdateAccount($event)"
+          (institutionDeleted)="onDeleteInstitution($event)"
         ></gf-accounts-table>
       </div>
     </div>
@@ -27,8 +31,8 @@
       class="align-items-center d-flex justify-content-center"
       color="primary"
       mat-fab
-      [routerLink]="[]"
       [queryParams]="{ choosePlaid: true }"
+      [routerLink]="[]"
     >
       <ion-icon ion-icon name="add-outline" size="large"></ion-icon>
     </a>

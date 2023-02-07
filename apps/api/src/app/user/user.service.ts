@@ -14,16 +14,20 @@ import {
   hasRole,
   permissions
 } from '@ghostfolio/common/permissions';
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma, Role, User } from '@prisma/client';
+import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 import { sortBy } from 'lodash';
+import { RetrieveBalanceDto } from './retrieve-balance-dto';
 
 const crypto = require('crypto');
+const axios = require('axios');
 
 @Injectable()
 export class UserService {
   public static DEFAULT_CURRENCY = 'USD';
-
+  public static DEFAULT_TIMEZONE = 'EST';
+  public PLAID_BASE_URI = process.env.PLAID_BASE_URI;
   private baseCurrency: string;
 
   public constructor(
@@ -143,6 +147,12 @@ export class UserService {
         UserService.DEFAULT_CURRENCY;
     }
 
+    // Set default value for base timezone
+    if (!(user.Settings.settings as UserSettings)?.timezone) {
+      (user.Settings.settings as UserSettings).timezone =
+        await this.getTimezoneByIp().timezone;
+    }
+
     // Set default value for date range
     (user.Settings.settings as UserSettings).dateRange =
       (user.Settings.settings as UserSettings).viewMode === 'ZEN'
@@ -221,6 +231,7 @@ export class UserService {
     if (!data?.provider) {
       data.provider = 'ANONYMOUS';
     }
+    const tz = await this.getTimezoneByIp();
 
     let user = await this.prismaService.user.create({
       data: {
@@ -229,13 +240,16 @@ export class UserService {
           create: {
             currency: this.baseCurrency,
             isDefault: true,
-            name: 'Default Account'
+            name: 'Default Account',
+            accountType: 'CASH',
+            accountSubTypeId: 1
           }
         },
         Settings: {
           create: {
             settings: {
-              currency: this.baseCurrency
+              currency: this.baseCurrency,
+              timezone: tz?.timezone ?? UserService.DEFAULT_TIMEZONE
             }
           }
         }
@@ -296,7 +310,7 @@ export class UserService {
       await this.prismaService.settings.delete({
         where: { userId: where.id }
       });
-    } catch {}
+    } catch { }
 
     return this.prismaService.user.delete({
       where
@@ -332,6 +346,32 @@ export class UserService {
     return;
   }
 
+  public async retrieveBalance(data: RetrieveBalanceDto) {
+
+    const config = {
+      method: 'post',
+      url: this.PLAID_BASE_URI + '/accounts/balance/get',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      data: data
+    };
+
+    const balance = axios(config)
+      .then(function (response) {
+        return response.data;
+      })
+      .catch(function (error) {
+        throw new HttpException(
+          getReasonPhrase(StatusCodes.FORBIDDEN),
+          StatusCodes.FORBIDDEN
+        );
+      });
+
+    return balance;
+
+  }
+
   private getRandomString(length: number) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     const result = [];
@@ -343,4 +383,13 @@ export class UserService {
     }
     return result.join('');
   }
+
+  private getTimezoneByIp() {
+    return axios.get('https://worldtimeapi.org/api/ip').then(
+      data => {
+        return data.data;
+      }
+    )
+  }
+
 }

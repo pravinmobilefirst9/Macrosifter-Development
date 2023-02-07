@@ -8,8 +8,9 @@ import { RouterModule } from '@angular/router';
 import { GfSymbolIconModule } from '@ghostfolio/client/components/symbol-icon/symbol-icon.module';
 import { GfValueModule } from '@ghostfolio/ui/value';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-
+import { MatDialogModule } from '@angular/material/dialog';
 import { AccountsTableComponent } from './accounts-table.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @NgModule({
   declarations: [AccountsTableComponent],
@@ -20,11 +21,13 @@ import { AccountsTableComponent } from './accounts-table.component';
     GfValueModule,
     MatButtonModule,
     MatInputModule,
+    MatTooltipModule,
     MatMenuModule,
     MatTableModule,
+    MatDialogModule,
     NgxSkeletonLoaderModule,
     RouterModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class GfAccountsTableModule {}
+export class GfAccountsTableModule { }

@@ -27,13 +27,18 @@ import { Account as AccountModel, AccountType } from '@prisma/client';
 import { User } from '@ghostfolio/common/interfaces';
 import { CreateAccountDto } from '@ghostfolio/api/app/account/create-account.dto';
 import { AccountDetailsToggleDialog } from './account-details-toggle/account-details-toggle.component';
+import { ChoosePlaidStartDialog } from './choose-plaid-start/choose-plaid-start.component';
+
+import {MatButtonModule} from '@angular/material/button';
 
 @Component({
   host: { class: 'h-100' },
   selector: 'gf-choose-plaid',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./choose-plaid.scss'],
-  templateUrl: 'choose-plaid.html'
+  templateUrl: './choose-plaid.html',
+  imports:[MatButtonModule],
+  standalone: true
 })
 export class ChoosePlaidDialog implements OnDestroy {
   public currencies: string[] = [];
@@ -41,14 +46,14 @@ export class ChoosePlaidDialog implements OnDestroy {
 
   private unsubscribeSubject = new Subject<void>();
   private plaidLinkHandler: PlaidLinkHandler;
- 
+
   private config: any = {
     apiVersion: "v2",
-    env: "sandbox",
+    env: environment.PLAID_ENV,
     institution: environment.plaid_institution,
     token: null,
     webhook: "",
-    product: ["auth","transactions"],
+    product: ["auth", "transactions"],
     countryCodes: ['US', 'CA', 'GB'],
     key: environment.plaid_secret
   };
@@ -63,7 +68,7 @@ export class ChoosePlaidDialog implements OnDestroy {
     private route: ActivatedRoute,
     @Inject(MAT_DIALOG_DATA) public data: ChoosePlaidDialogParams,
     private dialog: MatDialog,
-  ) {}
+  ) { }
 
   ngOnInit() {
     const { currencies, platforms } = this.dataService.fetchInfo();
@@ -80,24 +85,34 @@ export class ChoosePlaidDialog implements OnDestroy {
     this.unsubscribeSubject.next();
     this.unsubscribeSubject.complete();
   }
-  btnClick = async () =>{
-    await this.dataService.createPlaidLinkToken().subscribe(data=>{
-      this.config.token = data['link_token']
-      this.plaidLinkService
-      .createPlaid(
-        Object.assign({}, this.config, {
-          onSuccess: (token, metadata) => this.onSuccess(token, metadata),
-          onExit: (error, metadata) => this.onExit(error, metadata),
-          onEvent: (eventName, metadata) => this.onEvent(eventName, metadata)
-        })
-      )
-      .then((handler: PlaidLinkHandler) => {
-        this.plaidLinkHandler = handler;
-        this.open();
-      });
-    })
+
+  public btnClick = async () => {
+
+    this.onCancel();
+    const dialogRef = this.dialog.open(ChoosePlaidStartDialog, {
+      data: {},
+      height: this.deviceType === 'mobile' ? '97.5vh' : '80vh',
+      width: this.deviceType === 'mobile' ? '100vw' : '50rem'
+    });
+
+    // this.dataService.createPlaidLinkToken().subscribe(data => {
+    //   this.config.token = data['link_token']
+    //   this.plaidLinkService
+    //     .createPlaid(
+    //       Object.assign({}, this.config, {
+    //         onSuccess: (token, metadata) => this.onSuccess(token, metadata),
+    //         onExit: (error, metadata) => this.onExit(error, metadata),
+    //         onEvent: (eventName, metadata) => this.onEvent(eventName, metadata),
+    //       })
+    //     )
+    //     .then((handler: PlaidLinkHandler) => {
+    //       this.plaidLinkHandler = handler;
+    //       this.open();
+    //     });
+    // })
   }
   public manualClick() {
+    this.dialogRef.close();
     this.router.navigate(
       ['/accounts'],
       { queryParams: { createDialog: true } }
@@ -106,11 +121,11 @@ export class ChoosePlaidDialog implements OnDestroy {
   open() {
     this.plaidLinkHandler.open();
   }
- 
+
   exit() {
     this.plaidLinkHandler.exit();
   }
- 
+
   onSuccess(token, metadata) {
     console.log("We got a token:", token);
     console.log("We got metadata:", metadata);
@@ -120,23 +135,23 @@ export class ChoosePlaidDialog implements OnDestroy {
       "accounts": metadata.accounts,
       "institution": metadata.institution,
       "public_token": metadata.public_token,
-      "userId":window.localStorage.getItem("local-user-id")
+      "userId": window.localStorage.getItem("local-user-id")
     }
     // let response = {
     //   "statusCode": 201,
     //   "message": "account is verified with plaid we are importing account detailsssssss"
     // }
     // this.openAccountDetailsToggle(response)
-    this.dataService.postPlaidAccountDetails(bodyData).subscribe(response=>{
+    this.dataService.postPlaidAccountDetails(bodyData).subscribe(response => {
       this.openAccountDetailsToggle(response)
     })
   }
-  openAccountDetailsToggle(status){
+  openAccountDetailsToggle(status) {
     const dialogRef = this.dialog.open(AccountDetailsToggleDialog, {
       data: {
         account: {
           accountType: status,
-          
+
         }
       },
       height: this.deviceType === 'mobile' ? '97.5vh' : '80vh',
@@ -155,7 +170,7 @@ export class ChoosePlaidDialog implements OnDestroy {
             .pipe(takeUntil(this.unsubscribeSubject))
             .subscribe({
               next: () => {
-                
+
               }
             });
         }
@@ -167,7 +182,7 @@ export class ChoosePlaidDialog implements OnDestroy {
     console.log("We got an event:", eventName);
     console.log("We got metadata:", metadata);
   }
- 
+
   onExit(error, metadata) {
     console.log("We exited:", error);
     console.log("We got metadata:", metadata);

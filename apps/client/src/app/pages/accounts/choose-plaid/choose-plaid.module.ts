@@ -28,4 +28,4 @@ import { RouterModule } from '@angular/router';
     RouterModule
   ]
 })
-export class GfCreateOrUpdateAccountDialogModule {}
+export class GfChoosePlaidModule { }

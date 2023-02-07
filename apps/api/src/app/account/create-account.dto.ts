@@ -27,4 +27,7 @@ export class CreateAccountDto {
   @IsString()
   @ValidateIf((object, value) => value !== null)
   platformId: string | null;
+
+  @IsNumber()
+  accountSubTypeId: number | null;
 }

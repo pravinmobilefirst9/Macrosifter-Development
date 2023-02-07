@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import { AccountService } from '@ghostfolio/api/app/account/account.service';
 import { DataGatheringService } from '@ghostfolio/api/services/data-gathering.service';
 import { ExchangeRateDataService } from '@ghostfolio/api/services/exchange-rate-data.service';
@@ -9,7 +11,9 @@ import {
 } from '@ghostfolio/common/config';
 import { Filter } from '@ghostfolio/common/interfaces';
 import { OrderWithAccount } from '@ghostfolio/common/types';
-import { Injectable } from '@nestjs/common';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Injectable, Logger } from '@nestjs/common';
+import { format } from 'date-fns'
 import {
   AssetClass,
   AssetSubClass,
@@ -19,12 +23,14 @@ import {
   Tag,
   Type as TypeOfOrder
 } from '@prisma/client';
+const yahooFinance = require('yahoo-finance2').default;
 import Big from 'big.js';
 import { endOfToday, isAfter } from 'date-fns';
 import { groupBy } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Activity } from './interfaces/activities.interface';
+const axios = require('axios');
 
 @Injectable()
 export class OrderService {
@@ -34,7 +40,7 @@ export class OrderService {
     private readonly exchangeRateDataService: ExchangeRateDataService,
     private readonly prismaService: PrismaService,
     private readonly symbolProfileService: SymbolProfileService
-  ) {}
+  ) { }
 
   public async order(
     orderWhereUniqueInput: Prisma.OrderWhereUniqueInput
@@ -131,7 +137,7 @@ export class OrderService {
 
     if (!isDraft) {
       // Gather symbol data of order in the background, if not draft
-      this.dataGatheringService.gatherSymbols([
+      await this.dataGatheringService.gatherSymbols([
         {
           dataSource: data.SymbolProfile.connectOrCreate.create.dataSource,
           date: <Date>data.date,
@@ -140,12 +146,34 @@ export class OrderService {
       ]);
     }
 
+
     delete data.accountId;
     delete data.assetClass;
     delete data.assetSubClass;
 
     if (!data.comment) {
       delete data.comment;
+    }
+
+    if (!(data.type === 'ITEM')) {
+
+      // Getting summaryDetail for given symbol.
+      const symbolDetail = await this.getSymbolDetail(data.symbol)
+      // Logic for dividendpershare_at_cost
+      if (!(symbolDetail)) {
+        // If symbolDetail is null then dividendpershare_at_cost = 0.0.
+        data['dividendpershare_at_cost'] = 0.0;
+      } else {
+        // dividendpershare_at_cost getting from function
+        data['dividendpershare_at_cost'] = await this.dataGatheringService.getDividendpershareAtCost(data.symbol, data.date);
+      }
+
+      //   Set Historical Dividend Data for given symbol.
+      //   DividendData table's entry goes from this call.
+      await this.setHistoricalDividendData(data.symbol);
+
+      // SplitData table's entry goes fron this call
+      await this.setEODHistoricalSplitData(data.symbol);
     }
 
     delete data.currency;
@@ -156,6 +184,7 @@ export class OrderService {
 
     const orderData: Prisma.OrderCreateInput = data;
 
+    // Creating order table entry.
     return this.prismaService.order.create({
       data: {
         ...orderData,
@@ -169,6 +198,168 @@ export class OrderService {
       }
     });
   }
+
+
+  public async setHistoricalDividendData(symbol: string) {
+    const data = await this.getHistoricalDividendData(symbol);
+
+
+    if (data && (data.length > 0)) {
+      const finalDividendData = []
+      for (let i = 0; i < data.length; i++) {
+
+        const obj = {
+          dataSource: 'EOD_HISTORICAL_DATA',
+          symbol,
+          value: data[i]['value'],
+          unadjusted_value: data[i]['unadjustedValue'],
+          date: (data[i]['paymentDate']) ? (data[i]['paymentDate']) : (data[i]['date']),
+          currency: data[i]['currency'],
+          declarationDate: (data[i]['declarationDate']) ? new Date((data[i]['declarationDate'])) : null,
+          paymentDate: (data[i]['paymentDate']) ? new Date((data[i]['paymentDate'])) : null,
+          recordDate: (data[i]['recordDate']) ? new Date((data[i]['recordDate'])) : null,
+        }
+
+        obj['date'] = new Date(obj['date']);
+
+        finalDividendData.push(obj);
+
+      }
+
+      const isDividendDataExist = await this.prismaService.dividendData.findFirst({
+        where: {
+          symbol
+        }
+      })
+
+      if (!(isDividendDataExist)) {
+
+        await this.prismaService.dividendData.createMany({
+          data: [
+            ...finalDividendData
+          ],
+          skipDuplicates: true,
+        })
+        Logger.log(`DividendData is Inserted for ${symbol} !`);
+
+      } else {
+
+        await this.prismaService.dividendData.deleteMany({
+          where: {
+            symbol: symbol
+          }
+        })
+
+        await this.prismaService.dividendData.createMany({
+          data: [
+            ...finalDividendData
+          ],
+          skipDuplicates: true,
+        })
+        Logger.log(`DividendData is Updated for ${symbol} !`);
+
+
+      }
+
+    }
+
+  }
+
+  public async getHistoricalDividendData(symbol) {
+    try {
+
+      const url = `https://eodhistoricaldata.com/api/div/${symbol}?fmt=json&from=2000-01-01&api_token=633b608e2acf44.53707275`
+      const response = await axios.get(url)
+      return response.data;
+
+    } catch (error) {
+      return undefined;
+    }
+  }
+
+  public async getSymbolDetail(symbol) {
+
+    try {
+      const queryOptions = { modules: ['price', 'summaryDetail'] }; // defaults
+
+      const response = await yahooFinance.quoteSummary(symbol, queryOptions);
+      return response;
+
+    } catch (error) {
+      console.log(error);
+      return undefined;
+    }
+
+  }
+
+  public async setEODHistoricalSplitData(symbol: string) {
+    if (!symbol) return;
+    const data = await this.getHistoricalSplitData(symbol);
+    const splitData = [];
+    if (data && data.length > 0) {
+      for (let i = 0; i < data.length; i++) {
+        const obj: Prisma.SplitDataCreateInput = {
+          dataSource: 'EOD_HISTORICAL_DATA',
+          symbol,
+          date: new Date(data[i]['date']),
+          split: data[i]['split'],
+        }
+        splitData.push(obj);
+      }
+    }
+    const isSplitDataExist = await this.prismaService.splitData.findMany({
+      where: {
+        symbol
+      }
+    })
+
+    if (isSplitDataExist && isSplitDataExist.length > 0) {
+
+      if ((isSplitDataExist && isSplitDataExist.length) < (splitData && splitData.length)) {
+
+        await this.prismaService.splitData.createMany({
+          data: [
+            ...splitData
+          ],
+          skipDuplicates: true,
+        })
+        Logger.log(`SplitData is Updated for ${symbol} !`);
+
+      } else {
+        Logger.log(`SplitData is Already Up to date for ${symbol} !`);
+      }
+
+    } else {
+
+      if (splitData && splitData.length > 0) {
+
+        await this.prismaService.splitData.createMany({
+          data: [...splitData],
+          skipDuplicates: true,
+        })
+        Logger.log(`SplitData is Inserted for ${symbol} !`);
+      } else {
+        Logger.log(`SplitData is Not Found for ${symbol} !`);
+      }
+
+
+    }
+
+
+  }
+
+
+  public async getHistoricalSplitData(symbol) {
+    try {
+      const url = `https://eodhistoricaldata.com/api/splits/${symbol}?fmt=json&from=2000-01-01&api_token=633b608e2acf44.53707275`
+      const response = await axios.get(url)
+      return response.data;
+
+    } catch (error) {
+      return undefined;
+    }
+  }
+
 
   public async deleteOrder(
     where: Prisma.OrderWhereUniqueInput
@@ -298,12 +489,12 @@ export class OrderService {
           value,
           feeInBaseCurrency: this.exchangeRateDataService.toCurrency(
             order.fee,
-            order.SymbolProfile.currency,
+            (order.SymbolProfile?.currency) ? (order.SymbolProfile?.currency) : null,
             userCurrency
           ),
           valueInBaseCurrency: this.exchangeRateDataService.toCurrency(
             value,
-            order.SymbolProfile.currency,
+            (order.SymbolProfile?.currency) ? (order.SymbolProfile?.currency) : null,
             userCurrency
           )
         };

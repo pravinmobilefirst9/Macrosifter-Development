@@ -10,6 +10,9 @@ import { environment } from './environments/environment';
 
 (async () => {
   const response = await fetch('/api/v1/info');
+  fetch('/api/v1/plaid/fetch-latest-balance', {
+    headers: { Authorization: `Bearer ${window.localStorage.getItem('auth-token')}` }
+  })
   const info: InfoItem = await response.json();
   const utmSource = <'ios' | 'trusted-web-activity'>(
     window.localStorage.getItem('utm_source')

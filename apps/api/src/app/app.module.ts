@@ -32,11 +32,13 @@ import { SubscriptionModule } from './subscription/subscription.module';
 import { SymbolModule } from './symbol/symbol.module';
 import { UserModule } from './user/user.module';
 import { PlaidModule } from './plaid/plaid.module';
+import { CSVModule } from './csv/csv.module';
 
 @Module({
   imports: [
     AdminModule,
-    PlaidModule, 
+    PlaidModule,
+    CSVModule,
     AccessModule,
     AccountModule,
     AuthDeviceModule,

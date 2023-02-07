@@ -26,6 +26,9 @@ import { environment } from 'apps/client/src/environments/environment';
 import { Account as AccountModel, AccountType } from '@prisma/client';
 import { User } from '@ghostfolio/common/interfaces';
 import { CreateAccountDto } from '@ghostfolio/api/app/account/create-account.dto';
+import { ChoosePlaidDialog } from '../choose-plaid.component';
+import { ChoosePlaidStartDialog } from '../choose-plaid-start/choose-plaid-start.component';
+import { DeviceDetectorService } from 'ngx-device-detector';
 
 @Component({
   host: { class: 'h-100' },
@@ -40,29 +43,33 @@ export class AccountDetailsToggleDialog implements OnDestroy {
 
   private unsubscribeSubject = new Subject<void>();
   private plaidLinkHandler: PlaidLinkHandler;
- 
+
   private config: any = {
     apiVersion: "v2",
-    env: "sandbox",
+    env: environment.PLAID_ENV,
     institution: environment.plaid_institution,
     token: null,
     webhook: "",
-    product: ["auth","transactions"],
+    product: ["auth", "transactions"],
     countryCodes: ['US', 'CA', 'GB'],
     key: environment.plaid_secret
   };
+
+  public deviceType: string;
 
   public constructor(
     private plaidLinkService: NgxPlaidLinkService,
     private dataService: DataService,
     public dialogRef: MatDialogRef<AccountDetailsToggleDialog>,
+    public choosePlaidDialogRef: MatDialogRef<ChoosePlaidDialog>,
     private router: Router,
     private route: ActivatedRoute,
+    private deviceService: DeviceDetectorService,
     @Inject(MAT_DIALOG_DATA) public data: AccountDetailsToggleParams,
     private dialog: MatDialog,
-  ) {}
+  ) { }
   accountStatusCode = ''
-    msg = ''
+  msg = ''
   ngOnInit() {
     console.log(this.data.account.accountType)
     console.log(this.data.account.accountType['statusCode'])
@@ -76,6 +83,19 @@ export class AccountDetailsToggleDialog implements OnDestroy {
 
   public onCancel(): void {
     this.dialogRef.close();
+  }
+
+  onAddManualAccount() {
+    this.router.navigate([], { queryParams: { createDialog: true } });
+  }
+
+  onConnectToPlaid() {
+    this.onCancel();
+    const dialogRef = this.dialog.open(ChoosePlaidStartDialog, {
+      data: {},
+      height: this.deviceType === 'mobile' ? '97.5vh' : '80vh',
+      width: this.deviceType === 'mobile' ? '100vw' : '50rem'
+    });
   }
 
   public ngOnDestroy() {

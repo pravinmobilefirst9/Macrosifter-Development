@@ -41,7 +41,7 @@ export class OrderController {
     private readonly orderService: OrderService,
     @Inject(REQUEST) private readonly request: RequestWithUser,
     private readonly userService: UserService
-  ) {}
+  ) { }
 
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'))
@@ -133,7 +133,7 @@ export class OrderController {
           create: {
             currency: data.currency,
             dataSource: data.dataSource,
-            symbol: data.symbol
+            symbol: data.symbol,
           },
           where: {
             dataSource_symbol: {

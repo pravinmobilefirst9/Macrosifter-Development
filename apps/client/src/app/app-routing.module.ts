@@ -11,6 +11,11 @@ const routes: Routes = [
       import('./pages/about/about-page.module').then((m) => m.AboutPageModule)
   },
   {
+    path: 'privacy-policy',
+    loadChildren: () =>
+      import('./pages/privacy/privacy-page.module').then((m) => m.PrivacyPageModule)
+  },
+  {
     path: 'about/changelog',
     loadChildren: () =>
       import('./pages/about/changelog/changelog-page.module').then(
@@ -33,6 +38,20 @@ const routes: Routes = [
   },
   {
     path: 'accounts',
+    loadChildren: () =>
+      import('./pages/accounts/accounts-page.module').then(
+        (m) => m.AccountsPageModule
+      )
+  },
+  {
+    path: 'plaid-oauth-redirect',
+    loadChildren: () =>
+      import('./pages/plaid-auth-redirect/plaid-auth-redirect-page.module').then(
+        (m) => m.PlaidAuthRedirectPageModule
+      )
+  },
+  {
+    path: 'plaid-flow',
     loadChildren: () =>
       import('./pages/accounts/accounts-page.module').then(
         (m) => m.AccountsPageModule
@@ -255,4 +274,4 @@ const routes: Routes = [
   ],
   exports: [RouterModule]
 })
-export class AppRoutingModule {}
+export class AppRoutingModule { }

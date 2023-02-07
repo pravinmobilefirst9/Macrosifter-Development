@@ -1,10 +1,12 @@
 import { ExchangeRateDataService } from '@ghostfolio/api/services/exchange-rate-data.service';
 import { PrismaService } from '@ghostfolio/api/services/prisma.service';
 import { Filter } from '@ghostfolio/common/interfaces';
-import { Injectable } from '@nestjs/common';
-import { Account, Order, Platform, Prisma } from '@prisma/client';
+import { HttpException, Injectable } from '@nestjs/common';
+import { Account, Order, Platform, Prisma, Institution } from '@prisma/client';
 import Big from 'big.js';
+import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 import { groupBy } from 'lodash';
+import { use } from 'passport';
 
 import { CashDetails } from './interfaces/cash-details.interface';
 
@@ -25,6 +27,56 @@ export class AccountService {
 
     return data;
 
+  }
+
+  public async getAllAccountsByInstitutionWise(userId: string): Promise<any> {
+
+    // Finding all accounts of user
+    const userAccounts = await this.prismaService.account.findMany({
+      where: {
+        userId: userId
+      },
+      include: {
+        Institution: {
+          select: {
+            institutionName: true
+          }
+        }
+      }
+    })
+
+    let totalBalanceInBaseCurrency = 0;
+
+
+    const institutionsAccounts = {};
+    const manualAccounts = [];
+
+    for (let i = 0; i < userAccounts.length; i++) {
+      if (userAccounts[i].institutionId) {
+        // if institution present then
+
+        // eslint-disable-next-line no-prototype-builtins
+        if (institutionsAccounts.hasOwnProperty(userAccounts[i].Institution.institutionName)) {
+          institutionsAccounts[userAccounts[i].Institution.institutionName].push(userAccounts[i]);
+        } else {
+          institutionsAccounts[userAccounts[i].Institution.institutionName] = []
+          institutionsAccounts[userAccounts[i].Institution.institutionName].push(userAccounts[i]);
+        }
+
+
+      } else {
+        // if institution null then
+        manualAccounts.push(userAccounts[i]);
+      }
+      totalBalanceInBaseCurrency += userAccounts[i].balance;
+    }
+
+
+    return {
+      institutionsAccounts,
+      manualAccounts,
+      totalBalanceInBaseCurrency,
+    }
   }
 
 
@@ -71,8 +123,9 @@ export class AccountService {
       orderBy,
       skip,
       take,
-      where
+      where,
     });
+
   }
 
   public async createAccount(
@@ -185,4 +238,95 @@ export class AccountService {
       where
     });
   }
+
+  public async onDeleteAccountByInstitution(userId: string, institutionId: string) {
+
+    try {
+
+      // Account Deletion
+      await this.prismaService.account.deleteMany({
+        where: {
+          userId: userId,
+          institutionId: institutionId,
+        }
+      })
+
+      const plaidToken = await this.prismaService.plaidToken.findFirst({
+        where: {
+          userId: userId,
+          Institution: {
+            id: institutionId
+          }
+        }
+      })
+
+      // Deleting Order
+      await this.prismaService.order.deleteMany({
+        where: {
+          userId: userId,
+          accountId: null
+        }
+      })
+
+      // Deleting PlaidHolding
+      await this.prismaService.plaidHoldings.deleteMany({
+        where: {
+          accountId: null,
+          accountUserId: null,
+        }
+      })
+
+
+      // Deleting PlaidToken
+      await this.prismaService.plaidToken.delete({
+        where: {
+          id: plaidToken.id,
+        }
+      })
+
+      return { error: false, msg: 'Deleted Successfully' }
+    } catch (error) {
+      return { error: true, msg: 'Deletion failed!' }
+    }
+
+  }
+
+  public async getManualPlatform() {
+
+    try {
+
+      let platform = await this.prismaService.platform.findUnique({
+        where: {
+          url: 'https://macrosifter.com'
+        }
+      })
+
+      if (platform) {
+        return platform;
+      }
+
+      if (!(platform)) {
+
+        platform = await this.prismaService.platform.create({
+          data: {
+            url: 'https://macrosifter.com',
+            name: 'Manual Account',
+          }
+        })
+
+        return platform;
+
+      }
+
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        getReasonPhrase(StatusCodes.FORBIDDEN),
+        StatusCodes.FORBIDDEN
+      );
+
+    }
+
+  }
+
 }

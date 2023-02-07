@@ -26,7 +26,7 @@ import {
 } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
-import { Account as AccountModel } from '@prisma/client';
+import { Account as AccountModel, Platform } from '@prisma/client';
 import { StatusCodes, getReasonPhrase } from 'http-status-codes';
 
 import { AccountService } from './account.service';
@@ -42,6 +42,12 @@ export class AccountController {
     @Inject(REQUEST) private readonly request: RequestWithUser,
     private readonly userService: UserService
   ) { }
+
+  @Get('get-all-accounts-by-institution-wise')
+  @UseGuards(AuthGuard('jwt'))
+  public getAllAccountsByInstitutionWise(): any {
+    return this.accountService.getAllAccountsByInstitutionWise(this.request.user.id);
+  }
 
   @Get('getallaccounts-types-with-its-sub-types')
   @UseGuards(AuthGuard('jwt'))
@@ -190,25 +196,20 @@ export class AccountController {
       );
     }
 
-    if (data.platformId) {
-      const platformId = data.platformId;
+    data.platformId = null;
+    if (!data.platformId) {
       delete data.platformId;
+      const accountSubTypeId = data.accountSubTypeId;
+      delete data.accountSubTypeId;
+
+      const manualPlatform: Platform = await this.accountService.getManualPlatform();
 
       return this.accountService.createAccount(
         {
           ...data,
-          Platform: { connect: { id: platformId } },
-          User: { connect: { id: this.request.user.id } }
-        },
-        this.request.user.id
-      );
-    } else {
-      delete data.platformId;
-
-      return this.accountService.createAccount(
-        {
-          ...data,
-          User: { connect: { id: this.request.user.id } }
+          User: { connect: { id: this.request.user.id } },
+          AccountSubTypes: { connect: { id: accountSubTypeId } },
+          Platform: { connect: { id: manualPlatform.id } },
         },
         this.request.user.id
       );
@@ -245,12 +246,16 @@ export class AccountController {
       const platformId = data.platformId;
       delete data.platformId;
 
+      const finalData = { ...data };
+      delete finalData['accountSubTypeId'];
+
       return this.accountService.updateAccount(
         {
           data: {
-            ...data,
+            ...finalData,
             Platform: { connect: { id: platformId } },
-            User: { connect: { id: this.request.user.id } }
+            User: { connect: { id: this.request.user.id } },
+            AccountSubTypes: { connect: { id: data.accountSubTypeId } }
           },
           where: {
             id_userId: {
@@ -264,6 +269,8 @@ export class AccountController {
     } else {
       // platformId is null, remove it
       delete data.platformId;
+      const accountSubTypeId = data.accountSubTypeId;
+      delete data.accountSubTypeId;
 
       return this.accountService.updateAccount(
         {
@@ -272,7 +279,10 @@ export class AccountController {
             Platform: originalAccount.platformId
               ? { disconnect: true }
               : undefined,
-            User: { connect: { id: this.request.user.id } }
+            User: { connect: { id: this.request.user.id } },
+            AccountSubTypes: {
+              connect: { id: accountSubTypeId }
+            }
           },
           where: {
             id_userId: {
@@ -285,4 +295,14 @@ export class AccountController {
       );
     }
   }
+
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('delete-account-by-institution/:institutionId')
+  public async onDeleteAccountByInstitution(@Param('institutionId') institutionId: string) {
+    return this.accountService.onDeleteAccountByInstitution(this.request.user.id, institutionId);
+  }
+
+
+
 }

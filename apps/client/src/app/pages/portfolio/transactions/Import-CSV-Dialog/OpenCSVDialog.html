@@ -1,0 +1,102 @@
+<div *ngIf="!isLoading" class="container">
+  <div class="">
+    <h3 class="text-center">Upload CSV</h3>
+  </div>
+  <hr />
+  <div class="d-flex flex-col align-items-start">
+    <div class="mx-1">
+      <mat-form-field appearance="fill">
+        <mat-label>Select Institution</mat-label>
+        <mat-select
+          (selectionChange)="handleInstitutionSelectionChange($event.value)"
+        >
+          <mat-option
+            *ngFor="let institution of institutions"
+            value="{{institution.institutionId}}"
+            >{{institution.institutionName}}</mat-option
+          >
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="mx-1">
+      <mat-form-field appearance="fill">
+        <mat-label>Select Account</mat-label>
+        <mat-select
+          (selectionChange)="handleAccountSelectionChange($event.value)"
+        >
+          <mat-option
+            *ngFor="let account of accounts"
+            value="{{account.accountId}}"
+            >{{account.accountName}}</mat-option
+          >
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="mx-1 mt-2">
+      <button mat-raised-button type="file" (click)="onImportCSV()">
+        Choose File
+      </button>
+      {{selectedFileName}}
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-around">
+    <div>
+      <div>
+        <button
+          mat-raised-button
+          type="button"
+          [disabled]="!isFormOk"
+          (click)="handleUpload()"
+        >
+          Upload
+        </button>
+      </div>
+    </div>
+  </div>
+  <hr />
+</div>
+<!-- ORDER DATA  -->
+
+<table *ngIf="!isLoading" id="table">
+  <thead>
+    <tr>
+      <td>No</td>
+      <td>File Name</td>
+      <td>Total Quantity</td>
+      <td>Completed</td>
+      <td>Status</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let order of orders; index as i">
+      <td>{{i+1}}</td>
+      <td>{{order.fileName}}</td>
+      <td>{{order.totalOrder}}</td>
+      <td>{{order.completedOrder}}</td>
+      <td>{{order.status}}</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- Loader -->
+
+<ngx-skeleton-loader
+  *ngIf="isLoading"
+  animation="pulse"
+  class="px-4 py-3"
+  [theme]="{
+    height: '3.5rem',
+    width: '100%'
+  }"
+></ngx-skeleton-loader>
+
+<ngx-skeleton-loader
+  *ngIf="isLoading"
+  animation="pulse"
+  class="px-4 py-3 mt-4"
+  [theme]="{
+    height: '3.5rem',
+    width: '100%'
+  }"
+></ngx-skeleton-loader>

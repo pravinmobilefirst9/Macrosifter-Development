@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const configApp = await NestFactory.create(AppModule);
@@ -19,6 +20,10 @@ async function bootstrap() {
         ? ['error', 'log', 'warn']
         : ['debug', 'error', 'log', 'verbose', 'warn']
   });
+
+  app.use(bodyParser.json({limit: '50mb'}));
+  app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+
   app.enableCors();
   app.enableVersioning({
     defaultVersion: '1',

@@ -46,15 +46,12 @@
   class="footer d-flex justify-content-center w-100"
 >
   <div class="container text-center">
-    <div>
-      © {{ currentYear }} <a href="https://ghostfol.io">Ghostfolio</a>
-      {{ version }}
-    </div>
+    <div>© <a href="https://macrosifter.com">MacroSifter</a> {{ currentYear }}</div>
     <div class="py-2 text-muted">
-      <small i18n
-        >The risk of loss in trading can be substantial. It is not advisable to
-        invest money you may need in the short term.</small
-      >
+      
+      <a color="primary" mat-flat-button [routerLink]="['/privacy-policy']">
+        <small i18n>Privacy Policy</small>
+      </a>
     </div>
   </div>
 </footer>

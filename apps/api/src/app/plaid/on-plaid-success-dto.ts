@@ -9,7 +9,8 @@ export class OnPlaidSuccessDto {
             id: string,
             name: string,
             type: string,
-            subtype: string
+            subtype: string,
+            verification_status: string,
         }
     ];
 
@@ -23,5 +24,6 @@ export class OnPlaidSuccessDto {
 
     @IsString()
     userId: string;
+
 
 }

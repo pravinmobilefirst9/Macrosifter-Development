@@ -9,6 +9,7 @@ import { AccountsPageRoutingModule } from './accounts-page-routing.module';
 import { AccountsPageComponent } from './accounts-page.component';
 import { GfCreateOrUpdateAccountDialogModule } from './create-or-update-account-dialog/create-or-update-account-dialog.module';
 import { GfAccountDetailsToggleDialogModule } from './choose-plaid/account-details-toggle/account-details-toggle.module';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
   declarations: [AccountsPageComponent],
@@ -19,9 +20,10 @@ import { GfAccountDetailsToggleDialogModule } from './choose-plaid/account-detai
     GfAccountsTableModule,
     GfCreateOrUpdateAccountDialogModule,
     MatButtonModule,
+    MatDialogModule,
     RouterModule,
     GfAccountDetailsToggleDialogModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class AccountsPageModule {}
+export class AccountsPageModule { }

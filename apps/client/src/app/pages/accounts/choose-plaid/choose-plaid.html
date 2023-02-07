@@ -1,27 +1,45 @@
-<h1 i18n mat-dialog-title>Choose an account to link</h1>
-  <div class="flex-grow-1" mat-dialog-content>
+<div class="chooseplaidpop">
+  <div class="close-btn" (click)="onCancel()"></div>
+  <h5 i18n class="choose-plaid-title"><b>Choose an account to link</b></h5>
+  <hr/>
+  
+  <div class="choose-plaid-content">
     Connect your accounts to automatically import your holdings. We have partnered with Plaid to securely connect to your holdings.
-    <p>Alternatively, you can choose to create a manual account in the case of a physical holding, such as property. Or, simply because you prefer to enter manually.</p>
+      
+    <br/>
+    Alternatively, you can choose to create a manual account in the case of a physical holding, such as property. Or, simply because you prefer to enter manually.
   </div>
-  <div class="justify-content-end" mat-dialog-actions>
-    <button i18n style="margin-bottom: 2%;margin-left: 40%;" (click)="btnClick()">
-      Connect w/Plaid
-    </button>
-  </div>
-  <div class="justify-content-end" mat-dialog-actions>
-    <button i18n style="margin-left: 40%;margin-bottom: 2%;" (click)="manualClick()"
-    routerLink="[]"
-      queryParams="{ createDialog: true }">
+
+  <hr/><br/> 
+  
+  <div class="d-flex justify-content-center flex-column">
+    <div class="d-flex justify-content-center">
+      <button mat-raised-button color="accent" (click)="btnClick()">
+      Connect W/ Plaid
+      </button>
+    </div> 
+    <br/>
+    <div class="d-flex justify-content-center">
+      <button mat-raised-button color="accent"
+      queryParams="{ createDialog: true }"
+      routerLink="[]" 
+      (click)="manualClick()">
       Add a Manual Account
-    </button>
-  </div>
-  <div class="justify-content-end" mat-dialog-actions>
-    <button i18n style="margin-left: 40%;margin-bottom: 10%;" 
-    (click)="onCancel()">
-      Cancel
-    </button>
-  </div>
-  <div style="width: 50%;">
-    Your security is important to us.
-    in addition to security measures,you are only authorizing read-only access via plaid.
-  </div>
+      </button>
+    </div>
+  </div> 
+
+  <hr /> 
+
+  <div class="grid-container-element">
+    <div class="grid-child-element purple">
+      <img
+      alt="Snow"
+      id="myImg"
+      src="https://cdn-icons-png.flaticon.com/512/1691/1691940.png"
+      style="width: 100%; max-width: 100px"
+      />
+    </div>
+    <div class="choose-plaid-content-security"><br/>Your security is important to us. in addition to security measures,you are only authorizing read-only access via plaid.</div>
+   </div> 
+</div>

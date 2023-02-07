@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CreateAccountDto } from '@ghostfolio/api/app/account/create-account.dto';
 import { UpdateAccountDto } from '@ghostfolio/api/app/account/update-account.dto';
@@ -14,9 +14,17 @@ import { Account as AccountModel, AccountType } from '@prisma/client';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-
+import { parse as csvToJson } from 'papaparse';
 import { CreateOrUpdateAccountDialog } from './create-or-update-account-dialog/create-or-update-account-dialog.component';
 import { ChoosePlaidDialog } from './choose-plaid/choose-plaid.component';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { AccountPageComponent } from '../account/account-page.component';
+import { ChoosePlaidStartDialog } from './choose-plaid/choose-plaid-start/choose-plaid-start.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   host: { class: 'page' },
@@ -26,6 +34,8 @@ import { ChoosePlaidDialog } from './choose-plaid/choose-plaid.component';
 })
 export class AccountsPageComponent implements OnDestroy, OnInit {
   public accounts: AccountModel[];
+  public accountTypes: [];
+  public plaidMessages: [];
   public deviceType: string;
   public hasImpersonationId: boolean;
   public hasPermissionToCreateAccount: boolean;
@@ -46,6 +56,7 @@ export class AccountsPageComponent implements OnDestroy, OnInit {
     private impersonationStorageService: ImpersonationStorageService,
     private route: ActivatedRoute,
     private router: Router,
+    private snackBar: MatSnackBar,
     private userService: UserService
   ) {
     this.route.queryParams
@@ -53,10 +64,10 @@ export class AccountsPageComponent implements OnDestroy, OnInit {
       .subscribe((params) => {
         if (params['accountId'] && params['accountDetailDialog']) {
           this.openAccountDetailDialog(params['accountId']);
-        }else if(params['choosePlaid']){
+        } else if (params['choosePlaid']) {
           this.openChoosePlaidDialog();
         }
-         else if (
+        else if (
           params['createDialog'] &&
           this.hasPermissionToCreateAccount
         ) {
@@ -105,9 +116,28 @@ export class AccountsPageComponent implements OnDestroy, OnInit {
       });
 
     this.fetchAccounts();
+    this.fetchAccountTypesWithSubTypes();
+  }
+
+  public getPlaidMessages() {
+
+    this.dataService.getPlaidMessages().pipe(takeUntil(this.unsubscribeSubject))
+      .subscribe((response: []) => {
+        this.plaidMessages = response;
+      })
+  }
+
+
+  public fetchAccountTypesWithSubTypes() {
+    this.dataService.getAccountTypesWithItsSubTypes()
+      .pipe(takeUntil(this.unsubscribeSubject))
+      .subscribe((x: []) => {
+        this.accountTypes = x;
+      })
   }
 
   public fetchAccounts() {
+    this.getPlaidMessages();
     this.dataService
       .fetchAccounts()
       .pipe(takeUntil(this.unsubscribeSubject))
@@ -148,6 +178,16 @@ export class AccountsPageComponent implements OnDestroy, OnInit {
       });
   }
 
+  public onDeleteInstitution(institutionId: string) {
+    this.dataService.deleteAccountByInstitutionId(institutionId)
+      .pipe()
+      .subscribe({
+        next: () => {
+          this.fetchAccounts();
+        }
+      })
+  }
+
   public onUpdateAccount(aAccount: AccountModel) {
     this.router.navigate([], {
       queryParams: { accountId: aAccount.id, editDialog: true }
@@ -159,17 +199,20 @@ export class AccountsPageComponent implements OnDestroy, OnInit {
     balance,
     currency,
     id,
+    accountSubTypeId,
     isExcluded,
     name,
     platformId
   }: AccountModel): void {
     const dialogRef = this.dialog.open(CreateOrUpdateAccountDialog, {
       data: {
+        accountTypes: this.accountTypes,
         account: {
           accountType,
           balance,
           currency,
           id,
+          accountSubTypeId,
           isExcluded,
           name,
           platformId
@@ -233,8 +276,10 @@ export class AccountsPageComponent implements OnDestroy, OnInit {
   private openCreateAccountDialog(): void {
     const dialogRef = this.dialog.open(CreateOrUpdateAccountDialog, {
       data: {
+        accountTypes: this.accountTypes,
         account: {
-          accountType: AccountType.SECURITIES,
+          accountType: AccountType.CASH,
+          accountSubTypeId: 1,
           balance: 0,
           currency: this.user?.settings?.baseCurrency,
           isExcluded: false,
@@ -262,6 +307,11 @@ export class AccountsPageComponent implements OnDestroy, OnInit {
                   .get(true)
                   .pipe(takeUntil(this.unsubscribeSubject))
                   .subscribe();
+                this.dialog.open(DialogManualAccountInsert, {
+                  data: {},
+                  height: this.deviceType === 'mobile' ? '97.5vh' : '80vh',
+                  width: this.deviceType === 'mobile' ? '100vw' : '50rem'
+                })
 
                 this.fetchAccounts();
               }
@@ -313,4 +363,54 @@ export class AccountsPageComponent implements OnDestroy, OnInit {
         this.router.navigate(['.'], { relativeTo: this.route });
       });
   }
+}
+
+
+
+@Component({
+  selector: 'dialog-manual-account-insert',
+  templateUrl: 'dialog-manual-account-insert.html',
+  styleUrls: ['dialog-manual-account-insert.scss'],
+  imports: [
+    MatButtonModule,
+    MatCheckboxModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+  ],
+  standalone: true
+})
+export class DialogManualAccountInsert implements OnInit {
+  public deviceType: string;
+  constructor(public dialogRef: MatDialogRef<DialogManualAccountInsert>,
+    private dialog: MatDialog,
+    private router: Router,
+    private deviceService: DeviceDetectorService,
+  ) {
+
+  }
+  ngOnInit(): void {
+    this.deviceType = this.deviceService.getDeviceInfo().deviceType;
+  }
+
+
+  onCancel() {
+    this.dialogRef.close();
+  }
+
+  onAddManualAccount() {
+    this.onCancel();
+    this.router.navigate([], { queryParams: { createDialog: true } });
+  }
+
+  onConnectToPlaid() {
+    this.onCancel();
+    const dialogRef = this.dialog.open(ChoosePlaidStartDialog, {
+      data: {},
+      height: this.deviceType === 'mobile' ? '97.5vh' : '80vh',
+      width: this.deviceType === 'mobile' ? '100vw' : '50rem'
+    });
+  }
+
 }

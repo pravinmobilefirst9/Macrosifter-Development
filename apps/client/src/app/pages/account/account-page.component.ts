@@ -26,10 +26,14 @@ import { hasPermission, permissions } from '@ghostfolio/common/permissions';
 import { uniq } from 'lodash';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { StripeService } from 'ngx-stripe';
-import { EMPTY, Subject } from 'rxjs';
-import { catchError, switchMap, takeUntil } from 'rxjs/operators';
+import {EMPTY, map, Observable, Subject} from 'rxjs';
+import {catchError, startWith, switchMap, takeUntil} from 'rxjs/operators';
 
 import { CreateOrUpdateAccessDialog } from './create-or-update-access-dialog/create-or-update-access-dialog.component';
+import {
+  WorldtimeapiByIpResposeInterface
+} from "@ghostfolio/common/interfaces/responses/worldtimeapi.by-ip-respose.interface";
+import {FormControl} from "@angular/forms";
 
 @Component({
   host: { class: 'page' },
@@ -56,12 +60,17 @@ export class AccountPageComponent implements OnDestroy, OnInit {
   public hasPermissionToUpdateUserSettings: boolean;
   public language = document.documentElement.lang;
   public locales = ['de', 'de-CH', 'en-GB', 'en-US', 'es', 'it', 'nl'];
+  public timezones: string[] = [];
+  public currentTime: WorldtimeapiByIpResposeInterface;
   public price: number;
   public priceId: string;
   public snackBarRef: MatSnackBarRef<TextOnlySnackBar>;
   public trySubscriptionMail =
     'mailto:hi@ghostfol.io?Subject=Ghostfolio Premium Trial&body=Hello%0D%0DI am interested in Ghostfolio Premium. Can you please send me a coupon code to try it for some time?%0D%0DKind regards';
   public user: User;
+
+  timezoneControl = new FormControl('');
+  timezoneFilteredOptions: Observable<string[]>;
 
   private unsubscribeSubject = new Subject<void>();
 
@@ -103,10 +112,11 @@ export class AccountPageComponent implements OnDestroy, OnInit {
       .subscribe((state) => {
         if (state?.user) {
           this.user = state.user;
-
           this.defaultDateFormat = getDateFormatString(
             this.user.settings.locale
           );
+
+          this.timezoneControl.patchValue(this.user.settings.timezone);
 
           this.hasPermissionToCreateAccess = hasPermission(
             this.user.permissions,
@@ -122,6 +132,7 @@ export class AccountPageComponent implements OnDestroy, OnInit {
             this.user.permissions,
             permissions.updateUserSettings
           );
+          if (!this.hasPermissionToUpdateUserSettings) this.timezoneControl.disable();
 
           this.hasPermissionToUpdateViewMode = hasPermission(
             this.user.permissions,
@@ -148,9 +159,38 @@ export class AccountPageComponent implements OnDestroy, OnInit {
     this.deviceType = this.deviceService.getDeviceInfo().deviceType;
 
     this.update();
+
+    this.timezoneFilteredOptions = this.timezoneControl.valueChanges.pipe(
+      startWith(''),
+      map(value => this._filterTZ(value || '')),
+    );
+
+    this.changeDetectorRef.markForCheck();
+
+    this.userService.getAllTimezones()
+      .then( data => {
+        this.timezones = [...data];
+        this.changeDetectorRef.markForCheck();
+      })
+
+    if (!this.user.settings.timezone) {
+      this.userService.getTimezoneByIp().then( () => {
+        this.updateTimezoneTime();
+        this.changeDetectorRef.markForCheck();
+      })
+    } else
+      this.updateTimezoneTime();
+  }
+
+  public updateTimezoneTime() {
+    this.userService.getTimezone(this.user.settings.timezone).then( tz => {
+      this.currentTime = {...tz};
+      this.changeDetectorRef.markForCheck();
+    });
   }
 
   public onChangeUserSetting(aKey: string, aValue: string) {
+    if (!aValue) return;
     this.dataService
       .putUserSetting({ [aKey]: aValue })
       .pipe(takeUntil(this.unsubscribeSubject))
@@ -162,6 +202,8 @@ export class AccountPageComponent implements OnDestroy, OnInit {
           .pipe(takeUntil(this.unsubscribeSubject))
           .subscribe((user) => {
             this.user = user;
+
+            this.updateTimezoneTime();
 
             this.changeDetectorRef.markForCheck();
 
@@ -387,5 +429,11 @@ export class AccountPageComponent implements OnDestroy, OnInit {
 
         this.changeDetectorRef.markForCheck();
       });
+  }
+
+  private _filterTZ(value: string): string[] {
+    const filterValue = value.toLowerCase();
+
+    return this.timezones.filter(option => option.toLowerCase().includes(filterValue));
   }
 }

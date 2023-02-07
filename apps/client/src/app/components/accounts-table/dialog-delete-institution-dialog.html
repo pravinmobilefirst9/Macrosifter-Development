@@ -1,0 +1,17 @@
+<div class="p-1">
+  <h6 mat-dialog-title>Confirmation Institution</h6>
+  <hr />
+  <h6 class="p-1" mat-dialog-content>
+    Do you really want to delete this Institution ?
+  </h6>
+  <hr />
+  <div class="d-flex justify-content-end" mat-dialog-actions>
+    <button class="mat-raised-button" (click)="close()">Cancel</button>
+    <button
+      class="mat-raised-button bg-dark text-white ml-4"
+      (click)="save(institutionId)"
+    >
+      OK
+    </button>
+  </div>
+</div>

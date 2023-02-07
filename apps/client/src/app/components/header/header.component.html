@@ -234,7 +234,7 @@
       <gf-logo [hideName]="currentRoute === 'register'"></gf-logo>
     </a>
     <span class="spacer"></span>
-    <a
+    <!-- <a
       class="d-none d-sm-block mx-1"
       i18n
       mat-flat-button
@@ -244,7 +244,7 @@
       }"
       [routerLink]="['/features']"
       >Features</a
-    >
+    > -->
     <a
       class="d-none d-sm-block mx-1"
       i18n
@@ -279,19 +279,19 @@
       [routerLink]="['/markets']"
       >Markets</a
     >
-    <a
+    <!-- <a
       class="d-none d-sm-block mx-1 no-min-width px-1"
       href="https://github.com/ghostfolio/ghostfolio"
       mat-flat-button
       ><ion-icon name="logo-github"></ion-icon
-    ></a>
+    ></a> -->
     <button class="mx-1" mat-flat-button (click)="openLoginDialog()">
       <ng-container i18n>Sign in</ng-container>
     </button>
     <a
       *ngIf="currentRoute !== 'register' && !info?.isReadOnlyMode"
       class="d-none d-sm-block"
-      color="primary"
+      style="background-color: #007bff;color:white !important;"
       mat-flat-button
       [routerLink]="['/register']"
       ><ng-container i18n>Get started</ng-container>

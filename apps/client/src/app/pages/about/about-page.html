@@ -1,90 +1,79 @@
 <div class="container">
   <div class="mb-5 row">
     <div class="col">
-      <h3 class="d-flex justify-content-center mb-3">About Ghostfolio</h3>
+      <h3 class="d-flex justify-content-center mb-3">About MacroSifter</h3>
       <div class="about-container">
+        <p>Hi, my name is Fehzan Ali and I am the founder of MacroSifter.</p>
         <p>
-          Ghostfolio is a lightweight wealth management application for
-          individuals to keep track of stocks, ETFs or cryptocurrencies and make
-          solid, data-driven investment decisions. The source code is fully
-          available as open source software (OSS). The project has been
-          initiated by
-          <a href="https://dotsilver.ch" title="Website of Thomas Kaul"
-            >Thomas Kaul</a
-          >
-          and is driven by the efforts of its
-          <a
-            href="https://github.com/ghostfolio/ghostfolio/graphs/contributors"
-            title="Contributors to Ghostfolio"
-            >contributors</a
-          >.
-          <ng-container *ngIf="version">
-            This instance is running Ghostfolio {{ version }}.
-          </ng-container>
-          <ng-container *ngIf="hasPermissionForStatistics"
-            >Check the system status at
-            <a href="https://status.ghostfol.io" title="Ghostfolio status"
-              >status.ghostfol.io</a
-            >.</ng-container
-          >
+          MacroSifter is an investment management software created for
+          individuals interested in enterprise-grade portfolio management. We
+          make it easy for you to connect, track, and analyze your investments
+          across various asset classes.
         </p>
         <p>
-          If you encounter a bug or would like to suggest an improvement or a
-          new
-          <a [routerLink]="['/features']">feature</a>, please join the
-          Ghostfolio
-          <a
-            href="https://join.slack.com/t/ghostfolio/shared_invite/zt-vsaan64h-F_I0fEo5M0P88lP9ibCxFg"
-            title="Join the Ghostfolio Slack community"
-            >Slack community</a
-          >, tweet to
-          <a
-            href="https://twitter.com/ghostfolio_"
-            title="Tweet to Ghostfolio on Twitter"
-            >@ghostfolio_</a
-          >, send an e-mail to
-          <a href="mailto:hi@ghostfol.io" title="Send an e-mail"
-            >hi@ghostfol.io</a
-          >
-          or open an issue at
-          <a
-            href="https://github.com/ghostfolio/ghostfolio"
-            title="Find Ghostfolio on GitHub"
-            >GitHub</a
-          >.
+          After spending the last decade investing with advisors, investing in
+          my own ideas, investing in others ideas, trying to time the market,
+          and generally making bad investing decisions, I finally found my firm
+          footing in the world of investing by establishing foundational
+          knowledge in macroeconomics, the way the world works, investment
+          management, and what makes great companies tick. After this time, I
+          was finally able to start generating real investment returns while
+          consistently learning from mistakes.
         </p>
+        <p>
+          Most importantly, I learned that investing is overly complex for very
+          few reasons. For everyday investors, the chips are stacked against you
+          with high fees, confusing products, and emotions that can become
+          difficult to navigate during market gyrations.
+        </p>
+        <p>
+          MacroSifter is meant to replace excel with something better for
+          myself. I believe in this product because it saves me substantial time
+          and allows me to automate tracking and analysis of my various
+          investment portfolios while spotting opportunities, issues, and other
+          key analysis I may otherwise miss. More than that, it helps me stay
+          the course during turbulent times by keeping my eye on the metrics
+          that matter most - the long term fundamentals of my investments.
+        </p>
+
+        <p>I hope MacroSifter is that solution for you too.</p>
+
         <p class="text-center">
           <a
             class="mx-2"
-            href="https://twitter.com/ghostfolio_"
+            href="https://twitter.com/"
             mat-icon-button
-            title="Follow Ghostfolio on Twitter"
+            title="Follow MacroSifter on Twitter"
           >
-            <ion-icon name="logo-twitter" size="large"></ion-icon>
+            <ion-icon
+              name="logo-twitter"
+              size="large"
+              style="color: #007bff"
+            ></ion-icon>
           </a>
           <a
             class="mx-2"
-            href="mailto:hi@ghostfol.io"
+            href="https://facebook.com/"
+            mat-icon-button
+            title="Follow MacroSifter on Facebook"
+          >
+            <ion-icon
+              name="logo-facebook"
+              size="large"
+              style="color: #007bff"
+            ></ion-icon>
+          </a>
+          <a
+            class="mx-2"
+            href="#"
             mat-icon-button
             title="Send an e-mail"
           >
-            <ion-icon name="mail" size="large"></ion-icon>
-          </a>
-          <a
-            class="mx-2"
-            href="https://join.slack.com/t/ghostfolio/shared_invite/zt-vsaan64h-F_I0fEo5M0P88lP9ibCxFg"
-            mat-icon-button
-            title="Join the Ghostfolio Slack channel"
-          >
-            <ion-icon name="logo-slack" size="large"></ion-icon>
-          </a>
-          <a
-            class="mx-2"
-            href="https://github.com/ghostfolio/ghostfolio"
-            mat-icon-button
-            title="Find Ghostfolio on GitHub"
-          >
-            <ion-icon name="logo-github" size="large"></ion-icon>
+            <ion-icon
+              name="mail"
+              size="large"
+              style="color: #007bff"
+            ></ion-icon>
           </a>
         </p>
         <div
@@ -93,7 +82,7 @@
         >
           <div
             class="independent-and-bootstrapped-logo mb-2"
-            title="Ghostfolio is an independent & bootstrapped business"
+            title="MacroSifter is an independent & bootstrapped business"
           ></div>
         </div>
       </div>
@@ -102,7 +91,7 @@
 
   <div *ngIf="hasPermissionForStatistics" class="mb-5 row">
     <div class="col">
-      <h3 class="mb-3 text-center">Ghostfolio in Numbers</h3>
+      <h3 class="mb-3 text-center">macrosifter in Numbers</h3>
       <mat-card>
         <mat-card-content>
           <div class="row">
@@ -133,7 +122,7 @@
             <div class="col-xs-12 col-md-4 my-2">
               <a
                 class="d-block"
-                href="https://join.slack.com/t/ghostfolio/shared_invite/zt-vsaan64h-F_I0fEo5M0P88lP9ibCxFg"
+                href="https://join.slack.com/t/macrosifter/shared_invite/zt-vsaan64h-F_I0fEo5M0P88lP9ibCxFg"
               >
                 <gf-value
                   size="large"
@@ -145,7 +134,7 @@
             <div class="col-xs-12 col-md-4 my-2">
               <a
                 class="d-block"
-                href="https://github.com/ghostfolio/ghostfolio/graphs/contributors"
+                href="https://github.com/macrosifter/macrosifter/graphs/contributors"
               >
                 <gf-value
                   size="large"
@@ -157,7 +146,7 @@
             <div class="col-xs-12 col-md-4 my-2">
               <a
                 class="d-block"
-                href="https://github.com/ghostfolio/ghostfolio/stargazers"
+                href="https://github.com/macrosifter/macrosifter/stargazers"
               >
                 <gf-value
                   size="large"
@@ -182,7 +171,7 @@
         >FAQ</a
       >
     </div>
-    <div
+    <!-- <div
       class="col-md-3 col-xs-12 my-2"
       [ngClass]="{ 'offset-md-4': !hasPermissionForBlog }"
     >
@@ -193,7 +182,7 @@
         [routerLink]="['/about', 'changelog']"
         >Changelog & License</a
       >
-    </div>
+    </div> -->
     <div *ngIf="hasPermissionForSubscription" class="col-md-3 col-xs-12 my-2">
       <a
         class="py-2 w-100"

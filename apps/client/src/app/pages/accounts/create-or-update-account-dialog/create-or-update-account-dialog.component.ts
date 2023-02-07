@@ -37,24 +37,27 @@ export class CreateOrUpdateAccountDialog implements OnDestroy {
 
   async ngOnInit() {
     const { currencies, platforms } = this.dataService.fetchInfo();
-
-    await this.dataService.getAccountTypesWithItsSubTypes().forEach((x: []) => {
-      this.accountTypes = x;
-    })
-
-    this.setActiveAccount(this.accountTypes[0].accountTypeName)
-
     this.currencies = currencies;
     this.platforms = platforms;
+
+    this.accountTypes = this.data.accountTypes;
+
+    if (this.data.account.id) {
+      this.setActiveAccount(this.data.account.accountType)
+    } else {
+      this.setActiveAccount(this.accountTypes[0].accountTypeName)
+    }
   }
 
-  public setActiveAccount(activeAccountType) {
-
-    this.accountTypes.forEach((x) => {
-      if (x.accountTypeName === activeAccountType) {
-        this.activeSubTypes = x.AccountSubTypes;
+  public setActiveAccount(activeAccountTypeName: string) {
+    // Targeted accountTypeName
+    for (let i = 0; i < this.accountTypes.length; i++) {
+      if (this.accountTypes[i].accountTypeName === activeAccountTypeName) {
+        this.activeSubTypes = this.accountTypes[i].AccountSubTypes;
+        // this.data.account.accountSubTypeId = 1;
+        break;
       }
-    })
+    }
 
   }
 

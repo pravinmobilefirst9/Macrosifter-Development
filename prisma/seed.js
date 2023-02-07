@@ -7,6 +7,9 @@ const {
 } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+// fehzan@macrosifter.com (Sandbox - 1 free sample account, Development 100/100 items).
+// The password is G%6#!q2S@s2K.
+
 async function main() {
   const platformBitcoinSuisse = await prisma.platform.upsert({
     create: {
@@ -283,6 +286,738 @@ async function main() {
         type: Type.BUY,
         unitPrice: 203.15,
         userId: userDemo.id
+      }
+    ],
+    skipDuplicates: true
+  });
+
+  await prisma.activityType.createMany({
+    data: [
+      {
+        id: 1,
+        type: 'BUY'
+      },
+      {
+        id: 2,
+        type: 'DIVIDEND'
+      },
+      {
+        id: 3,
+        type: 'ITEM'
+      },
+      {
+        id: 4,
+        type: 'SELL'
+      },
+      {
+        id: 5,
+        type: 'TAX'
+      },
+      {
+        id: 6,
+        type: 'FEES'
+      },
+      {
+        id: 7,
+        type: 'CANCEL'
+      },
+      {
+        id: 8,
+        type: 'TRANSFER'
+      },
+      {
+        id: 9,
+        type: 'CASH'
+      }
+    ],
+    skipDuplicates: true
+  });
+
+  await prisma.activitySubType.createMany({
+    data: [
+      { type: 'BUY', subtype: 'Assignment', typeId: 1, id: 1 },
+      { type: 'BUY', subtype: 'Buy to Cover', typeId: 1, id: 2 },
+      {
+        type: 'BUY',
+        subtype: 'Ordinary Dividend Reinvestment',
+        typeId: 1,
+        id: 3
+      },
+      {
+        type: 'BUY',
+        subtype: 'Qualified Dividend Reinvestment',
+        typeId: 1,
+        id: 4
+      },
+      { type: 'BUY', subtype: 'Interest Reinvestment', typeId: 1, id: 5 },
+      {
+        type: 'BUY',
+        subtype: 'Partnership Distribution Reinvestment',
+        typeId: 1,
+        id: 6
+      },
+      {
+        type: 'BUY',
+        subtype: 'Long Term Capital Gain Reinvestment',
+        typeId: 1,
+        id: 7
+      },
+      {
+        type: 'BUY',
+        subtype: 'Short Term Capital Gain Reinvestment',
+        typeId: 1,
+        id: 8
+      },
+      { type: 'BUY', subtype: 'Buy', typeId: 1, id: 9 },
+      { type: 'BUY', subtype: 'Contribution', typeId: 1, id: 10 },
+      { type: 'SELL', subtype: 'Exercise', typeId: 4, id: 11 },
+      { type: 'SELL', subtype: 'Sell short', typeId: 4, id: 12 },
+      { type: 'SELL', subtype: 'Sell', typeId: 4, id: 13 },
+      { type: 'SELL', subtype: 'Distribution', typeId: 4, id: 14 },
+      { type: 'DIVIDEND', subtype: 'Ordinary Dividend', typeId: 2, id: 15 },
+      {
+        type: 'DIVIDEND',
+        subtype: 'Qualified Dividend',
+        typeId: 2,
+        id: 16
+      },
+      { type: 'DIVIDEND', subtype: 'Interest', typeId: 2, id: 17 },
+      {
+        type: 'DIVIDEND',
+        subtype: 'Partnership Distribution',
+        typeId: 2,
+        id: 18
+      },
+      { type: 'TAX', subtype: 'Foreign Tax Withheld', typeId: 5, id: 19 },
+      { type: 'TAX', subtype: 'Tax Withheld', typeId: 5, id: 20 },
+      { type: 'TAX', subtype: 'Non-Resident Tax', typeId: 5, id: 21 },
+      { type: 'FEES', subtype: 'Account Fee', typeId: 6, id: 22 },
+      { type: 'FEES', subtype: 'Management Fee', typeId: 6, id: 23 },
+      { type: 'FEES', subtype: 'Transfer Fee', typeId: 6, id: 24 },
+      { type: 'FEES', subtype: 'Trust Fee', typeId: 6, id: 25 },
+      { type: 'FEES', subtype: 'ADR Fees', typeId: 6, id: 26 },
+      { type: 'FEES', subtype: 'Foreign Security Fee', typeId: 6, id: 27 },
+      { type: 'FEES', subtype: 'Other Fees', typeId: 6, id: 28 },
+      { type: 'FEES', subtype: 'Legal Fee', typeId: 6, id: 29 },
+      { type: 'FEES', subtype: 'Margin Expense', typeId: 6, id: 30 },
+      { type: 'FEES', subtype: 'Adjustment', typeId: 6, id: 31 },
+      { type: 'TRANSFER', subtype: 'Assignment', typeId: 8, id: 32 },
+      { type: 'TRANSFER', subtype: 'Adjustment', typeId: 8, id: 33 },
+      { type: 'TRANSFER', subtype: 'Exercise', typeId: 8, id: 34 },
+      { type: 'TRANSFER', subtype: 'Expire', typeId: 8, id: 35 },
+      { type: 'TRANSFER', subtype: 'Merger', typeId: 8, id: 36 },
+      { type: 'TRANSFER', subtype: 'Request', typeId: 8, id: 37 },
+      { type: 'TRANSFER', subtype: 'Send', typeId: 8, id: 38 },
+      { type: 'TRANSFER', subtype: 'Spin off', typeId: 8, id: 39 },
+      { type: 'TRANSFER', subtype: 'Split', typeId: 8, id: 40 },
+      { type: 'TRANSFER', subtype: 'Trade', typeId: 8, id: 41 },
+      { type: 'TRANSFER', subtype: 'Transfer', typeId: 8, id: 42 },
+      { type: 'CASH', subtype: 'Contribution', typeId: 9, id: 43 },
+      { type: 'CASH', subtype: 'Deposit', typeId: 9, id: 44 },
+      { type: 'CASH', subtype: 'Distribution', typeId: 9, id: 45 },
+      { type: 'CASH', subtype: 'Margin expense', typeId: 9, id: 46 },
+      {
+        type: 'CASH',
+        subtype: 'Long-term Capital Gains',
+        typeId: 9,
+        id: 47
+      },
+      {
+        type: 'CASH',
+        subtype: 'Short Term Capital Gains',
+        typeId: 9,
+        id: 48
+      },
+      { type: 'CASH', subtype: 'Pending Credit', typeId: 9, id: 49 },
+      { type: 'CASH', subtype: 'Pending Debit', typeId: 9, id: 50 },
+      { type: 'CASH', subtype: 'Unqualified Gain', typeId: 9, id: 51 },
+      { type: 'CASH', subtype: 'Withdrawal', typeId: 9, id: 52 },
+      { type: 'CASH', subtype: 'INTEST', typeId: 9, id: 53 }
+    ],
+    skipDuplicates: true
+  });
+
+  await prisma.accountTypes.createMany({
+    data: [
+      {
+        id: 1,
+        accountTypeName: 'CASH',
+        show: true
+      },
+      {
+        id: 2,
+        accountTypeName: 'SECURITIES',
+        show: true
+      },
+      {
+        id: 3,
+        accountTypeName: 'LOAN',
+        show: true
+      },
+      {
+        id: 4,
+        accountTypeName: 'CREDIT',
+        show: true
+      },
+      {
+        id: 5,
+        accountTypeName: 'OTHER',
+        show: true
+      },
+      {
+        id: 6,
+        accountTypeName: 'HOLDING_COMPANY',
+        show: true
+      }
+    ],
+    skipDuplicates: true
+  });
+
+  await prisma.accountSubTypes.createMany({
+    data: [
+      {
+        id: 1,
+        accountSubTypeName: 'Checking Account',
+        plaidAccountSubtype: 'checking',
+        plaidAccountType: 'depository',
+        accountTypeId: 1,
+        country: null
+      },
+      {
+        id: 2,
+        accountSubTypeName: 'Savings Account',
+        plaidAccountSubtype: 'savings',
+        plaidAccountType: 'depository',
+        accountTypeId: 1,
+        country: null
+      },
+      {
+        id: 3,
+        accountSubTypeName: 'Health Saving Account (HSA)',
+        plaidAccountSubtype: 'hsa',
+        plaidAccountType: 'depository',
+        accountTypeId: 1,
+        country: 'US'
+      },
+      {
+        id: 4,
+        accountSubTypeName: 'Certificate of Deposit Account (CD)',
+        plaidAccountSubtype: 'cd',
+        plaidAccountType: 'depository',
+        accountTypeId: 1,
+        country: null
+      },
+      {
+        id: 5,
+        accountSubTypeName: 'Money Market Account',
+        plaidAccountSubtype: 'money market',
+        plaidAccountType: 'depository',
+        accountTypeId: 1,
+        country: null
+      },
+      {
+        id: 6,
+        accountSubTypeName: 'Paypal',
+        plaidAccountSubtype: 'paypal',
+        plaidAccountType: 'depository',
+        accountTypeId: 1,
+        country: null
+      },
+      {
+        id: 7,
+        accountSubTypeName: 'Prepaid debit card',
+        plaidAccountSubtype: 'prepaid',
+        plaidAccountType: 'depository',
+        accountTypeId: 1,
+        country: null
+      },
+      {
+        id: 8,
+        accountSubTypeName: 'Cash Management Account',
+        plaidAccountSubtype: 'cash management',
+        plaidAccountType: 'depository',
+        accountTypeId: 1,
+        country: null
+      },
+      {
+        id: 9,
+        accountSubTypeName: 'Electronic Benefit Transfer (EBT)',
+        plaidAccountSubtype: 'ebt',
+        plaidAccountType: 'depository',
+        accountTypeId: 1,
+        country: 'US'
+      },
+      {
+        id: 10,
+        accountSubTypeName: '529 Plan',
+        plaidAccountSubtype: '529',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'US'
+      },
+      {
+        id: 11,
+        accountSubTypeName: '401(a) Retirement Plan',
+        plaidAccountSubtype: '401a',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'US'
+      },
+      {
+        id: 12,
+        accountSubTypeName: '401(k) Retirement Account',
+        plaidAccountSubtype: '401k',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'US'
+      },
+      {
+        id: 13,
+        accountSubTypeName: '403(b) Savings Account',
+        plaidAccountSubtype: '403B',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'US'
+      },
+      {
+        id: 14,
+        accountSubTypeName: '457(b0 Retirement Plan',
+        plaidAccountSubtype: '457b',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'US'
+      },
+      {
+        id: 15,
+        accountSubTypeName: 'Brokerage Account',
+        plaidAccountSubtype: 'brokerage',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: null
+      },
+      {
+        id: 16,
+        accountSubTypeName: 'Individual Savings Account (ISA)',
+        plaidAccountSubtype: 'cash isa',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'UK'
+      },
+      {
+        id: 17,
+        accountSubTypeName: 'Crypto Exchange',
+        plaidAccountSubtype: 'crypto exchange',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: null
+      },
+      {
+        id: 18,
+        accountSubTypeName: 'Education Savings Account (ESA)',
+        plaidAccountSubtype: 'education savings account',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'US'
+      },
+      {
+        id: 19,
+        accountSubTypeName: 'Fixed Annuity',
+        plaidAccountSubtype: 'fixed annuity',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: null
+      },
+      {
+        id: 20,
+        accountSubTypeName: 'Guaranteed Investment Certificate',
+        plaidAccountSubtype: 'gic',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'CA'
+      },
+      {
+        id: 21,
+        accountSubTypeName: 'Tax-Adv. Health Reimbursement Arranagement (HRA)',
+        plaidAccountSubtype: 'health reimbursement arrangement',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'US'
+      },
+      {
+        id: 22,
+        accountSubTypeName: 'Non-Cash Health Savings Account (HSA)',
+        plaidAccountSubtype: 'hsa',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'US'
+      },
+      {
+        id: 23,
+        accountSubTypeName: 'Traditional Individual Retirement Account (IRA)',
+        plaidAccountSubtype: 'ira',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'US'
+      },
+      {
+        id: 24,
+        accountSubTypeName: 'Non-cash Individual Savings Account (ISA)',
+        plaidAccountSubtype: 'isa',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'UK'
+      },
+      {
+        id: 25,
+        accountSubTypeName: 'Keogh',
+        plaidAccountSubtype: 'keogh',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'US'
+      },
+      {
+        id: 26,
+        accountSubTypeName: 'Life Income Fund (LIF) Retirement Account',
+        plaidAccountSubtype: 'lif',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'CA'
+      },
+      {
+        id: 27,
+        accountSubTypeName: 'Life Insurance Account',
+        plaidAccountSubtype: 'life insurance',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: null
+      },
+      {
+        id: 28,
+        accountSubTypeName: 'Locked-in Retirement Account (LIRA)',
+        plaidAccountSubtype: 'lira',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'CA'
+      },
+      {
+        id: 29,
+        accountSubTypeName: 'Locked-in Retirement Income Fund (LRIF)',
+        plaidAccountSubtype: 'lrif',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'CA'
+      },
+      {
+        id: 30,
+        accountSubTypeName: 'Mutual Fund Account',
+        plaidAccountSubtype: 'mutual fund',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: null
+      },
+      {
+        id: 31,
+        accountSubTypeName: 'Non-custodial Account',
+        plaidAccountSubtype: 'non-custodial wallet',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: null
+      },
+      {
+        id: 32,
+        accountSubTypeName: 'Other',
+        plaidAccountSubtype: 'other',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: null
+      },
+      {
+        id: 33,
+        accountSubTypeName: 'Other Annuity',
+        plaidAccountSubtype: 'other annuity',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: null
+      },
+      {
+        id: 34,
+        accountSubTypeName: 'Other Insurance',
+        plaidAccountSubtype: 'other insurance',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: null
+      },
+      {
+        id: 35,
+        accountSubTypeName: 'Pension',
+        plaidAccountSubtype: 'pension',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: null
+      },
+      {
+        id: 36,
+        accountSubTypeName: 'Prescribed Registered Retirement Income Fund',
+        plaidAccountSubtype: 'prif',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'CA'
+      },
+      {
+        id: 37,
+        accountSubTypeName: 'Profit Sharing Plan',
+        plaidAccountSubtype: 'profit sharing plan',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: null
+      },
+      {
+        id: 38,
+        accountSubTypeName: 'Qualifying share account',
+        plaidAccountSubtype: 'qshr',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: null
+      },
+      {
+        id: 39,
+        accountSubTypeName: 'Registered Disability Savings Plan (RSDP)',
+        plaidAccountSubtype: 'rdsp',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'CA'
+      },
+      {
+        id: 40,
+        accountSubTypeName: 'Registered Education Savings Plan (RESP)',
+        plaidAccountSubtype: 'resp',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'CA'
+      },
+      {
+        id: 41,
+        accountSubTypeName: 'Other Retirement',
+        plaidAccountSubtype: 'retirement',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: null
+      },
+      {
+        id: 42,
+        accountSubTypeName: 'Restricted Life Income Fund (RLIF)',
+        plaidAccountSubtype: 'rlif',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'CA'
+      },
+      {
+        id: 43,
+        accountSubTypeName: 'Roth IRA',
+        plaidAccountSubtype: 'roth',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'US'
+      },
+      {
+        id: 44,
+        accountSubTypeName: 'Roth 401k',
+        plaidAccountSubtype: 'roth 401k',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'US'
+      },
+      {
+        id: 45,
+        accountSubTypeName: 'Registered Retirement Income Fund (RRIF)',
+        plaidAccountSubtype: 'rrif',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'CA'
+      },
+      {
+        id: 46,
+        accountSubTypeName: 'SARSEP',
+        plaidAccountSubtype: 'sarsep',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'US'
+      },
+      {
+        id: 47,
+        accountSubTypeName: 'SEP IRA',
+        plaidAccountSubtype: 'sep ira',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'US'
+      },
+      {
+        id: 48,
+        accountSubTypeName: 'Simple IRA',
+        plaidAccountSubtype: 'simple ira',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'US'
+      },
+      {
+        id: 49,
+        accountSubTypeName: 'Self-Invested Personal Pension (SIPP)',
+        plaidAccountSubtype: 'sipp',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'UK'
+      },
+      {
+        id: 50,
+        accountSubTypeName: 'Standard Stock Plan Account',
+        plaidAccountSubtype: 'stock plan',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: null
+      },
+      {
+        id: 51,
+        accountSubTypeName: 'Tax-Free Savings Account (TFSA)',
+        plaidAccountSubtype: 'tfsa',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'CA'
+      },
+      {
+        id: 52,
+        accountSubTypeName: 'Trust',
+        plaidAccountSubtype: 'trust',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: null
+      },
+      {
+        id: 53,
+        accountSubTypeName: 'UGMA Brokerage Account',
+        plaidAccountSubtype: 'ugma',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'US'
+      },
+      {
+        id: 54,
+        accountSubTypeName: 'UTMA Brokerage Account',
+        plaidAccountSubtype: 'utma',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: 'US'
+      },
+      {
+        id: 55,
+        accountSubTypeName: 'Variable Annuity',
+        plaidAccountSubtype: 'variable annuity',
+        plaidAccountType: 'investment',
+        accountTypeId: 2,
+        country: null
+      },
+      {
+        id: 56,
+        accountSubTypeName: 'Credit Card',
+        plaidAccountSubtype: 'credit card',
+        plaidAccountType: 'credit',
+        accountTypeId: 4,
+        country: null
+      },
+      {
+        id: 57,
+        accountSubTypeName: 'Paypal Credit Card',
+        plaidAccountSubtype: 'paypal',
+        plaidAccountType: 'credit',
+        accountTypeId: 4,
+        country: null
+      },
+      {
+        id: 58,
+        accountSubTypeName: 'Car Loan',
+        plaidAccountSubtype: 'auto',
+        plaidAccountType: 'loan',
+        accountTypeId: 3,
+        country: null
+      },
+      {
+        id: 59,
+        accountSubTypeName: 'Business Loan',
+        plaidAccountSubtype: 'business',
+        plaidAccountType: 'loan',
+        accountTypeId: 3,
+        country: null
+      },
+      {
+        id: 60,
+        accountSubTypeName: 'Commercial Loan',
+        plaidAccountSubtype: 'commercial',
+        plaidAccountType: 'loan',
+        accountTypeId: 3,
+        country: null
+      },
+      {
+        id: 61,
+        accountSubTypeName: 'Consumer Facing Loan',
+        plaidAccountSubtype: 'consumer',
+        plaidAccountType: 'loan',
+        accountTypeId: 3,
+        country: null
+      },
+      {
+        id: 62,
+        accountSubTypeName: 'Home Equity Line of LOAN (HELOC)',
+        plaidAccountSubtype: 'home equity',
+        plaidAccountType: 'loan',
+        accountTypeId: 3,
+        country: null
+      },
+      {
+        id: 63,
+        accountSubTypeName: 'General Loan',
+        plaidAccountSubtype: 'loan',
+        plaidAccountType: 'loan',
+        accountTypeId: 3,
+        country: null
+      },
+      {
+        id: 64,
+        accountSubTypeName: 'Mortgage Loan',
+        plaidAccountSubtype: 'mortgage',
+        plaidAccountType: 'loan',
+        accountTypeId: 3,
+        country: null
+      },
+      {
+        id: 65,
+        accountSubTypeName: 'Overdraft Account',
+        plaidAccountSubtype: 'overdraft',
+        plaidAccountType: 'loan',
+        accountTypeId: 3,
+        country: null
+      },
+      {
+        id: 66,
+        accountSubTypeName: 'Line of LOAN',
+        plaidAccountSubtype: 'line of credit',
+        plaidAccountType: 'loan',
+        accountTypeId: 3,
+        country: null
+      },
+      {
+        id: 67,
+        accountSubTypeName: 'Student Loan',
+        plaidAccountSubtype: 'student',
+        plaidAccountType: 'loan',
+        accountTypeId: 3,
+        country: null
+      },
+      {
+        id: 68,
+        accountSubTypeName: 'Other Loan',
+        plaidAccountSubtype: 'other',
+        plaidAccountType: 'loan',
+        accountTypeId: 3,
+        country: null
       }
     ],
     skipDuplicates: true

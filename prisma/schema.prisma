@@ -21,24 +21,30 @@ model Access {
 }
 
 model Account {
-  accountType      AccountType?
-  balance          Float            @default(0)
-  createdAt        DateTime         @default(now())
-  currency         String?
-  id               String           @default(uuid())
-  isDefault        Boolean          @default(false)
-  isExcluded       Boolean          @default(false)
-  name             String?
-  platformId       String?
-  institutionId    String?
-  updatedAt        DateTime         @updatedAt
-  userId           String
-  accountSubTypeId Int?
-  AccountSubTypes  AccountSubTypes? @relation(fields: [accountSubTypeId], references: [id])
-  Platform         Platform?        @relation(fields: [platformId], references: [id])
-  Institution      Institution?     @relation(fields: [institutionId], references: [id])
-  User             User             @relation(fields: [userId], references: [id])
-  Order            Order[]
+  accountType         AccountType?
+  balance             Float            @default(0)
+  createdAt           DateTime         @default(now())
+  currency            String?
+  id                  String           @default(uuid())
+  isDefault           Boolean          @default(false)
+  isExcluded          Boolean          @default(false)
+  name                String?
+  platformId          String?
+  institutionId       String?
+  plaidTokenId        Int?
+  account_id          String?
+  verification_status String?
+  updatedAt           DateTime         @updatedAt
+  userId              String
+  accountSubTypeId    Int?
+  AccountSubTypes     AccountSubTypes? @relation(fields: [accountSubTypeId], references: [id])
+  Platform            Platform?        @relation(fields: [platformId], references: [id])
+  Institution         Institution?     @relation(fields: [institutionId], references: [id])
+  PlaidToken          PlaidToken?      @relation(fields: [plaidTokenId], references: [id])
+  User                User             @relation(fields: [userId], references: [id])
+  Order               Order[]
+  PlaidHoldings       PlaidHoldings[]
+  OrderCSV            OrderCSV[]
 
   @@id([id, userId])
 }
@@ -74,24 +80,45 @@ model MarketData {
 }
 
 model Order {
-  accountId       String?
-  accountUserId   String?
-  comment         String?
-  createdAt       DateTime      @default(now())
-  date            DateTime
-  fee             Float
-  id              String        @id @default(uuid())
-  isDraft         Boolean       @default(false)
-  quantity        Float
-  symbolProfileId String
-  type            Type
-  unitPrice       Float
-  updatedAt       DateTime      @updatedAt
-  userId          String
-  Account         Account?      @relation(fields: [accountId, accountUserId], references: [id, userId])
-  SymbolProfile   SymbolProfile @relation(fields: [symbolProfileId], references: [id])
-  User            User          @relation(fields: [userId], references: [id])
-  tags            Tag[]
+  accountId                String?
+  accountUserId            String?
+  comment                  String?
+  createdAt                DateTime       @default(now())
+  date                     DateTime
+  fee                      Float
+  id                       String         @id @default(uuid())
+  isDraft                  Boolean        @default(false)
+  quantity                 Float
+  dividendpershare_at_cost Float?
+  symbolProfileId          String?
+  transactionId            String?
+  type                     Type
+  subtype                  Int?
+  unitPrice                Float
+  updatedAt                DateTime       @updatedAt
+  userId                   String
+  Account                  Account?       @relation(fields: [accountId, accountUserId], references: [id, userId])
+  SymbolProfile            SymbolProfile? @relation(fields: [symbolProfileId], references: [id])
+  User                     User           @relation(fields: [userId], references: [id])
+  tags                     Tag[]
+
+  @@unique([transactionId, userId])
+}
+
+model OrderCSV {
+  id             String      @id @default(uuid())
+  fileName       String?
+  createdAt      DateTime    @default(now())
+  totalOrder     Int
+  completedOrder Int
+  status         String
+  userId         String
+  User           User        @relation(fields: [userId], references: [id])
+  institutionId  String
+  Institution    Institution @relation(fields: [institutionId], references: [id])
+  accountId      String
+  accountUserId  String
+  Account        Account     @relation(fields: [accountId, accountUserId], references: [id, userId])
 }
 
 model Platform {
@@ -125,6 +152,11 @@ model SymbolProfile {
   createdAt              DateTime                @default(now())
   currency               String
   dataSource             DataSource
+  dataSource2            Json?
+  dividend               Int?                    @default(0)
+  dividend_period        String?
+  dividendpershare       Float?
+  dividendpershare_type  Int?
   id                     String                  @id @default(uuid())
   name                   String?
   updatedAt              DateTime                @updatedAt
@@ -135,6 +167,7 @@ model SymbolProfile {
   url                    String?
   Order                  Order[]
   SymbolProfileOverrides SymbolProfileOverrides?
+  PlaidHoldings          PlaidHoldings[]
 
   @@unique([dataSource, symbol])
 }
@@ -184,23 +217,23 @@ model User {
   Settings        Settings?
   Subscription    Subscription[]
   ThirdPartyCreds ThirdPartyCreds[]
+  PlaidToken      PlaidToken[]
+  OrderCSV        OrderCSV[]
 }
 
 model Institution {
-  id                  String    @id @default(uuid())
+  id                  String       @id @default(uuid())
   institutionName     String
+  logo                String?
   institutionUrl      String
-  institutionUniqueId String    @unique
+  institutionUniqueId String       @unique
   platformId          String
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
   Account             Account[]
-  Platform            Platform? @relation(fields: [platformId], references: [id])
-}
-
-model ActivityType {
-  id   Int    @id @default(autoincrement())
-  type String @unique
+  Platform            Platform?    @relation(fields: [platformId], references: [id])
+  PlaidToken          PlaidToken[]
+  OrderCSV            OrderCSV[]
 }
 
 model AccountSubTypes {
@@ -221,9 +254,14 @@ model AccountTypes {
   AccountSubTypes AccountSubTypes[]
 }
 
+model ActivityType {
+  id   Int    @id @default(autoincrement())
+  type String @unique
+}
+
 model ActivitySubType {
   id      Int    @id @default(autoincrement())
-  subtype String @unique
+  subtype String
   type    String
   typeId  Int
 }
@@ -237,6 +275,76 @@ model ThirdPartyCreds {
   platformId  String?
   User        User?     @relation(fields: [userId], references: [id])
   Platform    Platform? @relation(fields: [platformId], references: [id])
+}
+
+model PlaidToken {
+  id                  Int             @id @default(autoincrement())
+  userId              String
+  institutionUniqueId String
+  accessToken         String
+  publicToken         String
+  itemId              String?
+  PlaidMessages       PlaidMessages[]
+  User                User            @relation(fields: [userId], references: [id])
+  Institution         Institution     @relation(fields: [institutionUniqueId], references: [institutionUniqueId])
+  Account             Account[]
+}
+
+model PlaidMessages {
+  id                         Int         @id @default(autoincrement())
+  item_Login_Required_Status Boolean     @default(false)
+  itemId                     String?
+  PlaidToken                 PlaidToken? @relation(fields: [plaidTokenId], references: [id])
+  plaidTokenId               Int?
+}
+
+model DividendData {
+  id               String     @id @default(uuid())
+  createdAt        DateTime   @default(now())
+  dataSource       DataSource
+  symbol           String
+  date             DateTime
+  declarationDate  DateTime?
+  paymentDate      DateTime?
+  recordDate       DateTime?
+  value            Float
+  unadjusted_value Float
+  currency         String
+
+  @@unique([date, symbol])
+  @@index([symbol])
+}
+
+model SplitData {
+  id         String     @id @default(uuid())
+  createdAt  DateTime   @default(now())
+  dataSource DataSource
+  symbol     String
+  split      String?
+  date       DateTime?
+
+  @@unique([date, symbol])
+  @@index([symbol])
+}
+
+model PlaidHoldings {
+  id                 String         @id @default(uuid())
+  createdAt          DateTime       @default(now())
+  accountId          String?
+  Account            Account?       @relation(fields: [accountId, accountUserId], references: [id, userId])
+  accountUserId      String?
+  lastUpdated        DateTime?
+  symbol             String?
+  name               String?
+  symbolProfileId    String?
+  SymbolProfile      SymbolProfile? @relation(fields: [symbolProfileId], references: [id])
+  security_id        String?
+  currency           String?
+  quantity           Float?
+  cost_basis         Float?
+  is_cash_equivalent Boolean?
+
+  @@unique([accountId, security_id])
 }
 
 enum AccountType {
@@ -300,4 +408,9 @@ enum Type {
   DIVIDEND
   ITEM
   SELL
+  TAX
+  FEES
+  CANCEL
+  TRANSFER
+  CASH
 }

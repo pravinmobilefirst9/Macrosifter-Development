@@ -55,4 +55,7 @@ export class UpdateUserSettingDto {
   @IsIn(<ViewMode[]>['DEFAULT', 'ZEN'])
   @IsOptional()
   viewMode?: ViewMode;
+
+  @IsString()
+  timezone?: string;
 }

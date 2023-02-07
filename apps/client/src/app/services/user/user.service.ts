@@ -2,12 +2,15 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ObservableStore } from '@codewithdan/observable-store';
 import { User } from '@ghostfolio/common/interfaces';
-import { of } from 'rxjs';
+import {of, Subject, take} from 'rxjs';
 import { throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import {catchError, map, takeUntil} from 'rxjs/operators';
 
 import { UserStoreActions } from './user-store.actions';
 import { UserStoreState } from './user-store.state';
+import {
+  WorldtimeapiByIpResposeInterface
+} from "@ghostfolio/common/interfaces/responses/worldtimeapi.by-ip-respose.interface";
 const LOCAL_USER_ID = 'local-user-id'
 
 @Injectable({
@@ -34,6 +37,32 @@ export class UserService extends ObservableStore<UserStoreState> {
 
   public remove() {
     this.setState({ user: null }, UserStoreActions.RemoveUser);
+  }
+
+  public getAllTimezones() {
+    return fetch("https://worldtimeapi.org/api/timezone")
+      .then(response => response.json());
+  }
+
+  public getTimezoneByIp() {
+    return fetch("https://worldtimeapi.org/api/ip")
+      .then(response => {
+        response.json().then( data => {
+          const tz = (data as WorldtimeapiByIpResposeInterface).timezone;
+          return this.get()
+            .pipe(take(1))
+            .subscribe( u => {
+            const user: User = {...u};
+            user.settings.timezone = tz;
+            this.setState({ user }, UserStoreActions.GetUser);
+          });
+        })
+      })
+  }
+
+  public getTimezone(tz: string) {
+    return fetch("https://worldtimeapi.org/api/timezone/" + tz)
+      .then(response => response.json())
   }
 
   private fetchUser() {

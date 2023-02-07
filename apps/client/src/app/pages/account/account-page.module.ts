@@ -16,26 +16,28 @@ import { GfValueModule } from '@ghostfolio/ui/value';
 import { AccountPageRoutingModule } from './account-page-routing.module';
 import { AccountPageComponent } from './account-page.component';
 import { GfCreateOrUpdateAccessDialogModule } from './create-or-update-access-dialog/create-or-update-access-dialog.module';
+import {MatAutocompleteModule} from "@angular/material/autocomplete";
 
 @NgModule({
   declarations: [AccountPageComponent],
-  imports: [
-    AccountPageRoutingModule,
-    CommonModule,
-    FormsModule,
-    GfCreateOrUpdateAccessDialogModule,
-    GfPortfolioAccessTableModule,
-    GfPremiumIndicatorModule,
-    GfValueModule,
-    MatButtonModule,
-    MatCardModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatSlideToggleModule,
-    ReactiveFormsModule,
-    RouterModule
-  ]
+    imports: [
+        AccountPageRoutingModule,
+        CommonModule,
+        FormsModule,
+        GfCreateOrUpdateAccessDialogModule,
+        GfPortfolioAccessTableModule,
+        GfPremiumIndicatorModule,
+        GfValueModule,
+        MatButtonModule,
+        MatCardModule,
+        MatDialogModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MatSlideToggleModule,
+        ReactiveFormsModule,
+        RouterModule,
+        MatAutocompleteModule
+    ]
 })
 export class AccountPageModule {}

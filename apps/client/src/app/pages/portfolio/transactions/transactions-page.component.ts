@@ -18,12 +18,14 @@ import { hasPermission, permissions } from '@ghostfolio/common/permissions';
 import { DataSource, Order as OrderModel } from '@prisma/client';
 import { format, parseISO } from 'date-fns';
 import { isArray } from 'lodash';
+import { parse as csvToJson } from 'papaparse';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { CreateOrUpdateTransactionDialog } from './create-or-update-transaction-dialog/create-or-update-transaction-dialog.component';
 import { ImportTransactionDialog } from './import-transaction-dialog/import-transaction-dialog.component';
+import { OpenCSVDialog } from './Import-CSV-Dialog/OpenCSVDialog';
 
 @Component({
   host: { class: 'page' },
@@ -174,9 +176,8 @@ export class TransactionsPageComponent implements OnDestroy, OnInit {
             data.activities
           ),
           contentType: 'text/calendar',
-          fileName: `ghostfolio-draft${
-            data.activities.length > 1 ? 's' : ''
-          }-${format(parseISO(data.meta.date), 'yyyyMMddHHmmss')}.ics`,
+          fileName: `ghostfolio-draft${data.activities.length > 1 ? 's' : ''
+            }-${format(parseISO(data.meta.date), 'yyyyMMddHHmmss')}.ics`,
           format: 'string'
         });
       });
@@ -203,7 +204,6 @@ export class TransactionsPageComponent implements OnDestroy, OnInit {
         try {
           if (file.name.endsWith('.json')) {
             const content = JSON.parse(fileContent);
-
             if (!isArray(content.activities)) {
               if (isArray(content.orders)) {
                 this.handleImportError({
@@ -265,6 +265,19 @@ export class TransactionsPageComponent implements OnDestroy, OnInit {
     };
 
     input.click();
+  }
+
+  public onImportCSV() {
+    const dialogRef = this.dialog.open(OpenCSVDialog, {
+      height: this.deviceType === 'mobile' ? '97.5vh' : '75vh',
+      width: this.deviceType === 'mobile' ? '100vw' : '50rem'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log(`Dialog result: ${result}`);
+    });
+
+
   }
 
   public onUpdateTransaction(aTransaction: OrderModel) {

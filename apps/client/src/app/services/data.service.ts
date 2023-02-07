@@ -1,3 +1,4 @@
+/* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { CreateAccessDto } from '@ghostfolio/api/app/access/create-access.dto';
@@ -337,17 +338,99 @@ export class DataService {
     });
   }
 
+
+  public createPlaidLinkTokenMicroDeposit() {
+    const data = {
+      client_id: environment.plaid_client_id,
+      secret: environment.plaid_secret,
+      client_name: environment.client_name,
+      country_codes: environment.country_codes,
+      redirect_uri: environment.redirect_uri,
+      webhook: environment.webhook,
+      language: "en",
+      user: {
+        client_user_id: localStorage.getItem('local-user-id')
+      },
+      products: ["auth"],
+      auth: {
+        automated_microdeposits_enabled: true,
+        same_day_microdeposits_enabled: true,
+      },
+    }
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json'
+      }),
+    };
+    return this.http.post('/api/v1/plaid/create-token',
+      data, httpOptions
+    );
+  }
+
+  public createPlaidLinkTokenUpdateMode(accessToken: string) {
+    const data = {
+      client_id: environment.plaid_client_id,
+      secret: environment.plaid_secret,
+      client_name: environment.client_name,
+      country_codes: environment.country_codes,
+      redirect_uri: environment.redirect_uri,
+      webhook: environment.webhook,
+      language: "en",
+      access_token: accessToken,
+      update: { account_selection_enabled: true },
+      user: {
+        client_user_id: localStorage.getItem('local-user-id')
+      },
+      products: ["transactions"]
+    }
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json'
+      }),
+    };
+    return this.http.post('/api/v1/plaid/create-token',
+      data, httpOptions
+    );
+  }
+
+  public createPlaidLinkTokenTwoDeposit(accessToken: string) {
+    const data = {
+      client_id: environment.plaid_client_id,
+      secret: environment.plaid_secret,
+      client_name: environment.client_name,
+      country_codes: environment.country_codes,
+      redirect_uri: environment.redirect_uri,
+      webhook: environment.webhook,
+      language: "en",
+      access_token: accessToken,
+      user: {
+        client_user_id: localStorage.getItem('local-user-id')
+      },
+      products: []
+    }
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json'
+      }),
+    };
+    return this.http.post('/api/v1/plaid/create-token-two-deposit',
+      data, httpOptions
+    );
+  }
+
   public createPlaidLinkToken() {
     const data = {
       client_id: environment.plaid_client_id,
       secret: environment.plaid_secret,
-      client_name: "Insert Client name here",
-      country_codes: ["US"],
+      client_name: environment.client_name,
+      country_codes: environment.country_codes,
+      redirect_uri: environment.redirect_uri,
+      webhook: environment.webhook,
       language: "en",
       user: {
-        client_user_id: "unique_user_id"
+        client_user_id: localStorage.getItem('local-user-id')
       },
-      products: ["auth"]
+      products: ["transactions", "investments"]
     }
     const httpOptions = {
       headers: new HttpHeaders({
@@ -372,6 +455,47 @@ export class DataService {
 
   public getAccountTypesWithItsSubTypes() {
     return this.http.get('/api/v1/account/getallaccounts-types-with-its-sub-types')
+  }
+
+  public deleteAccountByInstitutionId(institutionId: string) {
+    return this.http.post(`/api/v1/account/delete-account-by-institution/${institutionId}`, {})
+  }
+
+  public importCSV(data) {
+    return this.http.post(`/api/v1/import/csv`, data)
+  }
+
+  public getPlaidMessages() {
+    return this.http.get('/api/v1/plaid/get-plaid-messages');
+  }
+
+  public getInititalCSVOrderData() {
+    return this.http.get('/api/v1/csv/get-csv-order');
+  }
+
+  public getInstitutionForCSVUpload() {
+    return this.http.get('/api/v1/csv/get-institution-for-csv-upload');
+  }
+
+  public postCSVFileUpload(bodyData) {
+    return this.http.post('/api/v1/csv/post-csv-file-upload', bodyData);
+  }
+
+  public updateItemLoginRequiredStatus(itemId: string) {
+    return this.http.post(`/api/v1/plaid/update-item-login-required-status/${itemId}`, {});
+  }
+
+  public updateManualTwoDepositStatus(bodyData: any) {
+    console.log(bodyData);
+
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json'
+      }),
+    };
+    return this.http.post(`/api/v1/plaid/update-manual-two-deposit-status`, bodyData
+      , httpOptions)
+
   }
 
   private buildFiltersAsQueryParams({ filters }: { filters?: Filter[] }) {
@@ -422,7 +546,6 @@ export class DataService {
 
     return params;
   }
-
 
 
 }

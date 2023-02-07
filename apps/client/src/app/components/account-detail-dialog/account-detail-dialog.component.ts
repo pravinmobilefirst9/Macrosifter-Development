@@ -31,6 +31,7 @@ export class AccountDetailDialog implements OnDestroy, OnInit {
   public name: string;
   public orders: OrderWithAccount[];
   public platformName: string;
+  public institutionName: string;
   public user: User;
   public valueInBaseCurrency: number;
 
@@ -58,10 +59,11 @@ export class AccountDetailDialog implements OnDestroy, OnInit {
     this.dataService
       .fetchAccount(this.data.accountId)
       .pipe(takeUntil(this.unsubscribeSubject))
-      .subscribe(({ accountType, name, Platform, valueInBaseCurrency }) => {
+      .subscribe(({ accountType, name, Platform, valueInBaseCurrency, Institution }) => {
         this.accountType = accountType;
         this.name = name;
         this.platformName = Platform?.name ?? '-';
+        this.institutionName = Institution?.institutionName ?? '-'
         this.valueInBaseCurrency = valueInBaseCurrency;
 
         this.changeDetectorRef.markForCheck();
@@ -97,9 +99,9 @@ export class AccountDetailDialog implements OnDestroy, OnInit {
           fileName: `ghostfolio-export-${this.name
             .replace(/\s+/g, '-')
             .toLowerCase()}-${format(
-            parseISO(data.meta.date),
-            'yyyyMMddHHmm'
-          )}.json`,
+              parseISO(data.meta.date),
+              'yyyyMMddHHmm'
+            )}.json`,
           format: 'json'
         });
       });

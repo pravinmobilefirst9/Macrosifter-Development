@@ -1,6 +1,6 @@
 import { Platform } from '@angular/cdk/platform';
 import { HttpClientModule } from '@angular/common/http';
-import { HashLocationStrategy, LocationStrategy } from '@angular/common';
+import { HashLocationStrategy, LocationStrategy, PathLocationStrategy } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatChipsModule } from '@angular/material/chips';
@@ -27,6 +27,9 @@ import { GfHeaderModule } from './components/header/header.module';
 import { authInterceptorProviders } from './core/auth.interceptor';
 import { httpResponseInterceptorProviders } from './core/http-response.interceptor';
 import { LanguageService } from './core/language.service';
+import { NgxPlaidLinkModule } from "ngx-plaid-link";
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 export function NgxStripeFactory(): string {
   return environment.stripePublicKey;
@@ -38,6 +41,7 @@ export function NgxStripeFactory(): string {
     AppRoutingModule,
     BrowserAnimationsModule,
     BrowserModule,
+    NgxPlaidLinkModule,
     GfHeaderModule,
     HttpClientModule,
     MarkdownModule.forRoot(),
@@ -50,6 +54,8 @@ export function NgxStripeFactory(): string {
     }),
     MatNativeDateModule,
     MatSnackBarModule,
+    MatFormFieldModule,
+    MatInputModule,
     NgxSkeletonLoaderModule,
     NgxStripeModule.forRoot(environment.stripePublicKey)
   ],
@@ -67,8 +73,8 @@ export function NgxStripeFactory(): string {
       provide: STRIPE_PUBLISHABLE_KEY,
       useFactory: NgxStripeFactory
     },
-    {provide: LocationStrategy, useClass: HashLocationStrategy}
+    { provide: LocationStrategy, useClass: PathLocationStrategy }
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule {}
+export class AppModule { }
