@@ -45,8 +45,9 @@ export const GATHER_ASSET_PROFILE_PROCESS = 'GATHER_ASSET_PROFILE';
 export const GATHER_ASSET_PROFILE_PROCESS_OPTIONS: JobOptions = {
   attempts: 10,
   backoff: {
-    delay: ms('1 minute'),
-    type: 'exponential'
+    // delay: ms('1 minute'),
+    delay: 1000,
+    type: 'exponential',
   },
   priority: DATA_GATHERING_QUEUE_PRIORITY_HIGH,
   removeOnComplete: {
@@ -58,7 +59,8 @@ export const GATHER_HISTORICAL_MARKET_DATA_PROCESS =
 export const GATHER_HISTORICAL_MARKET_DATA_PROCESS_OPTIONS: JobOptions = {
   attempts: 10,
   backoff: {
-    delay: ms('1 minute'),
+    // delay: ms('1 minute'),
+    delay: 1000,
     type: 'exponential'
   },
   priority: DATA_GATHERING_QUEUE_PRIORITY_LOW,
@@ -66,6 +68,8 @@ export const GATHER_HISTORICAL_MARKET_DATA_PROCESS_OPTIONS: JobOptions = {
     age: ms('2 weeks') / 1000
   }
 };
+
+
 
 export const MAX_CHART_ITEMS = 365;
 

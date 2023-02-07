@@ -9,10 +9,10 @@
 <div class="activities">
   <table
     class="gf-table w-100"
+    mat-table
     matSort
     matSortActive="date"
     matSortDirection="desc"
-    mat-table
     [dataSource]="dataSource"
   >
     <ng-container matColumnDef="count">
@@ -51,7 +51,7 @@
       <th *matHeaderCellDef class="px-1" mat-header-cell mat-sort-header>
         <ng-container i18n>Type</ng-container>
       </th>
-      <td *matCellDef="let element" mat-cell class="px-1">
+      <td *matCellDef="let element" class="px-1" mat-cell>
         <div
           class="d-inline-flex p-1 type-badge"
           [ngClass]="{
@@ -85,11 +85,11 @@
       </th>
       <td *matCellDef="let element" class="px-1" mat-cell>
         <div class="d-flex align-items-center">
-          <span *ngIf="isUUID(element.SymbolProfile.symbol); else symbol">
-            {{ element.SymbolProfile.name }}
+          <span *ngIf="isUUID(element.SymbolProfile?.symbol); else symbol">
+            {{ element.SymbolProfile?.name }}
           </span>
           <ng-template #symbol>
-            {{ element.SymbolProfile.symbol | gfSymbol }}
+            {{ element.SymbolProfile?.symbol | gfSymbol }}
           </ng-template>
           <span *ngIf="element.isDraft" class="badge badge-secondary ml-1" i18n
             >Draft</span
@@ -113,7 +113,7 @@
         class="d-none d-lg-table-cell px-1"
         mat-cell
       >
-        {{ element.SymbolProfile.currency }}
+        {{ element.SymbolProfile?.currency }}
       </td>
       <td *matFooterCellDef class="d-none d-lg-table-cell px-1" mat-footer-cell>
         {{ baseCurrency }}
@@ -313,6 +313,24 @@
             *ngIf="hasPermissionToImportActivities"
             class="align-items-center d-flex"
             mat-menu-item
+            (click)="onImportCSV()"
+          >
+            <ion-icon class="mr-2" name="cloud-upload-outline"></ion-icon>
+            <span i18n>Import CSV</span>
+          </button>
+          <!-- <button
+            *ngIf="hasPermissionToImportActivities"
+            class="align-items-center d-flex"
+            mat-menu-item
+            (click)="onImportCSV2()"
+          >
+            <ion-icon class="mr-2" name="cloud-upload-outline"></ion-icon>
+            <span i18n>Import CSV 2</span>
+          </button> -->
+          <button
+            *ngIf="hasPermissionToImportActivities"
+            class="align-items-center d-flex"
+            mat-menu-item
             (click)="onImport()"
           >
             <ion-icon class="mr-2" name="cloud-upload-outline"></ion-icon>
@@ -389,19 +407,19 @@
     <tr
       *matRowDef="let row; columns: displayedColumns"
       mat-row
+      [ngClass]="{
+        'cursor-pointer':
+          hasPermissionToOpenDetails && !row.isDraft && row.type !== 'ITEM'
+      }"
       (click)="
         hasPermissionToOpenDetails &&
           !row.isDraft &&
           row.type !== 'ITEM' &&
           onOpenPositionDialog({
-            dataSource: row.SymbolProfile.dataSource,
-            symbol: row.SymbolProfile.symbol
+            dataSource: row.SymbolProfile?.dataSource,
+            symbol: row.SymbolProfile?.symbol ? row.SymbolProfile?.symbol : null
           })
       "
-      [ngClass]="{
-        'cursor-pointer':
-          hasPermissionToOpenDetails && !row.isDraft && row.type !== 'ITEM'
-      }"
     ></tr>
     <tr
       *matFooterRowDef="displayedColumns"

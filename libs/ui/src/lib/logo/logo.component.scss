@@ -1,7 +1,10 @@
 :host {
   .logo {
-    background-color: rgba(var(--dark-primary-text));
-    mask: url('/assets/ghost.svg') no-repeat center;
+    background:  url('/assets/macrosifter_logo.png') no-repeat;
+    background-position: center;
+    background-size: contain;
+    height: 100px !important;
+    width: 50px !important;
   }
 
   .name {
