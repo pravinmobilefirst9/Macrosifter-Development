@@ -90,6 +90,7 @@ model Order {
   isDraft                  Boolean        @default(false)
   quantity                 Float
   dividendpershare_at_cost Float?
+  dividendpershare_at_costFlag Boolean?   @default(false)
   symbolProfileId          String?
   transactionId            String?
   type                     Type

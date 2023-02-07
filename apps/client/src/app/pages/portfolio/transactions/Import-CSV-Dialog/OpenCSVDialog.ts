@@ -15,6 +15,7 @@ import { DataService } from "@ghostfolio/client/services/data.service";
 import { parse as csvToJson } from 'papaparse';
 import { NgxSkeletonLoaderModule } from "ngx-skeleton-loader";
 import { groupBy } from "lodash";
+import { ActivatedRoute, Router } from '@angular/router';
 
 
 @Component({
@@ -65,8 +66,9 @@ export class OpenCSVDialog implements OnInit {
     }[];
 
 
-    constructor(public dialogRef: MatDialogRef<OpenCSVDialog>,
+    constructor(public dialogRef: MatDialogRef<OpenCSVDialog>, private router: Router,
         public dataService: DataService,
+        private route: ActivatedRoute,
         private snackBar: MatSnackBar,
         @Inject(MAT_DIALOG_DATA) public data) {
     }
@@ -275,4 +277,9 @@ export class OpenCSVDialog implements OnInit {
 
     }
 
+    public handleCloseCSVUpload() {
+
+        this.dialogRef.close();
+        this.router.navigate(['/portfolio'], { relativeTo: this.route });
+    }
 }

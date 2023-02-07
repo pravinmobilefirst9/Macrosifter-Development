@@ -1,16 +1,19 @@
 import { DataGatheringService } from "../../services/data-gathering.service";
 import { PrismaService } from "../../services/prisma.service";
 import { GATHER_ASSET_PROFILE_PROCESS, GATHER_ASSET_PROFILE_PROCESS_OPTIONS, GATHER_HISTORICAL_MARKET_DATA_PROCESS, GATHER_HISTORICAL_MARKET_DATA_PROCESS_OPTIONS } from "@ghostfolio/common/config";
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { parseISO } from "date-fns";
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
+import { groupBy } from "lodash";
 
 @Injectable()
 export class CSVService {
 
     constructor(public readonly dataGatheringService: DataGatheringService,
-        public readonly prismaService: PrismaService) { }
+        public readonly prismaService: PrismaService) {
+
+    }
 
     public async updateCSVOrder(csv_data, fileName, userId, accountId, institutionId) {
         try {
@@ -38,10 +41,15 @@ export class CSVService {
                     }
                 })
 
+
                 if (((orderCSV.completedOrder + csv_data.length) === orderCSV.totalOrder)) {
-                    // Gathering SymbolProfile Table Data
+
+                    await this.dataGatheringService.gatherDividendData();
+                    await this.updateDividendPershareAtCost();
+                    // Gathering SymbolProfile Table Data 
                     const uniqueAssets = await this.dataGatheringService.getUniqueAssets();
                     for (const { dataSource, symbol } of uniqueAssets) {
+                        console.log('Symbol Profile job add to queue');
 
                         await this.dataGatheringService.addJobToQueue(
                             GATHER_ASSET_PROFILE_PROCESS,
@@ -56,11 +64,12 @@ export class CSVService {
                         if (dataSource === 'MANUAL') {
                             continue;
                         }
+                        console.log('Market Data job add to queue');
                         await this.dataGatheringService.addJobToQueue(
                             GATHER_HISTORICAL_MARKET_DATA_PROCESS,
                             {
                                 dataSource,
-                                date: new Date('01-01-2020').toISOString(),
+                                date: new Date('01-01-2010').toISOString(),
                                 symbol
                             },
                             GATHER_HISTORICAL_MARKET_DATA_PROCESS_OPTIONS
@@ -121,12 +130,9 @@ export class CSVService {
         }
 
         const symbolProfileId = (symbol) ? await this.dataGatheringService.getSymbolProfileId(symbol) : null;
-        // will manage this soon....... PENDING_PENDING
-        // const dividendpershare_at_cost = ((csv_data["SYMBOL"])) ? await this.dataGatheringService.getDividendpershareAtCost(csv_data['SYMBOL'], new Date(csv_data['DATE'])) : null;
-        const response = await this.dataGatheringService.getHistoricalDividendData(symbol);
+        // const response = await this.dataGatheringService.getHistoricalDividendData(symbol);
 
         for (const order of csv_data) {
-
 
             if (!(order['TRANSACTION ID'])) {
                 continue;
@@ -282,8 +288,8 @@ export class CSVService {
                 continue;
             }
 
-            const dividendpershare_at_cost = await this.getDividendpershareAtCost(symbol, new Date(order['DATE']), response);
-
+            // const dividendpershare_at_cost = await this.getDividendpershareAtCost(symbol, new Date(order['DATE']), response);
+            const dividendpershare_at_cost = 0; // will set in the background.
             const obj = {
 
                 date: date,
@@ -305,6 +311,7 @@ export class CSVService {
                     await this.prismaService.order.create({
                         data: {
                             ...obj,
+                            dividendpershare_at_costFlag: false,
                             Account: {
                                 connect: {
                                     id_userId: {
@@ -326,23 +333,16 @@ export class CSVService {
                         }
                     })
 
-
-
-
-
-
-
                 } catch (error) {
                     console.log(error);
                 }
 
             }
 
-
-
         }
 
         await this.updateCSVOrder(csv_data, fileName, userId, accountId, institutionId);
+
         console.log('DONE FOR -----> ', symbol);
     }
 
@@ -399,8 +399,6 @@ export class CSVService {
 
     }
 
-
-
     public async postCSVFileUpload(bodyData, userId) {
 
         try {
@@ -424,6 +422,62 @@ export class CSVService {
         }
 
         return 1;
+
+    }
+
+    public async updateDividendPershareAtCost(): Promise<void> {
+
+        let orders = await this.prismaService.order.findMany({
+            where: {
+                dividendpershare_at_costFlag: false,
+            },
+            include: {
+                SymbolProfile: {
+                    select: {
+                        symbol: true
+                    }
+                }
+            }
+        })
+
+        if (orders && orders.length === 0) {
+            Logger.log("dividendpershare_at_cost column is Already Synced!")
+            return;
+        }
+
+        orders = orders.map((e) => {
+            return { ...e, symbol: e['SymbolProfile']['symbol'] }
+        })
+
+        const ordersWithGroup = groupBy(orders, 'symbol');
+
+        for (const symbol in ordersWithGroup) {
+            if (Object.prototype.hasOwnProperty.call(ordersWithGroup, symbol)) {
+                const ordersArray = ordersWithGroup[symbol];
+                const response = await this.dataGatheringService.getHistoricalDividendData(symbol);
+
+                for (const order of ordersArray) {
+
+                    const dividendpershare_at_cost = await this.getDividendpershareAtCost(symbol, order.date, response);
+
+                    await this.prismaService.order.update({
+                        where: {
+                            id: order.id
+                        },
+                        data: {
+                            dividendpershare_at_cost,
+                            dividendpershare_at_costFlag: true
+                        }
+                    })
+
+                }
+                Logger.log("dividendpershare_at_cost column is Synced for " + symbol);
+
+            }
+        }
+
+
+
 
     }
 

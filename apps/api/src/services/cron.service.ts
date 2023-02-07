@@ -4,6 +4,7 @@ import {
 } from '@ghostfolio/common/config';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { CSVService } from '../app/csv/csv.service';
 import { RedisCacheService } from '../app/redis-cache/redis-cache.service';
 
 import { DataGatheringService } from './data-gathering.service';
@@ -17,6 +18,8 @@ export class CronService {
     private readonly exchangeRateDataService: ExchangeRateDataService,
     private readonly twitterBotService: TwitterBotService,
     private readonly redisCacheService: RedisCacheService,
+    private readonly csvService: CSVService,
+
   ) { }
 
   @Cron(CronExpression.EVERY_HOUR)
@@ -54,13 +57,6 @@ export class CronService {
     await this.exchangeRateDataService.loadCurrencies();
   }
 
-  // Macrosifter Test Cron
-  // @Cron(CronExpression.EVERY_10_MINUTES)
-  // public async test() {
-  //   Logger.log({
-  //     name: 'vaibhav'
-  //   });
-  // }
 
   @Cron(CronExpression.EVERY_DAY_AT_5PM)
   public async runEveryDayAtFivePM() {
@@ -104,11 +100,16 @@ export class CronService {
   // CRON AUTOMATION FOR Missing Data Inside the Symbol Profile, DividendData or MarketData Hourly
   @Cron(CronExpression.EVERY_12_HOURS)
   public async automation_SymbolProfile_DividendData_MarketData() {
-    this.syncMarketData()
-    this.syncSymbolProfile();
-    this.syncDividendData();
-    this.syncSplitData();
+    await this.syncMarketData()
+    await this.syncSymbolProfile();
+    await this.syncDividendData();
+    await this.syncSplitData();
   }
+
+  // @Cron(CronExpression.EVERY_30_MINUTES)
+  // public async updateDividendPerShareAtCost() {
+  //   await this.csvService.updateDividendPershareAtCost();
+  // }
 
 
 }
