@@ -28,6 +28,7 @@ export class ExportService {
         transactionId: true,
         subtype: true,
         dividendpershare_at_cost: true,
+        dividendpershare_at_costFlag: true,
         unitPrice: true
       },
       where: { userId }
@@ -47,6 +48,7 @@ export class ExportService {
           comment,
           date,
           dividendpershare_at_cost,
+          dividendpershare_at_costFlag,
           fee,
           id,
           quantity,
@@ -63,6 +65,7 @@ export class ExportService {
             id,
             quantity,
             dividendpershare_at_cost,
+            dividendpershare_at_costFlag,
             type,
             subtype,
             transactionId,

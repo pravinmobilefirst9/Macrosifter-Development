@@ -15,3 +15,15 @@
   text-align: left;
   color: black;
 }
+
+.close-btn {
+  background-image: url('../../../../../assets/close.png');
+  background-size: cover;
+  height: 20px;
+  width: 20px;
+  position: relative;
+  top: 0px;
+  right: 0px;
+  float: right;
+  cursor: pointer;
+}

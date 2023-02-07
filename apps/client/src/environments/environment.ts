@@ -9,8 +9,8 @@ export const environment = {
   stripePublicKey: '',
   version: 'dev',
 
-  plaid_client_id: '610ba50cc5c2c100116eb9d5',
-  plaid_secret: 'ab0499cac310beb056d759af917f3e',
+  plaid_client_id: '62fe6b548e95650013d54b06',
+  plaid_secret: 'aa251c610aa7a64b8203cfe7b2fb7f',
   plaid_institution: 'MacroSifter',
   PLAID_ENV: 'sandbox',
   client_name: 'Macrosifter',
