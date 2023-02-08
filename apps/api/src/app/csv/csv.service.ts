@@ -69,7 +69,7 @@ export class CSVService {
                             GATHER_HISTORICAL_MARKET_DATA_PROCESS,
                             {
                                 dataSource,
-                                date: new Date('01-01-2010').toISOString(),
+                                date: new Date('01-01-2000').toISOString(),
                                 symbol
                             },
                             GATHER_HISTORICAL_MARKET_DATA_PROCESS_OPTIONS
@@ -123,10 +123,14 @@ export class CSVService {
 
     public async uploadCSV(data: { institutionId: string, accountId: string, csv_data: { any }[], userId: string, fileName: string, symbol: string }): Promise<void> {
 
-        const { accountId, csv_data, fileName, institutionId, symbol, userId } = data;
+        let { accountId, csv_data, fileName, institutionId, symbol, userId } = data;
 
         if (!csv_data || csv_data.length === 0) {
             return;
+        }
+
+        if (symbol === 'FB') {
+            symbol = 'META'
         }
 
         const symbolProfileId = (symbol) ? await this.dataGatheringService.getSymbolProfileId(symbol) : null;
@@ -169,6 +173,11 @@ export class CSVService {
             if (description.includes('Bought')) {
                 type = 'BUY'
                 subtype = await this.getActivitySubTypeId('Buy')
+
+                if (description.includes(order['PRICE'])) {
+                    subtype = await this.getActivitySubTypeId('Ordinary Dividend Reinvestment')
+                }
+
                 if (csv_data['SYMBOL'] === 'CSCO') {
                     subtype = await this.getActivitySubTypeId('Qualified Dividend Reinvestment')
                 }
@@ -188,13 +197,14 @@ export class CSVService {
 
             if (description.includes('FREE BALANCE INTEREST ADJUSTMENT')) {
                 type = 'CASH'
-                subtype = await this.getActivitySubTypeId('INTEST')
+                subtype = await this.getActivitySubTypeId('Interest')
                 comment = 'FREE BALANCE INTEREST ADJUSTMENT'
             }
-            else if (description.includes('OFF-CYCLE INTEREST (MMDA10)')) {
+            else if (description.includes('OFF-CYCLE INTEREST (MMDA')) {
                 type = 'CASH'
-                subtype = await this.getActivitySubTypeId('INTEST')
-                comment = 'OFF-CYCLE INTEREST (MMDA10)'
+                subtype = await this.getActivitySubTypeId('Interest')
+                comment = description;
+                symbol = null;
             }
             else if (description.includes('REBATE')) {
                 type = 'CASH'
@@ -227,6 +237,13 @@ export class CSVService {
                 subtype = await this.getActivitySubTypeId('Foreign Tax Withheld')
             }
 
+            if (description && description.includes('MANDATORY REVERSE SPLIT')) {
+                type = 'TRANSFER'
+                subtype = await this.getActivitySubTypeId('Split')
+            }
+
+
+
             comment = description;
 
             let fee = 0;
@@ -249,7 +266,11 @@ export class CSVService {
             if (!(symbol)) {
 
                 type = 'CASH';
-                subtype = await this.getActivitySubTypeId('Deposit')
+                if (description.includes('OFF-CYCLE INTEREST (MMDA')) {
+                    subtype = await this.getActivitySubTypeId('Interest')
+                } else {
+                    subtype = await this.getActivitySubTypeId('Deposit')
+                }
                 comment = description;
                 const id = uuidv4();
 
