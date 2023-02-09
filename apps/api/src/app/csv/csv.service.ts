@@ -104,14 +104,25 @@ export class CSVService {
 
     }
 
-    public async getActivitySubTypeId(subtype) {
+    public async getActivitySubTypeId(subtype, type = null) {
         try {
+            let data = null;
+            if (type) {
+                data = await this.prismaService.activitySubType.findFirst({
 
-            const data = await this.prismaService.activitySubType.findFirst({
-                where: {
-                    subtype,
-                }
-            })
+                    where: {
+                        subtype,
+                        type
+                    }
+                })
+            } else {
+                data = await this.prismaService.activitySubType.findFirst({
+
+                    where: {
+                        subtype,
+                    }
+                })
+            }
 
             return (data && data.id) ? data.id : null;
 
@@ -119,6 +130,38 @@ export class CSVService {
             return null;
         }
 
+    }
+
+    public async isSubTypeOrdinaryDividendReinvestment(order, symbol, csv_data, date) {
+
+        const data = csv_data.filter((e) => {
+            return (
+                (e['DESCRIPTION'].includes('QUALIFIED DIVIDEND') ||
+                    e['DESCRIPTION'].includes('FOREIGN TAX WITHHELD') ||
+                    e['DESCRIPTION'].includes('ORDINARY DIVIDEND'))
+                && (date === e['DATE'] && symbol === e['SYMBOL'])
+            )
+        })
+
+        let amount = 0;
+        data.forEach((e) => amount += e['AMOUNT'])
+
+        return ((amount + order['AMOUNT']) === 0) ? true : false;
+
+    }
+
+    public async isSubTypePartnershipDistribution(order, symbol, csv_data, date) {
+        const data = csv_data.filter((e) => {
+            return (
+                (e['DESCRIPTION'].includes('PARTNERSHIP DISTRIBUTION'))
+                && (date === e['DATE'] && symbol === e['SYMBOL'])
+            )
+        })
+
+        let amount = 0;
+        data.forEach((e) => amount += e['AMOUNT'])
+
+        return ((amount + order['AMOUNT']) === 0) ? true : false;
     }
 
     public async uploadCSV(data: { institutionId: string, accountId: string, csv_data: { any }[], userId: string, fileName: string, symbol: string }): Promise<void> {
@@ -133,7 +176,7 @@ export class CSVService {
             symbol = 'META'
         }
 
-        const symbolProfileId = (symbol) ? await this.dataGatheringService.getSymbolProfileId(symbol) : null;
+        let symbolProfileId = (symbol) ? await this.dataGatheringService.getSymbolProfileId(symbol) : null;
         // const response = await this.dataGatheringService.getHistoricalDividendData(symbol);
 
         for (const order of csv_data) {
@@ -170,12 +213,21 @@ export class CSVService {
             let subtype = null;
             let comment = null;
 
+            if (description.includes('313747206')) {
+                symbol = 'FRT';
+                symbolProfileId = (symbol) ? await this.dataGatheringService.getSymbolProfileId(symbol) : null;
+            }
+
+
             if (description.includes('Bought')) {
                 type = 'BUY'
-                subtype = await this.getActivitySubTypeId('Buy')
 
-                if (description.includes(order['PRICE'])) {
-                    subtype = await this.getActivitySubTypeId('Ordinary Dividend Reinvestment')
+                if (await this.isSubTypeOrdinaryDividendReinvestment(order, symbol, csv_data, order['DATE'])) {
+                    subtype = await this.getActivitySubTypeId('Ordinary Dividend Reinvestment', 'BUY')
+                } else if (await this.isSubTypePartnershipDistribution(order, symbol, csv_data, order['DATE'])) {
+                    subtype = await this.getActivitySubTypeId('Partnership Distribution Reinvestment', 'BUY')
+                } else {
+                    subtype = await this.getActivitySubTypeId('Buy')
                 }
 
                 if (csv_data['SYMBOL'] === 'CSCO') {
@@ -197,52 +249,65 @@ export class CSVService {
 
             if (description.includes('FREE BALANCE INTEREST ADJUSTMENT')) {
                 type = 'CASH'
-                subtype = await this.getActivitySubTypeId('Interest')
+                subtype = await this.getActivitySubTypeId('Interest', type)
                 comment = 'FREE BALANCE INTEREST ADJUSTMENT'
             }
             else if (description.includes('OFF-CYCLE INTEREST (MMDA')) {
                 type = 'CASH'
-                subtype = await this.getActivitySubTypeId('Interest')
+                subtype = await this.getActivitySubTypeId('Interest', type)
                 comment = description;
                 symbol = null;
             }
             else if (description.includes('REBATE')) {
                 type = 'CASH'
-                subtype = await this.getActivitySubTypeId('DEPOSIT')
+                subtype = await this.getActivitySubTypeId('DEPOSIT', type)
                 comment = 'REBATE'
             }
             else if (description.includes('MANDATORY - NAME CHANGE')) {
                 type = 'TRANSFER'
-                subtype = await this.getActivitySubTypeId('TRANSFER')
+                subtype = await this.getActivitySubTypeId('TRANSFER', type)
                 comment = 'MANDATORY - NAME CHANGE'
             }
             else if (description.includes('MARGIN INTEREST ADJUSTMENT')) {
                 type = 'FEES'
-                subtype = await this.getActivitySubTypeId('Margin Expense')
+                subtype = await this.getActivitySubTypeId('Margin Expense', type)
                 comment = 'MARGIN INTEREST ADJUSTMENT'
             }
 
             if (description && description.includes('QUALIFIED DIVIDEND')) {
                 type = 'DIVIDEND';
-                subtype = await this.getActivitySubTypeId('Qualified Dividend')
+                subtype = await this.getActivitySubTypeId('Qualified Dividend', type)
                 comment = description;
             }
 
             if (description && description.includes('Foreign Tax Withheld')) {
                 type = 'FEES';
-                subtype = await this.getActivitySubTypeId('Foreign Tax Withheld')
+                subtype = await this.getActivitySubTypeId('Foreign Tax Withheld', type)
             }
+
             if (description && description.includes('FOREIGN TAX WITHHELD')) {
                 type = 'FEES';
-                subtype = await this.getActivitySubTypeId('Foreign Tax Withheld')
+                subtype = await this.getActivitySubTypeId('Foreign Tax Withheld', type)
             }
 
             if (description && description.includes('MANDATORY REVERSE SPLIT')) {
                 type = 'TRANSFER'
-                subtype = await this.getActivitySubTypeId('Split')
+                subtype = await this.getActivitySubTypeId('Split', type)
             }
 
+            if (description && description.includes('MANDATORY REVERSE SPLIT') && (!symbol)) {
+                continue;
+            }
 
+            if (description && description.includes('INTEREST INCOME - SECURITIES')) {
+                type = 'DIVIDEND'
+                subtype = await this.getActivitySubTypeId('Interest', type)
+            }
+
+            if (description && description.includes('PARTNERSHIP DISTRIBUTION')) {
+                type = 'DIVIDEND'
+                subtype = await this.getActivitySubTypeId('Partnership Distribution', type)
+            }
 
             comment = description;
 
