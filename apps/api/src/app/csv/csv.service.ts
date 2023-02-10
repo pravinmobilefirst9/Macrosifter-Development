@@ -273,6 +273,41 @@ export class CSVService {
                 subtype = await this.getActivitySubTypeId('Margin Expense', type)
                 comment = 'MARGIN INTEREST ADJUSTMENT'
             }
+            else if (description.includes('CASH IN LIEU OF FRACTIONAL SHARES')) {
+                type = 'SELL'
+                subtype = await this.getActivitySubTypeId('Sell', type)
+                comment = description
+            }
+            else if (description.includes('OTHER INCOME')) {
+                type = 'DIVIDEND'
+                subtype = await this.getActivitySubTypeId('Interest', type)
+                comment = description
+            }
+            else if (description.includes('FOREIGN SECURITY FEE')) {
+                type = 'FEES'
+                subtype = await this.getActivitySubTypeId('Foreign Security Fee', type)
+                comment = description
+            }
+            else if (description.includes('ADR FEE')) {
+                type = 'FEES'
+                subtype = await this.getActivitySubTypeId('ADR Fees', type)
+                comment = description
+            }
+            else if (description.includes('NON-TAXABLE SPIN OFF/LIQUIDATION DISTRIBUTION')) {
+                type = 'TRANSFER'
+                subtype = await this.getActivitySubTypeId('Spin off', type)
+                comment = description
+            }
+            else if (description.includes('LONG TERM GAIN DISTRIBUTION')) {
+                type = 'CASH'
+                subtype = await this.getActivitySubTypeId('Long-term Capital Gains', type)
+                comment = description
+            }
+            else if (description.includes('SHORT TERM CAPITAL GAINS')) {
+                type = 'CASH'
+                subtype = await this.getActivitySubTypeId('Short Term Capital Gains', type)
+                comment = description
+            }
 
             if (description && description.includes('QUALIFIED DIVIDEND')) {
                 type = 'DIVIDEND';
