@@ -279,7 +279,6 @@ export class CSVService {
                 if (csv_data['SYMBOL'] === 'PBA') {
                     subtype = await this.getActivitySubTypeId('Qualified Dividend Reinvestment')
                 }
-
             } else if (description.includes('DIVIDEND')) {
                 type = 'DIVIDEND'
                 subtype = await this.getActivitySubTypeId('Ordinary Dividend')
