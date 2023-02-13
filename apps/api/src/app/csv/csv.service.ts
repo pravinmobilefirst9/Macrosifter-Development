@@ -359,14 +359,14 @@ export class CSVService {
                 type = 'DIVIDEND';
                 subtype = await this.getActivitySubTypeId('Ordinary Dividend', type)
                 comment = description;
-            } else if (description && description.includes('Foreign Tax Withheld')) { // 14
+            } else if (description && description.includes('FOREIGN TAX WITHHELD (BSRTF)')) { // 14
                 type = 'TAX';
                 subtype = await this.getActivitySubTypeId('Foreign Tax Withheld', type)
             } else if (description && description.includes('MANDATORY REVERSE SPLIT') && (!symbol)) { // 15
                 continue;
             } else if (description && description.includes('MANDATORY REVERSE SPLIT')) { // 15
                 type = 'TRANSFER'
-                subtype = await this.getActivitySubTypeId('Split', type)
+                subtype = await this.getActivitySubTypeId('Reverse Split', type)
             }
             else if (description && description.includes('INTEREST INCOME - SECURITIES')) { // 16
                 type = 'DIVIDEND'
@@ -495,7 +495,7 @@ export class CSVService {
 
             }
 
-        }
+        } // End of for loop
 
         await this.updateCSVOrder(csv_data, fileName, userId, accountId, institutionId);
 
