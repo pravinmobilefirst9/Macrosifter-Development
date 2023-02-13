@@ -10,6 +10,9 @@ import { GfCreateOrUpdateTransactionDialogModule } from './create-or-update-tran
 import { GfImportTransactionDialogModule } from './import-transaction-dialog/import-transaction-dialog.module';
 import { TransactionsPageRoutingModule } from './transactions-page-routing.module';
 import { TransactionsPageComponent } from './transactions-page.component';
+import {
+  MsActivitiesTablePaginatorModule
+} from "@ghostfolio/ui/activities-table-paginator/activities-table-paginator.module";
 
 @NgModule({
   declarations: [TransactionsPageComponent],
@@ -22,7 +25,8 @@ import { TransactionsPageComponent } from './transactions-page.component';
     MatButtonModule,
     MatSnackBarModule,
     RouterModule,
-    TransactionsPageRoutingModule
+    TransactionsPageRoutingModule,
+    MsActivitiesTablePaginatorModule
   ],
   providers: [ImportTransactionsService],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]

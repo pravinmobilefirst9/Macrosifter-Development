@@ -13,6 +13,9 @@ import { GfValueModule } from '@ghostfolio/ui/value';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 import { ActivitiesTableComponent } from './activities-table.component';
+import {
+  MsActivitiesTablePaginatorModule
+} from "@ghostfolio/ui/activities-table-paginator/activities-table-paginator.module";
 
 @NgModule({
   declarations: [ActivitiesTableComponent],
@@ -29,7 +32,8 @@ import { ActivitiesTableComponent } from './activities-table.component';
     MatSortModule,
     MatTableModule,
     NgxSkeletonLoaderModule,
-    RouterModule
+    RouterModule,
+    MsActivitiesTablePaginatorModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

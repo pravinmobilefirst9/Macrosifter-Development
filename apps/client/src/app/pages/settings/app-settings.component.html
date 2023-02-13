@@ -1,0 +1,6 @@
+<div class="container">
+  <div>
+    <mat-spinner *ngIf="loadingTimezones"></mat-spinner>
+    <button (click)="updateTimezones()" *ngIf="!loadingTimezones">Update Timezones Table</button>
+  </div>
+</div>

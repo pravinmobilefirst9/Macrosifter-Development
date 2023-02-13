@@ -30,10 +30,9 @@ import {EMPTY, map, Observable, Subject} from 'rxjs';
 import {catchError, startWith, switchMap, takeUntil} from 'rxjs/operators';
 
 import { CreateOrUpdateAccessDialog } from './create-or-update-access-dialog/create-or-update-access-dialog.component';
-import {
-  WorldtimeapiByIpResposeInterface
-} from "@ghostfolio/common/interfaces/responses/worldtimeapi.by-ip-respose.interface";
 import {FormControl} from "@angular/forms";
+import {SelectSearchInput} from "@ghostfolio/ui/select-search/select-search.component";
+import {TimezoneInterface} from "@ghostfolio/common/interfaces/timezone.interface";
 
 @Component({
   host: { class: 'page' },
@@ -60,8 +59,10 @@ export class AccountPageComponent implements OnDestroy, OnInit {
   public hasPermissionToUpdateUserSettings: boolean;
   public language = document.documentElement.lang;
   public locales = ['de', 'de-CH', 'en-GB', 'en-US', 'es', 'it', 'nl'];
-  public timezones: string[] = [];
-  public currentTime: WorldtimeapiByIpResposeInterface;
+  public timezones: TimezoneInterface[] = [];
+  public timezonesFilter: SelectSearchInput[] = [];
+  public timezonesSelected = '';
+  public currentTime: { datetime: string, utc_offset: string };
   public price: number;
   public priceId: string;
   public snackBarRef: MatSnackBarRef<TextOnlySnackBar>;
@@ -70,7 +71,7 @@ export class AccountPageComponent implements OnDestroy, OnInit {
   public user: User;
 
   timezoneControl = new FormControl('');
-  timezoneFilteredOptions: Observable<string[]>;
+  timezoneFilteredOptions: Observable<TimezoneInterface[]>;
 
   private unsubscribeSubject = new Subject<void>();
 
@@ -165,28 +166,38 @@ export class AccountPageComponent implements OnDestroy, OnInit {
       map(value => this._filterTZ(value || '')),
     );
 
-    this.changeDetectorRef.markForCheck();
+    if (!this.user.settings.timezone) {
+      this.user.settings.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      this.onChangeUserSetting('timezone', this.user.settings.timezone)
+    }
 
     this.userService.getAllTimezones()
-      .then( data => {
+      .pipe(takeUntil(this.unsubscribeSubject))
+      .subscribe( data => {
         this.timezones = [...data];
-        this.changeDetectorRef.markForCheck();
-      })
-
-    if (!this.user.settings.timezone) {
-      this.userService.getTimezoneByIp().then( () => {
+        this.timezones.map( t => {
+          const composed = t.timezone + ' (' + t.abbreviation + ')';
+          this.timezonesFilter.push({key: composed, value: composed});
+        })
         this.updateTimezoneTime();
-        this.changeDetectorRef.markForCheck();
       })
-    } else
-      this.updateTimezoneTime();
   }
 
   public updateTimezoneTime() {
-    this.userService.getTimezone(this.user.settings.timezone).then( tz => {
-      this.currentTime = {...tz};
-      this.changeDetectorRef.markForCheck();
-    });
+    const selection = this.timezones.find(tz => tz.timezone === this.user.settings.timezone);
+    this.currentTime = {
+      datetime: new Date().toLocaleTimeString(this.user.settings.locale,
+        {timeZone: this.user.settings.timezone}),
+      utc_offset: selection?.utc_offset
+    }
+    this.timezonesSelected = selection?.timezone + ' (' + selection?.abbreviation + ')';
+    this.changeDetectorRef.markForCheck();
+  }
+
+  setTimezone(e) {
+    if (e?.key) {
+      this.onChangeUserSetting('timezone', e.key.split(' (')[0])
+    }
   }
 
   public onChangeUserSetting(aKey: string, aValue: string) {
@@ -431,9 +442,12 @@ export class AccountPageComponent implements OnDestroy, OnInit {
       });
   }
 
-  private _filterTZ(value: string): string[] {
+  private _filterTZ(value: string): TimezoneInterface[] {
     const filterValue = value.toLowerCase();
 
-    return this.timezones.filter(option => option.toLowerCase().includes(filterValue));
+    return this.timezones.filter(option =>
+      option.timezone.toLowerCase().includes(filterValue.toLowerCase())
+      || option.abbreviation.toLowerCase().includes(filterValue.toLowerCase())
+    );
   }
 }

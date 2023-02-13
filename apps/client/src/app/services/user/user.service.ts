@@ -8,9 +8,7 @@ import {catchError, map, takeUntil} from 'rxjs/operators';
 
 import { UserStoreActions } from './user-store.actions';
 import { UserStoreState } from './user-store.state';
-import {
-  WorldtimeapiByIpResposeInterface
-} from "@ghostfolio/common/interfaces/responses/worldtimeapi.by-ip-respose.interface";
+import {TimezoneInterface} from "@ghostfolio/common/interfaces/timezone.interface";
 const LOCAL_USER_ID = 'local-user-id'
 
 @Injectable({
@@ -40,29 +38,9 @@ export class UserService extends ObservableStore<UserStoreState> {
   }
 
   public getAllTimezones() {
-    return fetch("https://worldtimeapi.org/api/timezone")
-      .then(response => response.json());
-  }
-
-  public getTimezoneByIp() {
-    return fetch("https://worldtimeapi.org/api/ip")
-      .then(response => {
-        response.json().then( data => {
-          const tz = (data as WorldtimeapiByIpResposeInterface).timezone;
-          return this.get()
-            .pipe(take(1))
-            .subscribe( u => {
-            const user: User = {...u};
-            user.settings.timezone = tz;
-            this.setState({ user }, UserStoreActions.GetUser);
-          });
-        })
-      })
-  }
-
-  public getTimezone(tz: string) {
-    return fetch("https://worldtimeapi.org/api/timezone/" + tz)
-      .then(response => response.json())
+    return this.http.get<TimezoneInterface[]>('/api/v1/user/timezones-list').pipe(
+      catchError(this.handleError)
+    );
   }
 
   private fetchUser() {

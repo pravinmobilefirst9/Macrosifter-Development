@@ -333,7 +333,7 @@ async function main() {
     skipDuplicates: true
   });
 
-  const activitySubType = await prisma.activitySubType.createMany({
+  await prisma.activitySubType.createMany({
     data: [
       { type: 'BUY', subtype: 'Assignment', typeId: 1, id: 1 },
       { type: 'BUY', subtype: 'Buy to Cover', typeId: 1, id: 2 },
@@ -1035,15 +1035,6 @@ async function main() {
     userDemo
   });
 }
-
-async function deleteTables() {
-  await prisma.symbolProfile.deleteMany();
-  await prisma.order.deleteMany();
-  await prisma.orderCSV.deleteMany();
-  await prisma.marketData.deleteMany();
-}
-
-// deleteTables();
 
 main()
   .catch((e) => {

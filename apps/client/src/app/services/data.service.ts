@@ -5,7 +5,7 @@ import { CreateAccessDto } from '@ghostfolio/api/app/access/create-access.dto';
 import { CreateAccountDto } from '@ghostfolio/api/app/account/create-account.dto';
 import { UpdateAccountDto } from '@ghostfolio/api/app/account/update-account.dto';
 import { CreateOrderDto } from '@ghostfolio/api/app/order/create-order.dto';
-import { Activities } from '@ghostfolio/api/app/order/interfaces/activities.interface';
+import {Activities, Activity} from '@ghostfolio/api/app/order/interfaces/activities.interface';
 import { UpdateOrderDto } from '@ghostfolio/api/app/order/update-order.dto';
 import { PortfolioPositionDetail } from '@ghostfolio/api/app/portfolio/interfaces/portfolio-position-detail.interface';
 import { PortfolioPositions } from '@ghostfolio/api/app/portfolio/interfaces/portfolio-positions.interface';
@@ -43,6 +43,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { HttpHeaders } from '@angular/common/http';
+import {PaginatorOptionsInterface} from "@ghostfolio/common/interfaces/paginator-options.interface";
 
 
 @Injectable({
@@ -72,22 +73,21 @@ export class DataService {
     return this.http.get<Accounts>('/api/v1/account');
   }
 
-  public fetchActivities({
-    filters
-  }: {
-    filters?: Filter[];
-  }): Observable<Activities> {
+  public fetchActivities(
+    { filters}: { filters?: Filter[] },
+    paginator: PaginatorOptionsInterface = {}
+  ): Observable<{activities: Activity[], count: number}> {
     return this.http
-      .get<any>('/api/v1/order', {
-        params: this.buildFiltersAsQueryParams({ filters })
+      .get<unknown>('/api/v1/order', {
+        params: this.buildFiltersAsQueryParams({ filters }, paginator)
       })
       .pipe(
-        map(({ activities }) => {
-          for (const activity of activities) {
+        map(({ data }) => {
+          for (const activity of data.activities) {
             activity.createdAt = parseISO(activity.createdAt);
             activity.date = parseISO(activity.date);
           }
-          return { activities };
+          return data;
         })
       );
   }
@@ -498,7 +498,10 @@ export class DataService {
 
   }
 
-  private buildFiltersAsQueryParams({ filters }: { filters?: Filter[] }) {
+  private buildFiltersAsQueryParams(
+    { filters }: { filters?: Filter[] },
+    paginator: PaginatorOptionsInterface = {}
+  ) {
     let params = new HttpParams();
 
     if (filters?.length > 0) {
@@ -542,6 +545,15 @@ export class DataService {
             .join(',')
         );
       }
+    }
+
+    if (Object.keys(paginator).length > 0) {
+      Object.keys(paginator).forEach(key => {
+        params = params.append(
+          key,
+          paginator[key]
+        );
+      })
     }
 
     return params;

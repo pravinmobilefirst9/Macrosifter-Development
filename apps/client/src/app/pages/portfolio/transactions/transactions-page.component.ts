@@ -26,6 +26,8 @@ import { takeUntil } from 'rxjs/operators';
 import { CreateOrUpdateTransactionDialog } from './create-or-update-transaction-dialog/create-or-update-transaction-dialog.component';
 import { ImportTransactionDialog } from './import-transaction-dialog/import-transaction-dialog.component';
 import { OpenCSVDialog } from './Import-CSV-Dialog/OpenCSVDialog';
+import {PaginatorOptionsInterface} from "@ghostfolio/common/interfaces/paginator-options.interface";
+import {Sort} from "@angular/material/sort";
 
 @Component({
   host: { class: 'page' },
@@ -35,6 +37,7 @@ import { OpenCSVDialog } from './Import-CSV-Dialog/OpenCSVDialog';
 })
 export class TransactionsPageComponent implements OnDestroy, OnInit {
   public activities: Activity[];
+  public activitiesCount = 0;
   public defaultAccountId: string;
   public deviceType: string;
   public hasImpersonationId: boolean;
@@ -45,6 +48,13 @@ export class TransactionsPageComponent implements OnDestroy, OnInit {
   public user: User;
 
   private unsubscribeSubject = new Subject<void>();
+
+  private paginator: PaginatorOptionsInterface = {
+    size: '0',
+    page: '0',
+    direction: 'desc',
+    order: 'date'
+  }
 
   public constructor(
     private changeDetectorRef: ChangeDetectorRef,
@@ -113,15 +123,28 @@ export class TransactionsPageComponent implements OnDestroy, OnInit {
         }
       });
 
+    // this.fetchActivities();
+  }
+
+  public changePagination($event: {pageIndex: number, pageSize: number}) {
+    this.paginator.page = $event.pageIndex.toString();
+    this.paginator.size = $event.pageSize.toString();
     this.fetchActivities();
   }
 
+  sortChange(sort: Sort) {
+    this.paginator.order = sort.active;
+    if (sort.direction.length) this.paginator.direction = sort.direction
+  }
+
   public fetchActivities() {
+
     this.dataService
-      .fetchActivities({})
+      .fetchActivities({}, this.paginator)
       .pipe(takeUntil(this.unsubscribeSubject))
-      .subscribe(({ activities }) => {
-        this.activities = activities;
+      .subscribe(data => {
+        this.activities = data.activities;
+        this.activitiesCount = data.count;
 
         if (this.hasPermissionToCreateOrder && this.activities?.length <= 0) {
           this.router.navigate([], { queryParams: { createDialog: true } });
