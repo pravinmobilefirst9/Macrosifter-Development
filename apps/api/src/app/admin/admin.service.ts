@@ -18,6 +18,8 @@ import { Injectable } from '@nestjs/common';
 import { AssetSubClass, Prisma, Property } from '@prisma/client';
 import { differenceInDays } from 'date-fns';
 import { groupBy } from 'lodash';
+import axios from "axios";
+import {TimezoneInterface} from "@ghostfolio/common/interfaces/timezone.interface";
 
 @Injectable()
 export class AdminService {
@@ -192,6 +194,47 @@ export class AdminService {
     }
 
     return response;
+  }
+
+  public async updateOrCreateAllTimezones() {
+    await this.getTimezonesList().then(
+      async areas => {
+        for (const timezone of areas) {
+          await this.getAreaTimezone(timezone).then(tz => {
+            this.updateOrCreateTimezone({timezone}, tz)
+          })
+        }
+      })
+  }
+
+  private async updateOrCreateTimezone(
+      where: Prisma.TimezonesWhereUniqueInput,
+      data: TimezoneInterface
+  ): Promise<TimezoneInterface> {
+    const { timezone, abbreviation, utc_offset, dst, dst_from, dst_offset, dst_until, raw_offset} = data;
+    return await this.prismaService.timezones.upsert({
+      create:
+        { timezone, abbreviation, utc_offset, dst, dst_from, dst_offset, dst_until, raw_offset},
+      update:
+        { abbreviation, utc_offset, dst, dst_from, dst_offset, dst_until, raw_offset},
+      where,
+      });
+  }
+
+  private async getTimezonesList() {
+    return await axios.get('https://worldtimeapi.org/api/timezone').then(
+      data => {
+        return data.data;
+      }
+    )
+  }
+
+  private async getAreaTimezone(area: string) {
+    return await axios.get('https://worldtimeapi.org/api/timezone/' + area).then(
+      data => {
+        return data.data;
+      }
+    )
   }
 
   private async getUsersWithAnalytics(): Promise<AdminData['users']> {

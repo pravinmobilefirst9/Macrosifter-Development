@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = []
+  previewFeatures = ["interactiveTransactions"]
   binaryTargets   = ["debian-openssl-1.1.x", "linux-arm64-openssl-1.1.x", "native"]
 }
 
@@ -346,6 +346,17 @@ model PlaidHoldings {
   is_cash_equivalent Boolean?
 
   @@unique([accountId, security_id])
+}
+
+model Timezones {
+  timezone          String         @unique
+  abbreviation      String
+  utc_offset        String
+  raw_offset        Int
+  dst               Boolean        @default(false)
+  dst_offset        Int?
+  dst_from          String?
+  dst_until         String?
 }
 
 enum AccountType {

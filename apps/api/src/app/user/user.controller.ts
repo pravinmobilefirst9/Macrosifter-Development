@@ -28,6 +28,7 @@ import { UserItem } from './interfaces/user-item.interface';
 import { RetrieveBalanceDto } from './retrieve-balance-dto';
 import { UpdateUserSettingDto } from './update-user-setting.dto';
 import { UserService } from './user.service';
+import {TimezoneInterface} from "@ghostfolio/common/interfaces/timezone.interface";
 
 @Controller('user')
 export class UserController {
@@ -139,5 +140,11 @@ export class UserController {
   @Post('/retrieve-balance')
   public async retrieveBalance(@Body() data: RetrieveBalanceDto) {
     return this.userService.retrieveBalance(data)
+  }
+
+  @Get('timezones-list')
+  @UseGuards(AuthGuard('jwt'))
+  public async getTimezones(): Promise<TimezoneInterface[]> {
+    return this.userService.timezonesList();
   }
 }

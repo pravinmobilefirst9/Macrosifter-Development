@@ -333,7 +333,7 @@ async function main() {
     skipDuplicates: true
   });
 
-  const activitySubType = await prisma.activitySubType.createMany({
+  await prisma.activitySubType.createMany({
     data: [
       { type: 'BUY', subtype: 'Assignment', typeId: 1, id: 1 },
       { type: 'BUY', subtype: 'Buy to Cover', typeId: 1, id: 2 },
@@ -432,7 +432,7 @@ async function main() {
       { type: 'CASH', subtype: 'Pending Debit', typeId: 9, id: 50 },
       { type: 'CASH', subtype: 'Unqualified Gain', typeId: 9, id: 51 },
       { type: 'CASH', subtype: 'Withdrawal', typeId: 9, id: 52 },
-      { type: 'CASH', subtype: 'Interest', typeId: 9, id: 53 }
+      { type: 'CASH', subtype: 'INTEST', typeId: 9, id: 53 }
     ],
     skipDuplicates: true
   });
@@ -1034,15 +1034,6 @@ async function main() {
     userDemo
   });
 }
-
-async function deleteTables() {
-  await prisma.symbolProfile.deleteMany();
-  await prisma.order.deleteMany();
-  await prisma.orderCSV.deleteMany();
-  await prisma.marketData.deleteMany();
-}
-
-// deleteTables();
 
 main()
   .catch((e) => {

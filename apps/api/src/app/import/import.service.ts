@@ -211,12 +211,12 @@ export class ImportService {
 
           if (description.includes('FREE BALANCE INTEREST ADJUSTMENT')) {
             type = 'CASH'
-            subtype = await this.getActivitySubTypeId('Interest')
+            subtype = await this.getActivitySubTypeId('INTEST')
             comment = 'FREE BALANCE INTEREST ADJUSTMENT'
           }
           if (description.includes('OFF-CYCLE INTEREST (MMDA10)')) {
             type = 'CASH'
-            subtype = await this.getActivitySubTypeId('Interest')
+            subtype = await this.getActivitySubTypeId('INTEST')
             comment = 'OFF-CYCLE INTEREST (MMDA10)'
           }
 

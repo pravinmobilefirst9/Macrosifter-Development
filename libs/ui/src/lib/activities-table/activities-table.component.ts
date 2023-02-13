@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
@@ -8,7 +9,7 @@ import {
   Output,
   ViewChild
 } from '@angular/core';
-import { MatSort } from '@angular/material/sort';
+import {MatSort, Sort} from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { Activity } from '@ghostfolio/api/app/order/interfaces/activities.interface';
@@ -17,10 +18,12 @@ import { Filter, UniqueAsset } from '@ghostfolio/common/interfaces';
 import { OrderWithAccount } from '@ghostfolio/common/types';
 import Big from 'big.js';
 import { isUUID } from 'class-validator';
-import { log } from 'console';
 import { endOfToday, format, isAfter } from 'date-fns';
 import { isNumber } from 'lodash';
-import { Subject, Subscription, distinctUntilChanged, takeUntil } from 'rxjs';
+import {Subject, Subscription, distinctUntilChanged, takeUntil} from 'rxjs';
+import {
+  ActivitiesTablePaginatorComponent
+} from "@ghostfolio/ui/activities-table-paginator/activities-table-paginator.component";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,8 +31,9 @@ import { Subject, Subscription, distinctUntilChanged, takeUntil } from 'rxjs';
   styleUrls: ['./activities-table.component.scss'],
   templateUrl: './activities-table.component.html'
 })
-export class ActivitiesTableComponent implements OnChanges, OnDestroy {
+export class ActivitiesTableComponent implements OnChanges, AfterViewInit, OnDestroy {
   @Input() activities: Activity[];
+  @Input() totalRecords = 0;
   @Input() baseCurrency: string;
   @Input() deviceType: string;
   @Input() hasPermissionToCreateActivity: boolean;
@@ -48,9 +52,12 @@ export class ActivitiesTableComponent implements OnChanges, OnDestroy {
   @Output() exportDrafts = new EventEmitter<string[]>();
   @Output() import = new EventEmitter<void>();
   @Output() importCSV = new EventEmitter<void>();
+  @Output() sortChange = new EventEmitter<Sort>();
+  @Output() paginationSet = new EventEmitter<{pageIndex: number, pageSize: number}>();
   // @Output() importCSV2 = new EventEmitter<void>();
 
   @ViewChild(MatSort) sort: MatSort;
+  @ViewChild('paginator') paginator: ActivitiesTablePaginatorComponent;
 
   public allFilters: Filter[];
   public dataSource: MatTableDataSource<Activity> = new MatTableDataSource();
@@ -128,6 +135,18 @@ export class ActivitiesTableComponent implements OnChanges, OnDestroy {
     }
   }
 
+  ngAfterViewInit() {
+    this.sort.sortChange
+      .pipe(takeUntil(this.unsubscribeSubject))
+      .subscribe(next => {
+        this.sortChange.emit(next)
+        if (this.paginator) {
+          this.paginator.pageIndex = 0;
+          this.paginator.emit();
+        }
+      });
+  }
+
   public onCloneActivity(aActivity: OrderWithAccount) {
     this.activityToClone.emit(aActivity);
   }
@@ -199,6 +218,10 @@ export class ActivitiesTableComponent implements OnChanges, OnDestroy {
   public ngOnDestroy() {
     this.unsubscribeSubject.next();
     this.unsubscribeSubject.complete();
+  }
+
+  public changePagination($event) {
+    this.paginationSet.emit($event);
   }
 
   private getFilterableValues(

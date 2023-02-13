@@ -29,7 +29,7 @@ import { parseISO } from 'date-fns';
 import { StatusCodes, getReasonPhrase } from 'http-status-codes';
 
 import { CreateOrderDto } from './create-order.dto';
-import { Activities } from './interfaces/activities.interface';
+import {Activities, Activity} from './interfaces/activities.interface';
 import { OrderService } from './order.service';
 import { UpdateOrderDto } from './update-order.dto';
 
@@ -72,8 +72,12 @@ export class OrderController {
     @Headers('impersonation-id') impersonationId,
     @Query('accounts') filterByAccounts?: string,
     @Query('assetClasses') filterByAssetClasses?: string,
-    @Query('tags') filterByTags?: string
-  ): Promise<Activities> {
+    @Query('tags') filterByTags?: string,
+    @Query('page') page?: string,
+    @Query('size') pageSize?: string,
+    @Query('order') order?: string,
+    @Query('direction') direction?: string,
+  ): Promise<{data: {activities: Activity[], count: number}}> {
     const filters = this.apiService.buildFiltersFromQueryParams({
       filterByAccounts,
       filterByAssetClasses,
@@ -87,12 +91,16 @@ export class OrderController {
       );
     const userCurrency = this.request.user.Settings.settings.baseCurrency;
 
-    let activities = await this.orderService.getOrders({
+    let {activities, count} = await this.orderService.getOrdersWithPagination({
       filters,
       userCurrency,
       includeDrafts: true,
       userId: impersonationUserId || this.request.user.id,
-      withExcludedAccounts: true
+      withExcludedAccounts: true,
+      page,
+      pageSize,
+      orderBy: order,
+      direction
     });
 
     if (
@@ -109,7 +117,7 @@ export class OrderController {
       ]);
     }
 
-    return { activities };
+    return { data: {activities, count } };
   }
 
   @Post()

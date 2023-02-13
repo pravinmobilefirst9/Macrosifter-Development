@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes, TitleStrategy } from '@angular/router';
 import { PageTitleStrategy } from '@ghostfolio/client/services/page-title.strategy';
-
 import { ModulePreloadService } from './core/module-preload.service';
+
 
 const routes: Routes = [
   {
@@ -245,6 +245,11 @@ const routes: Routes = [
     path: 'zen',
     loadChildren: () =>
       import('./pages/zen/zen-page.module').then((m) => m.ZenPageModule)
+  },
+  {
+    path: 'app-settings',
+    loadChildren: () =>
+      import('./pages/settings/app-settings.module').then((m) => m.AppSettingsModule)
   },
   {
     // wildcard, if requested url doesn't match any paths for routes defined

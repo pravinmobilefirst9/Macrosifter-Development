@@ -4,7 +4,6 @@ import {
 } from '@ghostfolio/common/config';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { CSVService } from '../app/csv/csv.service';
 import { RedisCacheService } from '../app/redis-cache/redis-cache.service';
 
 import { DataGatheringService } from './data-gathering.service';
@@ -18,8 +17,7 @@ export class CronService {
     private readonly exchangeRateDataService: ExchangeRateDataService,
     private readonly twitterBotService: TwitterBotService,
     private readonly redisCacheService: RedisCacheService,
-    private readonly csvService: CSVService
-  ) {}
+  ) { }
 
   @Cron(CronExpression.EVERY_HOUR)
   public async runEveryHour() {
@@ -32,14 +30,15 @@ export class CronService {
     await this.dataGatheringService.gather7Days();
   }
 
-  // CRON AUTOMATION Cache Reset Cron Daily
+// CRON AUTOMATION Cache Reset Cron Daily
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   public async resetRedisCache() {
     await this.redisCacheService.reset();
   }
 
-  // CRON AUTOMATION DividendData Cron twice a month
-  @Cron('0 0 1,15 * *')
+
+ // CRON AUTOMATION DividendData Cron twice a month
+  @Cron("0 0 1,15 * *")
   public async syncDividendData() {
     await this.dataGatheringService.gatherDividendData();
   }
@@ -84,7 +83,7 @@ export class CronService {
     }
   }
 
-  // CRON AUTOMATION - Macrosifter sync new SymbolProfile data fields once a month
+// CRON AUTOMATION - Macrosifter sync new SymbolProfile data fields once a month 
   @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)
   public async syncSymbolProfile() {
     const uniqueAssets = await this.dataGatheringService.getUniqueAssets();
@@ -101,17 +100,15 @@ export class CronService {
     }
   }
 
+
   // CRON AUTOMATION FOR Missing Data Inside the Symbol Profile, DividendData or MarketData Hourly
   @Cron(CronExpression.EVERY_HOUR)
   public async automation_SymbolProfile_DividendData_MarketData() {
-    this.syncMarketData();
+    this.syncMarketData()
     this.syncSymbolProfile();
     this.syncDividendData();
     this.syncSplitData();
   }
 
-  // @Cron(CronExpression.EVERY_30_MINUTES)
-  // public async updateDividendPerShareAtCost() {
-  //   await this.csvService.updateDividendPershareAtCost();
-  // }
+
 }

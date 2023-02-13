@@ -70,6 +70,31 @@ export class OrderService {
     });
   }
 
+  public async ordersWithCount(params: {
+    include?: Prisma.OrderInclude;
+    skip?: number;
+    take?: number;
+    cursor?: Prisma.OrderWhereUniqueInput;
+    where?: Prisma.OrderWhereInput;
+    orderBy?: Prisma.OrderOrderByWithRelationInput;
+  }): Promise<{orders: OrderWithAccount[], count: number}> {
+    const { include, skip, take, cursor, where, orderBy } = params;
+
+    const [orders, count] = await this.prismaService.$transaction([
+      this.prismaService.order.findMany({
+        cursor,
+        include,
+        orderBy,
+        skip,
+        take,
+        where
+      }),
+      this.prismaService.order.count({ where })
+    ]);
+
+    return {orders, count};
+  }
+
   public async createOrder(
     data: Prisma.OrderCreateInput & {
       accountId?: string;
@@ -375,14 +400,154 @@ export class OrderService {
     return order;
   }
 
-  public async getOrders({
+  public async getOrdersWithPagination({
     filters,
     includeDrafts = false,
     types,
     userCurrency,
     userId,
-    withExcludedAccounts = false
+    withExcludedAccounts = false,
+    page = '0',
+    pageSize = '2',
+    orderBy = 'date',
+    direction = 'desc'
   }: {
+    filters?: Filter[];
+    includeDrafts?: boolean;
+    types?: TypeOfOrder[];
+    userCurrency: string;
+    userId: string;
+    withExcludedAccounts?: boolean;
+    page?: string;
+    pageSize?: string;
+    orderBy?: string;
+    direction?: string;
+  }): Promise<{activities: Activity[], count: number}> {
+    const where: Prisma.OrderWhereInput = { userId };
+
+    const {
+      ACCOUNT: filtersByAccount,
+      ASSET_CLASS: filtersByAssetClass,
+      TAG: filtersByTag
+    } = groupBy(filters, (filter) => {
+      return filter.type;
+    });
+
+    if (filtersByAccount?.length > 0) {
+      where.accountId = {
+        in: filtersByAccount.map(({ id }) => {
+          return id;
+        })
+      };
+    }
+
+    if (includeDrafts === false) {
+      where.isDraft = false;
+    }
+
+    if (filtersByAssetClass?.length > 0) {
+      where.SymbolProfile = {
+        OR: [
+          {
+            AND: [
+              {
+                OR: filtersByAssetClass.map(({ id }) => {
+                  return { assetClass: AssetClass[id] };
+                })
+              },
+              {
+                OR: [
+                  { SymbolProfileOverrides: { is: null } },
+                  { SymbolProfileOverrides: { assetClass: null } }
+                ]
+              }
+            ]
+          },
+          {
+            SymbolProfileOverrides: {
+              OR: filtersByAssetClass.map(({ id }) => {
+                return { assetClass: AssetClass[id] };
+              })
+            }
+          }
+        ]
+      };
+    }
+
+    if (filtersByTag?.length > 0) {
+      where.tags = {
+        some: {
+          OR: filtersByTag.map(({ id }) => {
+            return { id };
+          })
+        }
+      };
+    }
+
+    if (types) {
+      where.OR = types.map((type) => {
+        return {
+          type: {
+            equals: type
+          }
+        };
+      });
+    }
+
+    const sortOptions = {};
+    sortOptions[orderBy] = direction;
+
+    const {orders, count} = await this.ordersWithCount({
+      where,
+      skip: parseInt(page, 10) * parseInt(pageSize, 10),
+      take: parseInt(pageSize, 10),
+      include: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        Account: {
+          include: {
+            Platform: true
+          }
+        },
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        SymbolProfile: true,
+        tags: true
+      },
+      orderBy: sortOptions,
+    });
+
+    const activities = orders
+      .filter((order) => {
+        return withExcludedAccounts || order.Account?.isExcluded === false;
+      })
+      .map((order) => {
+        const value = new Big(order.quantity).mul(order.unitPrice).toNumber();
+
+        return {
+          ...order,
+          value,
+          feeInBaseCurrency: this.exchangeRateDataService.toCurrency(
+            order.fee,
+            (order.SymbolProfile?.currency) ? (order.SymbolProfile?.currency) : null,
+            userCurrency
+          ),
+          valueInBaseCurrency: this.exchangeRateDataService.toCurrency(
+            value,
+            (order.SymbolProfile?.currency) ? (order.SymbolProfile?.currency) : null,
+            userCurrency
+          )
+        };
+      });
+    return {activities, count};
+  }
+
+  public async getOrders({
+                           filters,
+                           includeDrafts = false,
+                           types,
+                           userCurrency,
+                           userId,
+                           withExcludedAccounts = false
+                         }: {
     filters?: Filter[];
     includeDrafts?: boolean;
     types?: TypeOfOrder[];

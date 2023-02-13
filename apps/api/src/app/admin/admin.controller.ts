@@ -352,4 +352,10 @@ export class AdminController {
 
     return await this.adminService.putSetting(key, data.value);
   }
+
+  @Get('timezones-update')
+  @UseGuards(AuthGuard('jwt'))
+  public async allTimezones() {
+    return await this.adminService.updateOrCreateAllTimezones();
+  }
 }

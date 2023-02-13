@@ -19,6 +19,7 @@ import { Prisma, Role, User } from '@prisma/client';
 import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 import { sortBy } from 'lodash';
 import { RetrieveBalanceDto } from './retrieve-balance-dto';
+import {TimezoneInterface} from "@ghostfolio/common/interfaces/timezone.interface";
 
 const crypto = require('crypto');
 const axios = require('axios');
@@ -26,7 +27,6 @@ const axios = require('axios');
 @Injectable()
 export class UserService {
   public static DEFAULT_CURRENCY = 'USD';
-  public static DEFAULT_TIMEZONE = 'EST';
   public PLAID_BASE_URI = process.env.PLAID_BASE_URI;
   private baseCurrency: string;
 
@@ -147,12 +147,6 @@ export class UserService {
         UserService.DEFAULT_CURRENCY;
     }
 
-    // Set default value for base timezone
-    if (!(user.Settings.settings as UserSettings)?.timezone) {
-      (user.Settings.settings as UserSettings).timezone =
-        await this.getTimezoneByIp().timezone;
-    }
-
     // Set default value for date range
     (user.Settings.settings as UserSettings).dateRange =
       (user.Settings.settings as UserSettings).viewMode === 'ZEN'
@@ -231,7 +225,6 @@ export class UserService {
     if (!data?.provider) {
       data.provider = 'ANONYMOUS';
     }
-    const tz = await this.getTimezoneByIp();
 
     let user = await this.prismaService.user.create({
       data: {
@@ -249,7 +242,6 @@ export class UserService {
           create: {
             settings: {
               currency: this.baseCurrency,
-              timezone: tz?.timezone ?? UserService.DEFAULT_TIMEZONE
             }
           }
         }
@@ -372,6 +364,10 @@ export class UserService {
 
   }
 
+  public async timezonesList(): Promise<TimezoneInterface[]> {
+    return await this.prismaService.timezones.findMany();
+  }
+
   private getRandomString(length: number) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     const result = [];
@@ -382,14 +378,6 @@ export class UserService {
       );
     }
     return result.join('');
-  }
-
-  private getTimezoneByIp() {
-    return axios.get('https://worldtimeapi.org/api/ip').then(
-      data => {
-        return data.data;
-      }
-    )
   }
 
 }

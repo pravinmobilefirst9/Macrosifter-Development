@@ -1,0 +1,9 @@
+<mat-paginator
+  [length]="length"
+  [pageSizeOptions]="pageSizeOptions"
+  [pageIndex]="pageIndex"
+  [pageSize]="pageSize"
+  (page)="pageSet($event)"
+  (change)="valueChange($event)"
+  aria-label="Select page">
+</mat-paginator>
