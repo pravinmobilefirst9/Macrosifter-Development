@@ -433,7 +433,11 @@ async function main() {
       { type: 'CASH', subtype: 'Unqualified Gain', typeId: 9, id: 51 },
       { type: 'CASH', subtype: 'Withdrawal', typeId: 9, id: 52 },
       { type: 'CASH', subtype: 'Interest', typeId: 9, id: 53 },
-      { type: 'TRANSFER', subtype: 'Reverse Split', typeId: 8, id: 54 }
+      { type: 'TRANSFER', subtype: 'Reverse Split', typeId: 8, id: 54 },
+      { type: 'BUY', subtype: 'Buy Call', typeId: 1, id: 55 },
+      { type: 'BUY', subtype: 'Buy Put', typeId: 1, id: 56 },
+      { type: 'SELL', subtype: 'Sell Call', typeId: 4, id: 57 },
+      { type: 'SELL', subtype: 'Sell Put', typeId: 4, id: 58 }
     ],
     skipDuplicates: true
   });

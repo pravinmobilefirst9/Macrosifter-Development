@@ -242,6 +242,10 @@ export class CSVService {
       symbol = 'META';
     }
 
+    if (symbol === 'null') {
+      symbol = null;
+    }
+
     let symbolProfileId = symbol
       ? await this.dataGatheringService.getSymbolProfileId(symbol)
       : null;
@@ -529,6 +533,10 @@ export class CSVService {
         type = 'CASH';
         if (description.includes('OFF-CYCLE INTEREST (MMDA')) {
           subtype = await this.getActivitySubTypeId('Interest');
+        } else if (description.includes('FREE BALANCE INTEREST ADJUSTMENT')) {
+          type = 'CASH';
+          subtype = await this.getActivitySubTypeId('Interest', type);
+          comment = description;
         } else {
           subtype = await this.getActivitySubTypeId('Deposit');
         }
