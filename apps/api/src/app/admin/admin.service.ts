@@ -20,6 +20,7 @@ import { differenceInDays } from 'date-fns';
 import { groupBy } from 'lodash';
 import axios from "axios";
 import {TimezoneInterface} from "@ghostfolio/common/interfaces/timezone.interface";
+import {sleepSecs} from "twitter-api-v2/dist/v1/media-helpers.v1";
 
 @Injectable()
 export class AdminService {
@@ -197,13 +198,56 @@ export class AdminService {
   }
 
   public async updateOrCreateAllTimezones() {
-    await this.getTimezonesList().then(
+    return await this.getTimezonesList().then(
       async areas => {
+        let updated = 0;
         for (const timezone of areas) {
           await this.getAreaTimezone(timezone).then(tz => {
             this.updateOrCreateTimezone({timezone}, tz)
+            updated++;
           })
+          await sleepSecs(.5);
         }
+        return {updated};
+      })
+  }
+
+  public async fillTimezonesTable() {
+    return await this.getTimezonesList().then(
+      async areasTotal => {
+        return await this.prismaService.timezones.findMany().then(
+          async tz => {
+            const areasLocal = tz.map( t => t.timezone);
+            let added = 0;
+            for (let i = 0; i < areasTotal?.length; i++) {
+              if (areasLocal.indexOf(areasTotal[i]) < 0) {
+                await this.getAreaTimezone(areasTotal[i]).then(
+                  async a => {
+                    await this.updateOrCreateTimezone({timezone: areasTotal[i]}, a).then(
+                      () => added++
+                    )
+                  }
+                )
+                await sleepSecs(.5);
+              }
+            }
+            return {new: added};
+          }
+        );
+      })
+  }
+
+  public async validateTimezonesList() {
+    return await this.getTimezonesList().then(
+      async areasTotal => {
+        return await this.prismaService.timezones.findMany().then(
+          areasLocal => {
+            return {
+              total: areasTotal,
+              local: areasLocal
+            }
+          }
+        );
       })
   }
 

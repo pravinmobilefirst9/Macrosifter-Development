@@ -353,6 +353,18 @@ export class AdminController {
     return await this.adminService.putSetting(key, data.value);
   }
 
+  @Get('timezones-validate')
+  @UseGuards(AuthGuard('jwt'))
+  public async validateTimezones() {
+    return await this.adminService.validateTimezonesList();
+  }
+
+  @Get('timezones-fill')
+  @UseGuards(AuthGuard('jwt'))
+  public async fillTimezones() {
+    return await this.adminService.fillTimezonesTable();
+  }
+
   @Get('timezones-update')
   @UseGuards(AuthGuard('jwt'))
   public async allTimezones() {
