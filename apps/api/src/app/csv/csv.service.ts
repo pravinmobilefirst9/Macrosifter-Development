@@ -1,4 +1,4 @@
-import { DataGatheringService } from '../../services/data-gathering.service';
+  import { DataGatheringService } from '../../services/data-gathering.service';
 import { PrismaService } from '../../services/prisma.service';
 import {
   GATHER_ASSET_PROFILE_PROCESS,
@@ -131,6 +131,57 @@ export class CSVService {
     }
   }
 
+  public getCCN(str){
+    
+    const MonthsArray  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    const digitOfMonths = ['01','02','03','04','05','06','07','08','09','10','11','12']
+    
+    let ccn = '';
+    
+    ccn += str.split(' ')[0]
+    let year = str.split(' ')[3]
+    
+    year = year.slice(2,4)
+    
+    ccn+=year;
+    
+    ccn += digitOfMonths[MonthsArray.findIndex((value,index)=>{
+        return str.split(' ')['1']===value
+    })]
+    
+    ccn += str.split(' ')[2];
+    
+    ccn += str.split(' ')[5] === 'Call' ? 'C':'P'
+    
+    let number1 = str.split(' ')[4]
+    number1 = String(number1).split('.')[0]
+    number1 = String(number1).split('')
+    
+    let temp = ['0','0','0','0','0']
+    
+    let j = temp.length-1;
+    for(let i=number1.length-1;i>=0;i--){
+        temp[j--] = number1[i]
+    }
+    
+    for(let i=0;i<temp.length;i++){
+        ccn+= temp[i]
+    }
+    
+    temp = ['0','0','0']
+    number1 = str.split(' ')[4].split('.')[1]
+    number1 = Array(number1)
+    
+    for(let i=0;i<number1.length;i++){
+        temp[i]=number1[i]
+    }
+    for(let i=0;i<temp.length;i++){
+        ccn+= temp[i]
+    }
+        
+    return ccn;
+}
+
   public async isSubTypeOrdinaryDividendReinvestment(
     order,
     symbol,
@@ -246,8 +297,22 @@ export class CSVService {
       symbol = null;
     }
 
+    let type = null;
+    let subtype = null;
+    let comment = null;
+
+    let isCCNSymbol = false;
+    if(symbol && symbol.includes('Call')){
+      symbol = this.getCCN(symbol)
+      isCCNSymbol = true;
+
+    }else if(symbol && symbol.includes('Put')){
+      symbol = this.getCCN(symbol)
+      isCCNSymbol = true;
+      
+    }
     let symbolProfileId = symbol
-      ? await this.dataGatheringService.getSymbolProfileId(symbol)
+      ? await this.dataGatheringService.getSymbolProfileId(symbol,isCCNSymbol)
       : null;
     // const response = await this.dataGatheringService.getHistoricalDividendData(symbol);
 
@@ -274,6 +339,14 @@ export class CSVService {
         continue;
       }
 
+      if(description.includes('REMOVAL OF OPTION DUE TO ASSIGNMENT')){
+        continue;
+      }
+
+      if(description.includes('REMOVAL OF OPTION DUE TO EXPIRATION')){
+        continue;
+      }
+
       if (
         description.includes('INTRA-ACCOUNT TRANSFER') ||
         description.includes(
@@ -291,14 +364,12 @@ export class CSVService {
         continue;
       }
 
-      let type = null;
-      let subtype = null;
-      let comment = null;
+
 
       if (description.includes('313747206')) {
         symbol = 'FRT';
         symbolProfileId = symbol
-          ? await this.dataGatheringService.getSymbolProfileId(symbol)
+          ? await this.dataGatheringService.getSymbolProfileId(symbol,isCCNSymbol)
           : null;
       }
 
@@ -508,11 +579,23 @@ export class CSVService {
         // 18
         type = 'TRANSFER';
         subtype = await this.getActivitySubTypeId('Split', type);
+      } 
+       if(description && description.includes('Sold') && symbol && symbol.includes('Put')){
+          type = 'SELL'
+          subtype = await this.getActivitySubTypeId('Sell Put')
+      }else if(description && description.includes('Bought') && symbol && symbol.includes('Call')){
+        type = 'BUY'
+        subtype = await this.getActivitySubTypeId('Buy Call')
+      }else if(description && description.includes('Sold') && symbol && symbol.includes('Call')){
+        type = 'SELL'
+        subtype = await this.getActivitySubTypeId('Sell Call')
+      }else if(description && description.includes('Bought') && symbol && symbol.includes('Put')){
+        type = 'BUY'
+        subtype = await this.getActivitySubTypeId('Buy Put')
       }
 
       comment = description;
-
-      let fee = 0;
+      let fee = 0; 
       if (order['REG FEE']) {
         fee += order['REG FEE'];
       }
