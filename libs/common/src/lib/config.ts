@@ -11,18 +11,18 @@ export const ghostfolioFearAndGreedIndexSymbol = `${ghostfolioScraperApiSymbolPr
 
 export const locale = 'en-US';
 
-export const primaryColorHex = '#36cfcc';
+export const primaryColorHex = '#72D8ED';
 export const primaryColorRgb = {
-  r: 54,
-  g: 207,
-  b: 204
+  r: 114,
+  g: 216,
+  b: 237
 };
 
-export const secondaryColorHex = '#3686cf';
+export const secondaryColorHex = '#2D4BAA';
 export const secondaryColorRgb = {
-  r: 54,
-  g: 134,
-  b: 207
+  r: 45,
+  g: 75,
+  b: 170
 };
 
 export const warnColorHex = '#dc3545';
@@ -91,3 +91,7 @@ export const QUEUE_JOB_STATUS_LIST = <JobStatus[]>[
 ];
 
 export const UNKNOWN_KEY = 'UNKNOWN';
+
+export const PRIVACY_POLICY_LINK = '/';
+
+export const TERMS_OF_USE_LINK = '/';

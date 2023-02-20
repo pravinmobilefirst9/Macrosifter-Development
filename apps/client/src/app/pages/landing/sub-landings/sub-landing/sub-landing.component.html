@@ -1,0 +1,11 @@
+<ms-banner [data]="data?.bannerData"></ms-banner>
+
+<div class="notes-block">
+  <div class="content" *ngFor="let t of data?.topics" >
+    <ms-landing-topic-block [data]="t"></ms-landing-topic-block>
+  </div>
+  <div class="f-btn sub">
+    <button mat-flat-button [routerLink]="'/register'" i18n>Try for free</button>
+  </div>
+</div>
+

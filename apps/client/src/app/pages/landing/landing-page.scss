@@ -1,125 +1,267 @@
-@import '~apps/client/src/styles/ghostfolio-style';
+.ms-container {
+  background-color: rgba(0, 163, 255, 0.08);
+  margin: -70px auto 0;
 
-:host {
-  display: block;
-
-  .button-container {
-    .mat-stroked-button {
-      background-color: var(--light-background);
-    }
+  .content {
+    position: relative;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding-bottom: 3rem;
   }
+}
 
-  .downloads {
-    img {
-      height: 2.5rem;
-    }
+.block-title {
+  font-size: 2.5rem;
+  font-family: Poppins-bold, sans-serif;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.image-left, .image-right {
+  position: absolute;
+}
+
+.image-left {
+  left: 0;
+  bottom: 3rem;
+}
+
+.image-right {
+  right: 0;
+  top: -50px;
+}
+
+.block {
+  text-align: center;
+  position: relative;
+}
+
+.blocks {
+  display: flex!important;
+  text-align: center;
+  margin: 0 auto;
+  justify-content: space-between;
+}
+
+.circle {
+  height: 100px;
+  width: 100px;
+  border-radius: 50%;
+  background: rgba(47, 112, 254, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 1.5rem;
+
+  img {
+    height: 50px;
+    width: 50px;
   }
+}
 
-  .intro {
-    font-size: 4vw;
-    line-height: 1;
+ms-landing-topic-block {
+  margin-bottom: 7.5rem;
+}
 
-    @media (max-width: 575.98px) {
-      font-size: 10vw;
-    }
-  }
+.features-block {
+  padding: 5.5rem 0;
+  background-color: rgba(0, 163, 255, 0.08);
 
-  .logo {
-    height: 3rem;
-    width: 7.5rem;
+  .content {
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
 
-    &.mask {
-      background-color: rgba(var(--dark-secondary-text));
-      mask-position: center;
-      mask-repeat: no-repeat;
-      mask-size: contain;
-    }
+    .feature {
+      margin-bottom: 3.5rem;
 
-    &.logo-agplv3 {
-      mask-image: url('/assets/images/logo-AGPLv3.svg');
-    }
+      .header {
+        font-size: 1.75rem;
+        font-weight: 700;
+        font-family: Poppins-medium, sans-serif;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: 1.25rem;
+      }
 
-    &.logo-alternative-to {
-      mask-image: url('/assets/images/logo-alternative-to.svg');
-    }
+      .f-circle {
+        background-color: white;
+        width: 4.5rem;
+        height: 4.5rem;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        margin-right: 1.25rem;
 
-    &.logo-awesome {
-      background-image: url('/assets/images/logo-awesome.png');
-      background-position: center;
-      background-repeat: no-repeat;
-      background-size: contain;
-      filter: grayscale(1);
-    }
+        img {
+          width: 2rem;
+          height: 2rem;
+        }
+      }
 
-    &.logo-openstartup {
-      background-image: url('/assets/images/logo-openstartup.png');
-      background-position: center;
-      background-repeat: no-repeat;
-      background-size: contain;
-      filter: grayscale(1);
-    }
-
-    &.logo-privacy-tools {
-      mask-image: url('/assets/images/logo-privacy-tools.svg');
-    }
-
-    &.logo-product-hunt {
-      background-image: url('/assets/images/logo-product-hunt.png');
-      background-position: center;
-      background-repeat: no-repeat;
-      background-size: contain;
-      filter: grayscale(1);
-    }
-
-    &.logo-unraid {
-      mask-image: url('/assets/images/logo-unraid.svg');
-    }
-  }
-
-  .outro-inner-container {
-    aspect-ratio: 16 / 9;
-    max-height: 66vh;
-
-    div {
-      background-image: url('/assets/intro.jpg');
-      background-position: top left;
-      background-repeat: no-repeat;
-      background-size: contain;
-    }
-  }
-
-  .video {
-    border: 1px solid rgba(var(--dark-dividers));
-
-    &:hover {
-      border-color: rgba(var(--palette-primary-500), 1);
+      .text {
+        text-align: justify;
+      }
     }
   }
 }
 
-:host-context(.is-dark-theme) {
-  .button-container {
-    .mat-stroked-button {
-      background-color: var(--dark-background);
+.f-btn {
+  text-align: center;
+
+  button {
+    padding: 0 3.5rem;
+    text-transform: uppercase;
+    font-family: Poppins-semibold, sans-serif;
+    color: white;
+    background-color: var(--ms-secondary);
+    border-radius: 5px;
+  }
+
+  &.sub {
+
+    margin-bottom: 8rem;
+
+    button {
+      padding: .3rem 8rem;
+      font-size: 1.3rem;
+    }
+  }
+}
+
+@media screen and (min-device-width: 901px) {
+  .ms-container {
+    padding: 8rem 4rem 5rem;
+  }
+
+  .blocks {
+    display: flex;
+    flex-direction: row;
+    max-width: 950px;
+
+    .block {
+      width: 30%;
+    }
+
+    .arrow {
+      position: absolute;
+      top: 50px;
+      left: 100%;
     }
   }
 
-  .logo {
-    &.logo-agplv3,
-    &.logo-alternative-to,
-    &.logo-privacy-tools,
-    &.logo-unraid {
-      background-color: rgba(var(--light-primary-text));
+  .notes-block {
+    padding: 6rem 0 0;
+    background-color: white;
+
+    .content {
+      max-width: 1000px;
+      margin: 0 auto 7.5rem;
     }
   }
 
-  .outro-inner-container {
-    div {
-      background-image: url('/assets/intro-dark.jpg') !important;
+  .features-block {
+    .content {
+      max-width: 1000px;
+      justify-content: center;
+
+      .feature {
+        width: 480px;
+      }
+    }
+  }
+}
+
+@media screen and (max-device-width: 900px) {
+  .ms-container{
+    padding: 8rem 0 2rem;
+  }
+
+  .blocks {
+    display: flex;
+    flex-direction: column;
+    max-width: 50%;
+
+    .block {
+      width: 100%;
+    }
+
+    .arrow {
+      transform: rotate(90deg);
+      margin: 3rem 0;
     }
   }
 
-  .video {
-    border-color: rgba(var(--light-dividers));
+  .notes-block {
+    padding: 3rem 0 0;
+    background-color: white;
+
+    .content {
+      max-width: 90%;
+      margin: 0 auto 3rem;
+    }
+  }
+
+  .features-block {
+    .content {
+      width: 90%;
+      justify-content: center;
+
+      .feature {
+        width: 100%;
+      }
+    }
+  }
+}
+
+@media screen and (max-device-width: 400px) {
+  .ms-container{
+    padding: 8rem 0 2rem;
+  }
+
+  .blocks {
+    display: flex;
+    flex-direction: column;
+    max-width: 90%;
+
+    .block {
+      width: 100%;
+    }
+
+    .arrow {
+      transform: rotate(90deg);
+      margin: 3rem 0;
+    }
+  }
+
+  .notes-block {
+    padding: 3rem 0 0;
+    background-color: white;
+
+    .content {
+      max-width: 90%;
+      margin: 0 auto 3rem;
+    }
+  }
+
+  .features-block {
+    .content {
+      width: 90%;
+      justify-content: center;
+
+      .feature {
+        width: 100%;
+      }
+    }
+  }
+
+  .f-btn button {
+    padding: 0!important;
+    width: 90% !important;
   }
 }

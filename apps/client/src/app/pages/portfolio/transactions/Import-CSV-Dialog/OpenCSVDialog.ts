@@ -280,6 +280,5 @@ export class OpenCSVDialog implements OnInit {
     public handleCloseCSVUpload() {
 
         this.dialogRef.close();
-        this.router.navigate(['/portfolio'], { relativeTo: this.route });
     }
 }

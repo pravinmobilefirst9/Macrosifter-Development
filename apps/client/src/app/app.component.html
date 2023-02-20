@@ -1,14 +1,14 @@
-<header>
-  <gf-header
+<header *ngIf="0">
+  <ms-header
     class="position-fixed w-100"
     [currentRoute]="currentRoute"
     [info]="info"
     [user]="user"
     (signOut)="onSignOut()"
-  ></gf-header>
+  ></ms-header>
 </header>
 
-<main role="main">
+<main role="main" *ngIf="0">
   <div
     *ngIf="canCreateAccount || (info?.systemMessage && user)"
     class="container info-message-container"
@@ -42,16 +42,23 @@
 </main>
 
 <footer
-  *ngIf="currentRoute === 'start'"
+  *ngIf="currentRoute === 'start' && 0"
   class="footer d-flex justify-content-center w-100"
 >
   <div class="container text-center">
     <div>© <a href="https://macrosifter.com">MacroSifter</a> {{ currentYear }}</div>
     <div class="py-2 text-muted">
-      
+
       <a color="primary" mat-flat-button [routerLink]="['/privacy-policy']">
         <small i18n>Privacy Policy</small>
       </a>
     </div>
   </div>
 </footer>
+
+<ms-layout
+  [currentRoute]="currentRoute"
+  [info]="info"
+  [user]="user"
+  (signOut)="onSignOut()"
+></ms-layout>

@@ -92,7 +92,7 @@ export class AppComponent implements OnDestroy, OnInit {
     this.tokenStorageService.signOut();
     this.userService.remove();
 
-    document.location.href = '/';
+    document.location.href = '';
   }
 
   public ngOnDestroy() {

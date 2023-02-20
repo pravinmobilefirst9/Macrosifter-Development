@@ -1,0 +1,12 @@
+<ms-header
+  [currentRoute]="currentRoute"
+  [info]="info"
+  [user]="user"
+  (signOut)="onSignOut()"
+></ms-header>
+
+<div class="content-container">
+  <router-outlet></router-outlet>
+</div>
+
+<ms-footer></ms-footer>

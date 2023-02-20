@@ -1,73 +1,32 @@
 <div align="center">
-  <a href="https://ghostfol.io">
+  <a href="https://macrosifter.com">
     <img
-      alt="Ghostfolio Logo"
-      src="https://avatars.githubusercontent.com/u/82473144?s=200"
+      alt="Macrosifter Logo"
+      src="https://macrosifter.com/assets/macrosifter_logo.png"
       width="100"
     />
   </a>
 
-  <h1>Ghostfolio</h1>
+  <h1>Macrosifter</h1>
   <p>
-    <strong>Open Source Wealth Management Software</strong>
+    <strong>MacroSifter is an investment management software</strong>
   </p>
   <p>
-    <a href="https://ghostfol.io"><strong>Ghostfol.io</strong></a> | <a href="https://ghostfol.io/en/demo"><strong>Live Demo</strong></a> | <a href="https://ghostfol.io/en/pricing"><strong>Ghostfolio Premium</strong></a> | <a href="https://ghostfol.io/en/faq"><strong>FAQ</strong></a> | <a href="https://ghostfol.io/en/blog"><strong>Blog</strong></a> | <a href="https://join.slack.com/t/ghostfolio/shared_invite/zt-vsaan64h-F_I0fEo5M0P88lP9ibCxFg"><strong>Slack</strong></a> | <a href="https://twitter.com/ghostfolio_"><strong>Twitter</strong></a>
+    <a href="https://macrosifter.com"><strong>macrosifter.com</strong></a>
   </p>
-  <p>
-    <a href="#contributing">
-      <img src="https://img.shields.io/badge/contributions-welcome-orange.svg"/></a>
-    <a href="https://www.gnu.org/licenses/agpl-3.0" rel="nofollow">
-      <img src="https://img.shields.io/badge/License-AGPL%20v3-blue.svg" alt="License: AGPL v3"/></a>
-  </p>
+  
 </div>
 
-**Ghostfolio** is an open source wealth management software built with web technology. The application empowers busy people to keep track of stocks, ETFs or cryptocurrencies and make solid, data-driven investment decisions.
+MacroSifter is an investment management software created for individuals interested in enterprise-grade portfolio management. We make it easy for you to connect, track, and analyze your investments across various asset classes.
+
 
 <div align="center" style="margin-top: 1rem; margin-bottom: 1rem;">
-  <a href="https://www.youtube.com/watch?v=yY6ObSQVJZk">
-    <img src="./apps/client/src/assets/images/video-preview.jpg" width="600"></a>
-</div>
-
-## Ghostfolio Premium
-
-Our official **[Ghostfolio Premium](https://ghostfol.io/en/pricing)** cloud offering is the easiest way to get started. Due to the time it saves, this will be the best option for most people. The revenue is used for covering the hosting costs.
-
-If you prefer to run Ghostfolio on your own infrastructure, please find further instructions in the [Self-hosting](#self-hosting) section.
-
-## Why Ghostfolio?
-
-Ghostfolio is for you if you are...
-
-- 💼 trading stocks, ETFs or cryptocurrencies on multiple platforms
-- 🏦 pursuing a buy & hold strategy
-- 🎯 interested in getting insights of your portfolio composition
-- 👻 valuing privacy and data ownership
-- 🧘 into minimalism
-- 🧺 caring about diversifying your financial resources
-- 🆓 interested in financial independence
-- 🙅 saying no to spreadsheets in 2022
-- 😎 still reading this list
-
-## Features
-
-- ✅ Create, update and delete transactions
-- ✅ Multi account management
-- ✅ Portfolio performance: Time-weighted rate of return (TWR) for `Today`, `YTD`, `1Y`, `5Y`, `Max`
-- ✅ Various charts
-- ✅ Static analysis to identify potential risks in your portfolio
-- ✅ Import and export transactions
-- ✅ Dark Mode
-- ✅ Zen Mode
-- ✅ Mobile-first design
-
-<div align="center" style="margin-top: 1rem; margin-bottom: 1rem;">
-  <img src="./apps/client/src/assets/images/screenshot.png" width="300">
+  <img src="https://macrosifter.com/assets/macrosifter_logo.png" width="300">
 </div>
 
 ## Technology Stack
 
-Ghostfolio is a modern web application written in [TypeScript](https://www.typescriptlang.org) and organized as an [Nx](https://nx.dev) workspace.
+Macrosifter is a modern web application written in [TypeScript](https://www.typescriptlang.org) and organized as an [Nx](https://nx.dev) workspace.
 
 ### Backend
 
@@ -79,18 +38,18 @@ The frontend is built with [Angular](https://angular.io) and uses [Angular Mater
 
 ## Self-hosting
 
-We provide official container images hosted on [Docker Hub](https://hub.docker.com/r/ghostfolio/ghostfolio) for `linux/amd64` and `linux/arm64`.
+We provide official container images hosted on [Docker Hub](https://hub.docker.com/r/Macrosifter/Macrosifter) for `linux/amd64` and `linux/arm64`.
 
 ### Supported Environment Variables
 
 | Name                | Default Value | Description                                                                                                                         |
 | ------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | `ACCESS_TOKEN_SALT` |               | A random string used as salt for access tokens                                                                                      |
-| `BASE_CURRENCY`     | `USD`         | The base currency of the Ghostfolio application. Caution: This cannot be changed later!                                             |
+| `BASE_CURRENCY`     | `USD`         | The base currency of the Macrosifter application. Caution: This cannot be changed later!                                             |
 | `DATABASE_URL`      |               | The database connection URL, e.g. `postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}?sslmode=prefer` |
-| `HOST`              | `0.0.0.0`     | The host where the Ghostfolio application will run on                                                                               |
+| `HOST`              | `0.0.0.0`     | The host where the Macrosifter application will run on                                                                               |
 | `JWT_SECRET_KEY`    |               | A random string used for _JSON Web Tokens_ (JWT)                                                                                    |
-| `PORT`              | `3333`        | The port where the Ghostfolio application will run on                                                                               |
+| `PORT`              | `3333`        | The port where the Macrosifter application will run on                                                                               |
 | `POSTGRES_DB`       |               | The name of the _PostgreSQL_ database                                                                                               |
 | `POSTGRES_PASSWORD` |               | The password of the _PostgreSQL_ database                                                                                           |
 | `POSTGRES_USER`     |               | The user of the _PostgreSQL_ database                                                                                               |
@@ -108,7 +67,7 @@ We provide official container images hosted on [Docker Hub](https://hub.docker.c
 
 #### a. Run environment
 
-Run the following command to start the Docker images from [Docker Hub](https://hub.docker.com/r/ghostfolio/ghostfolio):
+Run the following command to start the Docker images from [Docker Hub](https://hub.docker.com/r/Macrosifter/Macrosifter):
 
 ```bash
 docker-compose --env-file ./.env -f docker/docker-compose.yml up -d
@@ -133,13 +92,13 @@ Open http://localhost:3333 in your browser and accomplish these steps:
 
 #### Upgrade Version
 
-1. Increase the version of the `ghostfolio/ghostfolio` Docker image in `docker/docker-compose.yml`
+1. Increase the version of the `Macrosifter/Macrosifter` Docker image in `docker/docker-compose.yml`
 1. Run the following command to start the new Docker image: `docker-compose --env-file ./.env -f docker/docker-compose.yml up -d`  
    At each start, the container will automatically apply the database schema migrations if needed.
 
 ### Run with _Unraid_ (Community)
 
-Please follow the instructions of the Ghostfolio [Unraid Community App](https://unraid.net/community/apps?q=ghostfolio).
+Please follow the instructions of the Macrosifter [Unraid Community App](https://unraid.net/community/apps?q=Macrosifter).
 
 ## Development
 
@@ -254,16 +213,7 @@ Set the header as follows:
 }
 ```
 
-## Contributing
-
-Ghostfolio is **100% free** and **open source**. We encourage and support an active and healthy community that accepts contributions from the public - including you.
-
-Not sure what to work on? We have got some ideas. Please join the Ghostfolio [Slack channel](https://join.slack.com/t/ghostfolio/shared_invite/zt-vsaan64h-F_I0fEo5M0P88lP9ibCxFg), tweet to [@ghostfolio\_](https://twitter.com/ghostfolio_) or send an e-mail to hi@ghostfol.io. We would love to hear from you.
-
-If you like to support this project, get **[Ghostfolio Premium](https://ghostfol.io/en/pricing)** or **[Buy me a coffee](https://www.buymeacoffee.com/ghostfolio)**.
 
 ## License
 
-© 2022 [Ghostfolio](https://ghostfol.io)
-
-Licensed under the [AGPLv3 License](https://www.gnu.org/licenses/agpl-3.0.html).
+© 2022 [Macrosifter](https://macrosifter.com/home) 

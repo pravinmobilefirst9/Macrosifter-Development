@@ -1,324 +1,39 @@
-<div class="container">
-  <div class="row">
-    <div class="col text-center">
-      <h1 class="font-weight-bold intro mt-5">
-        Portfolio Management for the Fundamental Investor 
-      </h1>
-      <p class="lead mb-4">
-        We bring sophisticated investing to everyday investors.
-      </p>
-      <div class="mb-4">
-        <img
-            alt="macrosifter.com Trailer"
-            src="https://via.placeholder.com/640x360"
-            src="../assets/front_page_640x410.png"
-            style="max-width: 100%; width: 40rem"
-          />
+<ms-banner [data]="bannerData"></ms-banner>
+
+<div class="ms-container">
+  <div class="content">
+    <img src="assets/icons/triangles_group.svg" class="image-left" alt="" *ngIf="showsideImages">
+    <img src="assets/icons/triangles_group.svg" class="image-right" alt="" *ngIf="showsideImages">
+
+    <div class="block-title" i18n>How It Works</div>
+
+    <div class="blocks relative">
+      <div class="block" *ngFor="let b of blocks">
+        <div class="circle"><img [src]="b.icon" alt=""></div>
+        <div class="block-text">{{b.text}}</div>
+        <img [src]="'assets/icons/line.svg'" class="arrow" alt="" *ngIf="b.arrow">
       </div>
     </div>
   </div>
 </div>
 
-<div class="container">
-  <div class="button-container mb-5 row">
-    <div class="align-items-center col d-flex justify-content-center">
-      <div class="text-center">
-        <a
-          class="d-inline-block"
-          color="accent"
-          mat-flat-button
-          [routerLink]="['/register']"
-        >
-          Get Started
-        </a>
-        <div class="d-inline-block mx-3 text-muted">or</div>
-        <a class="d-inline-block" mat-stroked-button [routerLink]="['/demo']">
-          Live Demo
-        </a>
+<div class="notes-block">
+  <div class="content" *ngFor="let t of topics" >
+    <ms-landing-topic-block [data]="t"></ms-landing-topic-block>
+  </div>
+</div>
+
+<div class="features-block">
+  <div class="content">
+    <div class="feature" *ngFor="let f of features">
+      <div class="header">
+        <div class="f-circle"><img [src]="f?.icon" alt=""></div>
+        <div>{{f?.title}}</div>
       </div>
+      <div class="text">{{f?.text}}</div>
     </div>
   </div>
-
-  <div *ngIf="hasPermissionForStatistics" class="row mb-5">
-    <div
-      class="col-md-4 d-flex my-1"
-      [ngClass]="{ 'justify-content-center': this.deviceType !== 'mobile' }"
-    >
-      <a
-        class="d-block"
-        title="MacroSifter in Numbers: Monthly Active Users (MAU)"
-        [routerLink]="['/about']"
-      >
-        <gf-value
-          icon="people-outline"
-          size="large"
-          [value]="statistics?.activeUsers30d ?? '-'"
-          >Monthly Active Users</gf-value
-        >
-      </a>
-    </div>
-    <div
-      class="col-md-4 d-flex my-1"
-      [ngClass]="{ 'justify-content-center': this.deviceType !== 'mobile' }"
-    >
-      <a
-        class="d-block"
-        title="MacroSifter in Numbers: Stars on GitHub"
-        [routerLink]="['/about']"
-      >
-        <gf-value
-          icon="star-outline"
-          size="large"
-          [value]="statistics?.gitHubStargazers ?? '-'"
-          >Stars on GitHub</gf-value
-        >
-      </a>
-    </div>
-    <div
-      class="col-md-4 d-flex my-1"
-      [ngClass]="{ 'justify-content-center': this.deviceType !== 'mobile' }"
-    >
-      <a
-        class="d-block"
-        title="MacroSifter in Numbers: Pulls on Docker Hub"
-        [routerLink]="['/about']"
-      >
-        <gf-value
-          icon="cloud-download-outline"
-          size="large"
-          [value]="statistics?.dockerHubPulls ?? '-'"
-          >Pulls on Docker Hub</gf-value
-        >
-      </a>
-    </div>
+  <div class="f-btn">
+    <button mat-flat-button [routerLink]="'/register'" i18n>Try for free</button>
   </div>
-
-  <!-- <div class="row mb-5">
-    <div class="col-12 text-center text-muted"><small>As seen in</small></div>
-    <div class="col-md-2 d-flex justify-content-center my-1">
-      <a
-        class="d-block logo logo-alternative-to mask"
-        href="https://alternativeto.net"
-        target="_blank"
-        title="AlternativeTo - Crowdsourced software recommendations"
-      ></a>
-    </div>
-    <div class="col-md-2 d-flex justify-content-center my-1">
-      <a
-        class="d-block logo logo-awesome"
-        href="https://github.com/awesome-selfhosted/awesome-selfhosted"
-        target="_blank"
-        title="Awesome-Selfhosted: A list of Free Software network services and web applications which can be hosted on your own servers"
-      ></a>
-    </div>
-    <div class="col-md-2 d-flex justify-content-center my-1">
-      <a
-        class="d-block logo logo-openstartup"
-        href="https://openstartup.tm"
-        target="_blank"
-        title="Open Startup: The most complete list of open startups"
-      ></a>
-    </div>
-    <div class="col-md-2 d-flex justify-content-center my-1">
-      <a
-        class="d-block logo logo-privacy-tools mask"
-        href="https://www.privacytools.io"
-        target="_blank"
-        title="Privacy Tools: Software Alternatives and Encryption"
-      ></a>
-    </div>
-    <div class="col-md-2 d-flex justify-content-center my-1">
-      <a
-        class="d-block logo logo-product-hunt"
-        href="https://www.producthunt.com"
-        target="_blank"
-        title="Product Hunt – The best new products in tech."
-      ></a>
-    </div>
-    <div class="col-md-2 d-flex justify-content-center my-1">
-      <a
-        class="d-block logo logo-unraid mask"
-        href="https://unraid.net"
-        target="_blank"
-        title="Unraid | Unleash Your Hardware"
-      ></a>
-    </div>
-  </div> -->
-
-  <div class="pt-3 row">
-    <div class="col text-center">
-      <h2 class="h4 mb-1 text-center">
-        Forget <strong>Excel</strong>. <strong>Connect, segment, and analyze </strong> your investments.
-      </h2>
-      <p class="lead m-0">
-        MacroSifter empowers every day investors with enterprise-grade tracking and analysis across all of your investment holdings.
-      </p>
-    </div>
-  </div>
-
-  <div class="row my-3">
-    <div class="col-md-4 my-2">
-      <mat-card>
-        <mat-card-title>360° View</mat-card-title>
-        Connect all of your investments across multiple platforms.
-      </mat-card>
-    </div>
-    <div class="col-md-4 my-2">
-      <mat-card>
-        <mat-card-title>Sync like Magic</mat-card-title>
-        Your accounts and transactions are synced seamlessly.
-      </mat-card>
-    </div>
-    <div class="col-md-4 my-2">
-      <mat-card>
-        <mat-card-title>Track & Analyze</mat-card-title>
-        Track and analyze your performance with detailed insights that matter.
-      </mat-card>
-    </div>
-  </div>
-
-  <div class="row my-5">
-    <div class="col-md-6 offset-md-3">
-      <h2 class="h4 mb-1 text-center">Why <strong>MacroSifter</strong> ?</h2>
-      <p class="lead mb-3 text-center">MacroSifter is for you if you are...</p>
-      <ul class="list-unstyled">
-        <li class="d-flex mb-3">
-          <span class="mr-3">📈 </span
-          ><span
-            >Investing in stocks, ETFs, cryptocurrencies, or making alternative investments on multiple platforms</span
-          >
-        </li>
-        
-        <li class="d-flex mb-3">
-          <span class="mr-3">🤯</span
-          ><span>Frustrated with your performance today and the data offered</span>
-        </li>
-
-        <li class="d-flex mb-3">
-          <span class="mr-3">💰</span
-          ><span
-            >Interested in a buy & hold strategy</span
-          >
-        </li>
-        <li class="d-flex mb-3">
-          <span class="mr-3">🎯</span
-          ><span>Interested in gaining insights of your portfolio composition</span>
-        </li>
-
-
-        <li class="d-flex mb-3">
-          <span class="mr-3">📈</span
-          ><span>Interested in tracking your passive income growth over time</span>
-        </li>
-
-        <li class="d-flex mb-3">
-          <span class="mr-3">📊</span
-          ><span>Interested in optimizing your portfolio with data-driven advanced insights</span>
-        </li>
-
-        
-
-        <li class="d-flex mb-3">
-          <span class="mr-3">🔥</span
-          ><span>Interested in financial independence</span>
-        </li>
-
-        <li class="d-flex mb-3">
-          <span class="mr-3">👏</span
-          ><span>Saying no to spreadsheets and time intensive manual tracking in 2022</span>
-        </li>
-
-
-        
-      </ul>
-      <div class="mt-4 text-center">
-        <a mat-stroked-button [routerLink]="['/about']"
-          >Learn more about MacroSifter</a
-        >
-      </div>
-    </div>
-  </div>
-
-  <!-- <div class="row my-5">
-    <div class="col-12">
-      <h2 class="h4 mb-1 text-center">
-        What our <strong>users</strong> are saying
-      </h2>
-    </div>
-    <div *ngFor="let testimonial of testimonials" class="col-md-6">
-      <div class="d-flex flex-row py-3">
-        <div class="d-flex justify-content-center">
-          <gf-logo
-            class="mr-3 mt-2 pt-1"
-            size="medium"
-            [hideName]="true"
-          ></gf-logo>
-        </div>
-        <div>
-          <div>{{ testimonial.quote }}</div>
-          <div class="mt-2 text-muted">
-            — {{ testimonial.author }}, {{ testimonial.country }}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div> -->
-
-  <div class="row my-3">
-    <div class="col-12">
-      <h2 class="h4 mb-1 text-center">
-        How does <strong>MacroSifter</strong> work?
-      </h2>
-      <p class="lead mb-3 text-center">Get started in only 3 steps</p>
-    </div>
-    <div class="col-md-4 my-2">
-      <mat-card class="d-flex flex-row h-100">
-        <div class="flex-grow-1">
-          <div class="font-weight-bold">Sign Up</div>
-          <!-- <div class="text-muted">
-            <small>Connect your accounts</small>
-          </div> -->
-        </div>
-        <div class="pl-2 text-muted text-right">1</div>
-      </mat-card>
-    </div>
-    <div class="col-md-4 my-2">
-      <mat-card class="d-flex flex-row h-100">
-        <div class="flex-grow-1">
-          <div class="font-weight-bold">
-            Connect your accounts 
-          </div>
-        </div>
-        <div class="pl-2 text-muted text-right">2</div>
-      </mat-card>
-    </div>
-    <div class="col-md-4 my-2">
-      <mat-card class="d-flex flex-row h-100">
-        <div class="flex-grow-1">
-          <div class="font-weight-bold">
-            Get valuable insights
-          </div>
-        </div>
-        <div class="pl-2 text-muted text-right">3</div>
-      </mat-card>
-    </div>
-  </div>
-
-  <div class="row my-5">
-    <div class="col">
-      <h2 class="h4 mb-1 text-center">Ready to get started ?</h2>
-      <p class="lead mb-3 text-center">
-        Sign up now or check out our demo account 
-      </p>
-      <div class="py-2 text-center">
-        <a color="accent" mat-flat-button [routerLink]="['/register']">
-          Get Started
-        </a>
-        <div class="d-inline-block mx-3 text-muted">or</div>
-        <a class="d-inline-block" mat-stroked-button [routerLink]="['/demo']">
-          Live Demo
-        </a>
-      </div>
-    </div>
-  </div> 
 </div>

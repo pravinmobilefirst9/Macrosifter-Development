@@ -16,14 +16,41 @@ $mat-css-light-theme-selector: '.is-light-theme';
   // @include your-custom-component-theme($mat-css-theme);
 }
 
+@font-face {
+  font-family: 'Poppins-regular';
+  src: url("~assets/fonts/Poppins-Regular_0.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: 'Poppins-bold';
+  src: url("~assets/fonts/Poppins-Bold_0.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: 'Poppins-light';
+  src: url("~assets/fonts/Poppins-Light_0.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: 'Poppins-medium';
+  src: url("~assets/fonts/Poppins-Medium_0.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: 'Poppins-semibold';
+  src: url("~assets/fonts/Poppins-Semibold_0.ttf") format("truetype");
+}
+
 :root {
   --dark-background: rgb(39, 39, 39);
-  --font-family-sans-serif: Roboto, 'Helvetica Neue', sans-serif;
+  //--font-family-sans-serif: Roboto, 'Helvetica Neue', sans-serif;
   --light-background: rgb(255, 255, 255);
+  --ms-secondary: #2D4BAA;
 }
 
 body {
-  font-family: var(--font-family-sans-serif);
+  //font-family: var(--font-family-sans-serif);
+  font-family: 'Poppins-regular', sans-serif;
   margin: 0;
   margin-bottom: 5rem;
   min-height: 100%;

@@ -1,6 +1,9 @@
 import { Platform } from '@angular/cdk/platform';
 import { HttpClientModule } from '@angular/common/http';
-import { HashLocationStrategy, LocationStrategy, PathLocationStrategy } from '@angular/common';
+import {
+  LocationStrategy,
+  PathLocationStrategy
+} from '@angular/common';
 import { NgModule } from '@angular/core';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatChipsModule } from '@angular/material/chips';
@@ -17,26 +20,31 @@ import { MaterialCssVarsModule } from 'angular-material-css-vars';
 import { MarkdownModule } from 'ngx-markdown';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { NgxStripeModule, STRIPE_PUBLISHABLE_KEY } from 'ngx-stripe';
-
 import { environment } from '../environments/environment';
 import { CustomDateAdapter } from './adapter/custom-date-adapter';
 import { DateFormats } from './adapter/date-formats';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { GfHeaderModule } from './components/header/header.module';
+import { GfHeaderModule } from './components/@theme/header/header.module';
 import { authInterceptorProviders } from './core/auth.interceptor';
 import { httpResponseInterceptorProviders } from './core/http-response.interceptor';
 import { LanguageService } from './core/language.service';
-import { NgxPlaidLinkModule } from "ngx-plaid-link";
+import { NgxPlaidLinkModule } from 'ngx-plaid-link';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { LayoutComponent } from './components/@theme/layout/layout.component';
+import { FooterComponent } from './components/@theme/footer/footer.component';
 
 export function NgxStripeFactory(): string {
   return environment.stripePublicKey;
 }
 
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [
+    AppComponent,
+    LayoutComponent,
+    FooterComponent
+  ],
   imports: [
     AppRoutingModule,
     BrowserAnimationsModule,
@@ -75,6 +83,7 @@ export function NgxStripeFactory(): string {
     },
     { provide: LocationStrategy, useClass: PathLocationStrategy }
   ],
+  exports: [],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {}

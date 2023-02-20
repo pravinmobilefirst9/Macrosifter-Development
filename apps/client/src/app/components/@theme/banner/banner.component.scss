@@ -1,0 +1,102 @@
+.banner-bg {
+  height: 38rem;
+  background-color: #032962;
+  background-image: url("../../../../assets/images/map.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  clip-path: polygon(0 0, 100% 0, 100% 34rem, 0 100%);
+  position: relative;
+  z-index: 100;
+}
+
+.banner-container {
+  margin: 0 auto;
+  align-items: center;
+  display: flex;
+  height: 100%;
+  position: relative;
+}
+
+.content {
+  margin: 0 auto;
+  color: white;
+  text-align: center;
+
+  .title {
+    font-family: Poppins-bold, sans-serif;
+    font-weight: 900;
+    margin-bottom: 2rem;
+  }
+
+  .text {
+    font-size: 1.25rem;
+    margin-bottom: 3rem;
+  }
+
+  .action button {
+    padding: 0.8rem 2.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-family: Poppins-medium, sans-serif;
+    text-transform: uppercase;
+  }
+}
+
+.image-left, .image-right {
+  position: absolute;
+}
+
+.image-right {
+  right: 0;
+  bottom: 3rem;
+  opacity: .75;
+}
+
+.image-left {
+  left: 20px;
+  bottom: 2rem;
+  opacity: 0.7;
+}
+
+@media screen and (min-device-width: 901px) {
+  .banner-container {
+    max-width: 1440px;
+  }
+
+  .content {
+    width: 50%;
+  }
+
+  .title {
+    font-size: 3.3rem;
+  }
+}
+
+@media screen and (max-device-width: 900px) {
+  .banner-container {
+    max-width: 70%;
+  }
+
+  .content {
+    width: 100%;
+  }
+
+  .title {
+    font-size: 3rem;
+  }
+}
+
+@media screen and (max-device-width: 400px) {
+  .banner-container {
+    max-width: 90%;
+  }
+
+  .content {
+    width: 100%;
+  }
+
+  .title {
+    font-size: 3rem;
+  }
+}

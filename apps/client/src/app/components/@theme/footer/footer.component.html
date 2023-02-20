@@ -1,0 +1,89 @@
+<footer
+  class="flex-column justify-content-between"
+  [ngClass]="deviceType === 'desktop' ? 'ms-footer' : 'mob-footer'"
+>
+  <ng-container *ngIf="deviceType === 'desktop'">
+    <div class="ms-container flex-row mb-5">
+      <div class="flex-column w-25 logo-column">
+        <img src="assets/images/White-Logo-MacroSifter 1.svg" alt="MacroSifter white logo">
+        <div i18n>
+          © {{currentYear}} Pactora Inc. All rights reserved.
+        </div>
+      </div>
+
+      <div class="flex-column w-25">
+        <div class="header" i18n>Company</div>
+        <div *ngFor="let menu of menu1" class="menu">
+          <a [href]="menu.link" i18n>{{menu.name}}</a>
+        </div>
+      </div>
+
+      <div class="flex-column w-25">
+        <div class="header" i18n>Assets</div>
+        <div *ngFor="let menu of menu2" class="menu">
+          <a [href]="menu.link" i18n>{{menu.name}}</a>
+        </div>
+      </div>
+
+      <div class="flex-column w-25">
+        <div class="header" i18n>Features</div>
+        <div *ngFor="let menu of menu3" class="menu">
+          <a [href]="menu.link" i18n>{{menu.name}}</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="ms-container flex-row">
+      <div class="icons w-75">
+        <a *ngFor="let menu of icons" [href]="menu.link">
+          <img [src]="menu.name" [alt]="menu.name">
+        </a>
+      </div>
+
+      <div class="w-25">
+        <a [href]="privacyPolicyLink" i18n class="pp">Privacy Policy</a>
+        <a [href]="termsLink" i18n>Terms of Service</a>
+      </div>
+    </div>
+  </ng-container>
+
+
+  <ng-container *ngIf="deviceType !== 'desktop'">
+    <div class="mob-container flex-column">
+      <img src="assets/images/White-Logo-MacroSifter 1.svg" alt="MacroSifter white logo" class="mb-3">
+      <div class="mb-4">© {{currentYear}} Pactora Inc. All rights reserved.</div>
+      <div *ngFor="let menu of mobMenus" class="menus">
+        <div
+          class="header flex-row justify-content-center align-items-center"
+          [ngClass]="{'mb-4': menu.open}"
+          (click)="menu.open = !menu.open"
+          i18n
+        >
+          <span class="mr-3">{{menu.title}}</span>
+          <div class="chevron" [ngClass]="{'up': menu.open}">
+            <ion-icon name="chevron-down"></ion-icon>
+          </div>
+        </div>
+
+        <div
+          *ngFor="let m of menu.menu" class="menu"
+          [@openMenu]="menu.open ? 'open' : 'close'"
+        >
+          <a [href]="m.link" i18n [ngClass]="{'hide': !menu.open}">{{m.name}}</a>
+        </div>
+      </div>
+
+      <div class="icons justify-content-between align-items-center">
+        <a *ngFor="let menu of icons" [href]="menu.link">
+          <img [src]="menu.name" [alt]="menu.name">
+        </a>
+      </div>
+
+      <div class="terms justify-content-between align-items-center">
+        <a [href]="privacyPolicyLink" i18n>Privacy Policy</a>
+        <a [href]="termsLink" i18n>Terms of Service</a>
+      </div>
+
+    </div>
+  </ng-container>
+</footer>
