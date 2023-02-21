@@ -86,7 +86,7 @@ export class DataGatheringService {
     })
   }
 
-  public async getSymbolProfileId(symbol,isCCNSymbol) {
+  public async getSymbolProfileId(symbol) {
     try {
 
       const isSymbol = await this.prismaService.symbolProfile.findFirst({
@@ -104,8 +104,6 @@ export class DataGatheringService {
             symbol,
             currency: 'USD',
             dataSource: 'YAHOO',
-            assetClass:isCCNSymbol? 'EQUITY':null,
-            assetSubClass: isCCNSymbol ? 'DERIVATIVES':null
           }
         })
 
@@ -114,7 +112,7 @@ export class DataGatheringService {
 
     } catch (error) {
 
-      return null;
+      return undefined;
 
     }
   }

@@ -20,9 +20,8 @@ export class FrontendMiddleware implements NestMiddleware {
     private readonly configService: ConfigService,
     private readonly configurationService: ConfigurationService
   ) {
-    const NODE_ENV = 'development'
-      // this.configService.get<'development' | 'production'>('NODE_ENV') ??
-      // 'development';
+    const NODE_ENV = this.configService.get<'development' | 'production'>('NODE_ENV') ??
+      'development';
 
     this.isProduction = NODE_ENV === 'development';
 
@@ -47,7 +46,7 @@ export class FrontendMiddleware implements NestMiddleware {
         this.getPathOfIndexHtmlFile('nl'),
         'utf8'
       );
-    } catch {}
+    } catch { }
   }
 
   public use(req: Request, res: Response, next: NextFunction) {

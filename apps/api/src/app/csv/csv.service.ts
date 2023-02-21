@@ -1,4 +1,4 @@
-  import { DataGatheringService } from '../../services/data-gathering.service';
+import { DataGatheringService } from '../../services/data-gathering.service';
 import { PrismaService } from '../../services/prisma.service';
 import {
   GATHER_ASSET_PROFILE_PROCESS,
@@ -17,7 +17,7 @@ export class CSVService {
   constructor(
     public readonly dataGatheringService: DataGatheringService,
     public readonly prismaService: PrismaService
-  ) {}
+  ) { }
 
   public async updateCSVOrder(
     csv_data,
@@ -131,56 +131,56 @@ export class CSVService {
     }
   }
 
-  public getCCN(str){
-    
-    const MonthsArray  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-    const digitOfMonths = ['01','02','03','04','05','06','07','08','09','10','11','12']
-    
+  public getCCN(str) {
+
+    const MonthsArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    const digitOfMonths = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+
     let ccn = '';
-    
+
     ccn += str.split(' ')[0]
     let year = str.split(' ')[3]
-    
-    year = year.slice(2,4)
-    
-    ccn+=year;
-    
-    ccn += digitOfMonths[MonthsArray.findIndex((value,index)=>{
-        return str.split(' ')['1']===value
+
+    year = year.slice(2, 4)
+
+    ccn += year;
+
+    ccn += digitOfMonths[MonthsArray.findIndex((value, index) => {
+      return str.split(' ')['1'] === value
     })]
-    
+
     ccn += str.split(' ')[2];
-    
-    ccn += str.split(' ')[5] === 'Call' ? 'C':'P'
-    
+
+    ccn += str.split(' ')[5] === 'Call' ? 'C' : 'P'
+
     let number1 = str.split(' ')[4]
     number1 = String(number1).split('.')[0]
     number1 = String(number1).split('')
-    
-    let temp = ['0','0','0','0','0']
-    
-    let j = temp.length-1;
-    for(let i=number1.length-1;i>=0;i--){
-        temp[j--] = number1[i]
+
+    let temp = ['0', '0', '0', '0', '0']
+
+    let j = temp.length - 1;
+    for (let i = number1.length - 1; i >= 0; i--) {
+      temp[j--] = number1[i]
     }
-    
-    for(let i=0;i<temp.length;i++){
-        ccn+= temp[i]
+
+    for (let i = 0; i < temp.length; i++) {
+      ccn += temp[i]
     }
-    
-    temp = ['0','0','0']
+
+    temp = ['0', '0', '0']
     number1 = str.split(' ')[4].split('.')[1]
     number1 = Array(number1)
-    
-    for(let i=0;i<number1.length;i++){
-        temp[i]=number1[i]
+
+    for (let i = 0; i < number1.length; i++) {
+      temp[i] = number1[i]
     }
-    for(let i=0;i<temp.length;i++){
-        ccn+= temp[i]
+    for (let i = 0; i < temp.length; i++) {
+      ccn += temp[i]
     }
-        
+
     return ccn;
-}
+  }
 
   public async isSubTypeOrdinaryDividendReinvestment(
     order,
@@ -275,6 +275,52 @@ export class CSVService {
     return Math.floor(amount + order['AMOUNT']) === 0 ? true : false;
   }
 
+  public async getSymbolProfileIdForCCNSSymbol(symbol, name) {
+    try {
+
+      const isSymbol = await this.prismaService.symbolProfile.findFirst({
+        where: {
+          symbol,
+        }
+      })
+
+      if (isSymbol) {
+        return isSymbol.id;
+      } else {
+
+        const newSymbol = await this.prismaService.symbolProfile.create({
+          data: {
+            symbol,
+            currency: 'USD',
+            dataSource: 'YAHOO',
+            assetClass: 'EQUITY',
+            assetSubClass: "DERIVATIVES",
+            name: name,
+          }
+        })
+
+        return newSymbol.id;
+      }
+
+    } catch (error) {
+      console.log('getting errors', error);
+
+      return undefined;
+
+    }
+  }
+
+  // public getSymbolName(str) {
+  //   str = str.split(' ')
+  //   str = str.slice(2, 8)
+  //   let temp = ''
+  //   for (let i = 0; i < str.length; i++) {
+  //     temp += str[i] + " "
+  //   }
+  //   return temp;
+  // }
+
+
   public async uploadCSV(data: {
     institutionId: string;
     accountId: string;
@@ -302,19 +348,29 @@ export class CSVService {
     let comment = null;
 
     let isCCNSymbol = false;
-    if(symbol && symbol.includes('Call')){
+    if (symbol && symbol.includes('Call')) {
       symbol = this.getCCN(symbol)
       isCCNSymbol = true;
 
-    }else if(symbol && symbol.includes('Put')){
+    } else if (symbol && symbol.includes('Put')) {
       symbol = this.getCCN(symbol)
       isCCNSymbol = true;
-      
+
     }
-    let symbolProfileId = symbol
-      ? await this.dataGatheringService.getSymbolProfileId(symbol,isCCNSymbol)
-      : null;
-    // const response = await this.dataGatheringService.getHistoricalDividendData(symbol);
+
+
+
+    let symbolProfileId = null;
+    if (isCCNSymbol) {
+      symbolProfileId = await this.getSymbolProfileIdForCCNSSymbol(symbol, csv_data[0]['SYMBOL'])
+    } else {
+
+
+      symbolProfileId = symbol
+        ? await this.dataGatheringService.getSymbolProfileId(symbol)
+        : undefined;
+
+    }
 
     for (const order of csv_data) {
       if (!order['TRANSACTION ID']) {
@@ -339,11 +395,11 @@ export class CSVService {
         continue;
       }
 
-      if(description.includes('REMOVAL OF OPTION DUE TO ASSIGNMENT')){
+      if (description.includes('REMOVAL OF OPTION DUE TO ASSIGNMENT')) {
         continue;
       }
 
-      if(description.includes('REMOVAL OF OPTION DUE TO EXPIRATION')){
+      if (description.includes('REMOVAL OF OPTION DUE TO EXPIRATION')) {
         continue;
       }
 
@@ -369,8 +425,8 @@ export class CSVService {
       if (description.includes('313747206')) {
         symbol = 'FRT';
         symbolProfileId = symbol
-          ? await this.dataGatheringService.getSymbolProfileId(symbol,isCCNSymbol)
-          : null;
+          ? await this.dataGatheringService.getSymbolProfileId(symbol)
+          : undefined;
       }
 
       if (description.includes('Bought')) {
@@ -579,23 +635,24 @@ export class CSVService {
         // 18
         type = 'TRANSFER';
         subtype = await this.getActivitySubTypeId('Split', type);
-      } 
-       if(description && description.includes('Sold') && symbol && symbol.includes('Put')){
-          type = 'SELL'
-          subtype = await this.getActivitySubTypeId('Sell Put')
-      }else if(description && description.includes('Bought') && symbol && symbol.includes('Call')){
+      }
+
+      if (description && description.includes('Sold') && description.includes('Put')) {
+        type = 'SELL'
+        subtype = await this.getActivitySubTypeId('Sell Put')
+      } else if (description && description.includes('Bought') && description.includes('Call')) {
         type = 'BUY'
         subtype = await this.getActivitySubTypeId('Buy Call')
-      }else if(description && description.includes('Sold') && symbol && symbol.includes('Call')){
+      } else if (description && description.includes('Sold') && description.includes('Call')) {
         type = 'SELL'
         subtype = await this.getActivitySubTypeId('Sell Call')
-      }else if(description && description.includes('Bought') && symbol && symbol.includes('Put')){
+      } else if (description && description.includes('Bought') && description.includes('Put')) {
         type = 'BUY'
         subtype = await this.getActivitySubTypeId('Buy Put')
       }
 
       comment = description;
-      let fee = 0; 
+      let fee = 0;
       if (order['REG FEE']) {
         fee += order['REG FEE'];
       }

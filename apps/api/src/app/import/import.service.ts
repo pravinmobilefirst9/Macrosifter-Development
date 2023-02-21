@@ -238,7 +238,7 @@ export class ImportService {
             comment = 'MARGIN INTEREST ADJUSTMENT'
           }
 
-          const symbolProfileId = ((bodyData[i]["SYMBOL"])) ? await this.dataGatheringService.getSymbolProfileId(bodyData[i]['SYMBOL'],false) : null;
+          const symbolProfileId = ((bodyData[i]["SYMBOL"])) ? await this.dataGatheringService.getSymbolProfileId(bodyData[i]['SYMBOL']) : null;
           const dividendpershare_at_cost = ((bodyData[i]["SYMBOL"])) ? await this.dataGatheringService.getDividendpershareAtCost(bodyData[i]['SYMBOL'], new Date(bodyData[i]['DATE'])) : null;
 
 
