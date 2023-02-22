@@ -77,7 +77,7 @@ export class OrderService {
     cursor?: Prisma.OrderWhereUniqueInput;
     where?: Prisma.OrderWhereInput;
     orderBy?: Prisma.OrderOrderByWithRelationInput;
-  }): Promise<{orders: OrderWithAccount[], count: number}> {
+  }): Promise<{ orders: OrderWithAccount[], count: number }> {
     const { include, skip, take, cursor, where, orderBy } = params;
 
     const [orders, count] = await this.prismaService.$transaction([
@@ -92,7 +92,7 @@ export class OrderService {
       this.prismaService.order.count({ where })
     ]);
 
-    return {orders, count};
+    return { orders, count };
   }
 
   public async createOrder(
@@ -422,7 +422,7 @@ export class OrderService {
     pageSize?: string;
     orderBy?: string;
     direction?: string;
-  }): Promise<{activities: Activity[], count: number}> {
+  }): Promise<{ activities: Activity[], count: number }> {
     const where: Prisma.OrderWhereInput = { userId };
 
     const {
@@ -497,7 +497,7 @@ export class OrderService {
     const sortOptions = {};
     sortOptions[orderBy] = direction;
 
-    const {orders, count} = await this.ordersWithCount({
+    const { orders, count } = await this.ordersWithCount({
       where,
       skip: parseInt(page, 10) * parseInt(pageSize, 10),
       take: parseInt(pageSize, 10),
@@ -520,7 +520,12 @@ export class OrderService {
         return withExcludedAccounts || order.Account?.isExcluded === false;
       })
       .map((order) => {
-        const value = new Big(order.quantity).mul(order.unitPrice).toNumber();
+        let value = new Big(order.quantity).mul(order.unitPrice).toNumber();
+
+        if (order['SymbolProfile']['assetSubClass'] === 'DERIVATIVES') {
+          value = new Big(order.quantity).mul(100).mul(order.unitPrice).toNumber();
+        }
+
 
         return {
           ...order,
@@ -537,17 +542,17 @@ export class OrderService {
           )
         };
       });
-    return {activities, count};
+    return { activities, count };
   }
 
   public async getOrders({
-                           filters,
-                           includeDrafts = false,
-                           types,
-                           userCurrency,
-                           userId,
-                           withExcludedAccounts = false
-                         }: {
+    filters,
+    includeDrafts = false,
+    types,
+    userCurrency,
+    userId,
+    withExcludedAccounts = false
+  }: {
     filters?: Filter[];
     includeDrafts?: boolean;
     types?: TypeOfOrder[];

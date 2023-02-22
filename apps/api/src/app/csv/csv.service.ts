@@ -732,9 +732,9 @@ export class CSVService {
         transactionId: order['TRANSACTION ID']
       };
 
-      if (isCCNSymbol) {
-        obj['unitPrice'] = (order['QUANTITY'] * 100) * order['PRICE']
-      }
+      // if (isCCNSymbol) {
+      //   obj['unitPrice'] = (order['QUANTITY'] * 100) * order['PRICE']
+      // }
 
       if (symbol) {
         try {
