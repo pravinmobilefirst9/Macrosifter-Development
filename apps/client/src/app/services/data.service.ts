@@ -5,7 +5,7 @@ import { CreateAccessDto } from '@ghostfolio/api/app/access/create-access.dto';
 import { CreateAccountDto } from '@ghostfolio/api/app/account/create-account.dto';
 import { UpdateAccountDto } from '@ghostfolio/api/app/account/update-account.dto';
 import { CreateOrderDto } from '@ghostfolio/api/app/order/create-order.dto';
-import {Activities, Activity} from '@ghostfolio/api/app/order/interfaces/activities.interface';
+import { Activities, Activity } from '@ghostfolio/api/app/order/interfaces/activities.interface';
 import { UpdateOrderDto } from '@ghostfolio/api/app/order/update-order.dto';
 import { PortfolioPositionDetail } from '@ghostfolio/api/app/portfolio/interfaces/portfolio-position-detail.interface';
 import { PortfolioPositions } from '@ghostfolio/api/app/portfolio/interfaces/portfolio-positions.interface';
@@ -43,7 +43,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { HttpHeaders } from '@angular/common/http';
-import {PaginatorOptionsInterface} from "@ghostfolio/common/interfaces/paginator-options.interface";
+import { PaginatorOptionsInterface } from "@ghostfolio/common/interfaces/paginator-options.interface";
 
 
 @Injectable({
@@ -74,9 +74,9 @@ export class DataService {
   }
 
   public fetchActivities(
-    { filters}: { filters?: Filter[] },
+    { filters }: { filters?: Filter[] },
     paginator: PaginatorOptionsInterface = {}
-  ): Observable<{activities: Activity[], count: number}> {
+  ): Observable<{ activities: Activity[], count: number }> {
     return this.http
       .get<unknown>('/api/v1/order', {
         params: this.buildFiltersAsQueryParams({ filters }, paginator)
@@ -432,6 +432,10 @@ export class DataService {
       },
       products: ["transactions", "investments"]
     }
+    console.log('before token create');
+    console.log(environment.webhook);
+
+
     const httpOptions = {
       headers: new HttpHeaders({
         'Content-Type': 'application/json'

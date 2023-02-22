@@ -9,7 +9,8 @@ export const environment = {
   PLAID_ENV: 'sandbox',
   client_name: 'Macrosifter',
   country_codes: ['US'],
-  webhook: 'https://macrosifter.com/api/v1/plaid/receive_webhook',
+  webhook: 'https://0755-2409-4042-220d-65b4-3c73-a790-1de4-a2b1.in.ngrok.io/api/v1/plaid/receive_webhook',
+  // webhook: 'https://macrosifter.com/api/v1/plaid/receive_webhook',
   redirect_uri: 'https://macrosifter.com/plaid-oauth-redirect'
 
   // plaid_client_id : '610bdbc99ef9440010dd68c6',

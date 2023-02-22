@@ -17,6 +17,7 @@ import { format, getDate, getMonth, getYear, isBefore, parseISO, subDays } from 
 import { OrderService } from '../app/order/order.service';
 import { PlaidService } from '../app/plaid/plaid.service';
 const axios = require('axios');
+import { v4 as uuidv4 } from 'uuid';
 const yahooFinance = require('yahoo-finance2').default;
 import { DataProviderService } from './data-provider/data-provider.service';
 import { DataEnhancerInterface } from './data-provider/interfaces/data-enhancer.interface';
@@ -719,6 +720,34 @@ export class DataGatheringService {
     }
   }
 
+  public async investmentsTranscationGet(access_token: string) {
+    if (!access_token) return null;
+
+    const data = JSON.stringify({
+      "client_id": this.PLAID_CLIENT_ID,
+      "secret": this.PLAID_SECRET_ID,
+      "access_token": access_token,
+      "start_date": "2000-01-01",
+      "end_date": "2023-01-01"
+    });
+
+    const config = {
+      method: 'post',
+      url: this.PLAID_BASE_URI + `/investments/transactions/get`,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      data: data
+    };
+
+    try {
+      const response = await axios(config)
+      return response.data;
+    } catch (error) {
+      return null;
+    }
+  }
+
 
   public async handleUpdateHoldingsInvestment(access_token) {
 
@@ -904,6 +933,125 @@ export class DataGatheringService {
     }
 
 
+  }
+
+  public async handleUpdateTranscationInvestment(access_token) {
+    try {
+
+
+      const data = await this.investmentsTranscationGet(access_token);
+      if (!(data)) {
+        return;
+      }
+      console.log('Total Order ->', data['investment_transactions'].length);
+
+      for (const investment of data['investment_transactions']) {
+
+
+        const symbolProfile = data['securities'].filter((value) => {
+          return (value['security_id'] === investment['security_id'])
+        })
+
+
+        const obj = {
+          account_id: investment['account_id'],
+          amount: investment['amount'],
+          date: investment['date'],
+          fees: investment['fees'],
+          iso_currency_code: investment['iso_currency_code'],
+          name: investment['name'],
+          price: investment['price'],
+          security_id: investment['security_id'],
+          quantity: investment['quantity'],
+          subtype: investment['subtype'],
+          type: investment['type'],
+          SymbolProfile: {
+            symbol: symbolProfile[0]['ticker_symbol'],
+            type: symbolProfile[0]['type'],
+            name: symbolProfile[0]['name']
+          }
+        }
+
+        if (obj['SymbolProfile']['symbol'] === null) {
+          continue;
+        }
+
+
+        const account = await this.prismaService.account.findFirst({
+          where: {
+            account_id: obj['account_id']
+          }
+        })
+
+        let symbolProfileId = null;
+        let symbolProfileEntry = null;
+
+        if (obj['SymbolProfile']['symbol']) {
+
+          symbolProfileEntry = await this.prismaService.symbolProfile.findFirst({
+            where: {
+              symbol: obj['SymbolProfile']['symbol']
+            }
+          })
+
+        }
+
+
+        if (symbolProfileEntry) {
+          symbolProfileId = symbolProfileEntry.id;
+        } else {
+
+          console.log('creating new symbol ---> ',);
+          const temp = await this.prismaService.symbolProfile.create({
+            data: {
+              currency: obj['iso_currency_code'],
+              dataSource: 'YAHOO',
+              symbol: obj['SymbolProfile']['symbol']
+            }
+          })
+
+          symbolProfileId = temp.id;
+
+        }
+
+        await this.prismaService.order.create({
+          data: {
+            date: new Date(obj['date']),
+            fee: obj['fees'],
+            quantity: obj['quantity'],
+            type: 'BUY',
+            unitPrice: obj['price'],
+            dividendpershare_at_costFlag: false,
+            Account: {
+              connect: {
+                id_userId: {
+                  id: account.id,
+                  userId: account.userId
+                }
+              }
+            },
+            User: {
+              connect: {
+                id: account.userId
+              }
+            },
+            SymbolProfile: {
+              connect: {
+                id: symbolProfileId
+              }
+            }
+          }
+        });
+
+
+      }
+
+
+
+    } catch (error) {
+      console.log(error);
+
+    }
   }
 
   public async syncCashBalanceForPlaidLinkedInvestment(data, access_token) {

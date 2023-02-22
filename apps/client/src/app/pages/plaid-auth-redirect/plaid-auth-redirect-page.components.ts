@@ -23,7 +23,7 @@ export class PlaidAuthRedirectPageComponent implements OnInit {
         env: environment.PLAID_ENV,
         institution: environment.plaid_institution,
         token: null,
-        webhook: "",
+        webhook: environment.webhook,
         product: ["transactions"],
         countryCodes: ['US'],
         key: environment.plaid_secret
