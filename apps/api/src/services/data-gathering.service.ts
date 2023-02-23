@@ -11,7 +11,7 @@ import { RequestWithUser } from '@ghostfolio/common/types';
 import { InjectQueue } from '@nestjs/bull';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
-import { DataSource, PlaidHoldings, Prisma, PrismaClient, SplitData } from '@prisma/client';
+import { DataSource, PlaidHoldings, Prisma, PrismaClient, SplitData, Type } from '@prisma/client';
 import { JobOptions, Queue } from 'bull';
 import { format, getDate, getMonth, getYear, isBefore, parseISO, subDays } from 'date-fns';
 import { OrderService } from '../app/order/order.service';
@@ -935,6 +935,24 @@ export class DataGatheringService {
 
   }
 
+  public getType(type) {
+    switch (type) {
+      case 'buy': return Type.BUY;
+      case 'sell': return Type.SELL;
+      case 'dividend': return Type.DIVIDEND;
+      case 'fees':
+      case 'fee':
+        return Type.FEES;
+      case 'item':
+        return Type.ITEM;
+      case 'tax':
+        return Type.TAX;
+      case 'transfer':
+        return Type.TRANSFER
+      default: return Type.ITEM;
+    }
+  }
+
   public async handleUpdateTranscationInvestment(access_token) {
     try {
 
@@ -943,7 +961,7 @@ export class DataGatheringService {
       if (!(data)) {
         return;
       }
-      console.log('Total Order ->', data['investment_transactions'].length);
+
 
       for (const investment of data['investment_transactions']) {
 
@@ -957,7 +975,7 @@ export class DataGatheringService {
           account_id: investment['account_id'],
           amount: investment['amount'],
           date: investment['date'],
-          fees: investment['fees'],
+          fees: investment['amount'] - (investment['price'] * investment['quantity']),
           iso_currency_code: investment['iso_currency_code'],
           name: investment['name'],
           price: investment['price'],
@@ -1019,7 +1037,7 @@ export class DataGatheringService {
             date: new Date(obj['date']),
             fee: obj['fees'],
             quantity: obj['quantity'],
-            type: 'BUY',
+            type: this.getType(obj['type']),
             unitPrice: obj['price'],
             dividendpershare_at_costFlag: false,
             Account: {
