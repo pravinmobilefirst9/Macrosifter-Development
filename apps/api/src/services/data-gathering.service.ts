@@ -939,6 +939,7 @@ export class DataGatheringService {
     switch (type) {
       case 'buy': return Type.BUY;
       case 'sell': return Type.SELL;
+      case 'cash': return Type.CASH;
       case 'dividend': return Type.DIVIDEND;
       case 'fees':
       case 'fee':
@@ -949,7 +950,43 @@ export class DataGatheringService {
         return Type.TAX;
       case 'transfer':
         return Type.TRANSFER
-      default: return Type.ITEM;
+      default:
+        console.log(type + '<--- Not mapped yet, Need to map');
+
+        return Type.ITEM;
+    }
+  }
+
+  public getSubType(subtype) {
+    switch (subtype) {
+      case 'buy': return 'Buy';
+      case 'sell': return 'Sell';
+      case 'dividend': return 'Ordinary Dividend';
+      case 'fees':
+      case 'fee':
+        return 'Other Fees';
+      case 'tax':
+        return 'Foreign Tax Withheld';
+      case 'transfer':
+        return 'Transfer'
+      default: return null;
+    }
+  }
+
+  public async getActivitySubTypeId(subtype) {
+    try {
+      let data = null;
+
+      data = await this.prismaService.activitySubType.findFirst({
+        where: {
+          subtype
+        }
+      });
+
+
+      return data && data.id ? data.id : null;
+    } catch (error) {
+      return null;
     }
   }
 
@@ -962,6 +999,7 @@ export class DataGatheringService {
         return;
       }
 
+      console.log('investment_transactions count -->', data['investment_transactions'].length);
 
       for (const investment of data['investment_transactions']) {
 
@@ -981,7 +1019,7 @@ export class DataGatheringService {
           price: investment['price'],
           security_id: investment['security_id'],
           quantity: investment['quantity'],
-          subtype: investment['subtype'],
+          subtype: await this.getActivitySubTypeId(this.getSubType(investment['type'])),
           type: investment['type'],
           SymbolProfile: {
             symbol: symbolProfile[0]['ticker_symbol'],
@@ -1038,6 +1076,7 @@ export class DataGatheringService {
             fee: obj['fees'],
             quantity: obj['quantity'],
             type: this.getType(obj['type']),
+            subtype: obj['subtype'],
             unitPrice: obj['price'],
             dividendpershare_at_costFlag: false,
             Account: {
