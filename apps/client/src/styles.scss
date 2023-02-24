@@ -46,6 +46,9 @@ $mat-css-light-theme-selector: '.is-light-theme';
   //--font-family-sans-serif: Roboto, 'Helvetica Neue', sans-serif;
   --light-background: rgb(255, 255, 255);
   --ms-secondary: #2D4BAA;
+  --desktop-screen-min: 1025px;
+  --tablet-screen-max: 1024px;
+  --mobile-screen-max: 560px;
 }
 
 body {
@@ -283,6 +286,28 @@ ngx-skeleton-loader {
         var(--palette-foreground-disabled-text-alpha)
       );
     }
+  }
+}
+
+button {
+  border: none;
+
+  &.standard {
+    background-color: var(--ms-secondary);
+    color: white;
+    text-transform: uppercase;
+    font-size: 1.25rem;
+    font-weight: 700;
+    padding: .5rem 2.5rem;
+
+    &.inverted {
+      background-color: white!important;
+      color: black!important;
+    }
+  }
+
+  &:hover, &:active, &:focus {
+    opacity: .9;
   }
 }
 

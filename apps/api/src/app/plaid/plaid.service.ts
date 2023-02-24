@@ -187,9 +187,6 @@ export class PlaidService {
             console.log("Importing Holdings......")
             this.dataGatheringService.handleUpdateHoldingsInvestment(plaidToken['accessToken'])
             console.log("Importing Holdings Done.....")
-            console.log("handleUpdateTranscationInvestment ......")
-            this.dataGatheringService.handleUpdateTranscationInvestment(plaidToken['accessToken'])
-            console.log("handleUpdateTranscationInvestment Done .....")
 
 
             if (data[0] && data[0].verification_status === 'pending_automatic_verification') {
@@ -411,9 +408,6 @@ export class PlaidService {
             console.log("Importing Holdings (WEBHOOK)......")
             await this.dataGatheringService.handleUpdateHoldingsInvestment(plaidToken['accessToken'])
             console.log("Importing Holdings Done (WEBHOOK).....")
-            console.log("handleUpdateTranscationInvestment (WEBHOOK)......")
-            await this.dataGatheringService.handleUpdateTranscationInvestment(plaidToken['accessToken'])
-            console.log("handleUpdateTranscationInvestment Done (WEBHOOK).....")
         }
 
 

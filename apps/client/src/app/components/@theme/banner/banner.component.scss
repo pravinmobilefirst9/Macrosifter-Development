@@ -5,7 +5,7 @@
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
-  clip-path: polygon(0 0, 100% 0, 100% 34rem, 0 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
   position: relative;
   z-index: 100;
 }
@@ -35,11 +35,10 @@
   }
 
   .action button {
-    padding: 0.8rem 2.5rem;
-    font-size: 1.25rem;
-    font-weight: 700;
     font-family: Poppins-medium, sans-serif;
     text-transform: uppercase;
+    background-color: white!important;
+    color: black!important;
   }
 }
 
@@ -59,7 +58,8 @@
   opacity: 0.7;
 }
 
-@media screen and (min-device-width: 901px) {
+// desktop
+@media screen and (min-device-width: 1025px) {
   .banner-container {
     max-width: 1440px;
   }
@@ -73,7 +73,8 @@
   }
 }
 
-@media screen and (max-device-width: 900px) {
+// tablet
+@media screen and (max-device-width: 1024px) {
   .banner-container {
     max-width: 70%;
   }
@@ -83,11 +84,12 @@
   }
 
   .title {
-    font-size: 3rem;
+    font-size: 2rem;
   }
 }
 
-@media screen and (max-device-width: 400px) {
+// mobile
+@media screen and (max-device-width: 560px) {
   .banner-container {
     max-width: 90%;
   }
@@ -97,6 +99,6 @@
   }
 
   .title {
-    font-size: 3rem;
+    font-size: 1.5rem;
   }
 }

@@ -39,7 +39,7 @@ export class ChoosePlaidStartDialog implements OnInit {
     env: environment.PLAID_ENV,
     institution: environment.plaid_institution,
     token: null,
-    webhook: environment.webhook,
+    webhook: "",
     product: ["transactions"],
     countryCodes: ['US'],
     key: environment.plaid_secret

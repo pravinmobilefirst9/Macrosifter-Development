@@ -53,7 +53,7 @@ export class AccountDetailsTogglePendingDialog implements OnDestroy {
     env: environment.PLAID_ENV,
     institution: environment.plaid_institution,
     token: null,
-    webhook: environment.webhook,
+    webhook: "",
     product: ["auth", "transactions"],
     countryCodes: ['US', 'CA', 'GB'],
     key: environment.plaid_secret

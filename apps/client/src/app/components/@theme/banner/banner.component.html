@@ -4,11 +4,16 @@
       <div class="title">{{data?.title}}</div>
       <div class="text">{{data?.text}}</div>
       <div class="action">
-        <button mat-flat-button [routerLink]="data?.buttonRoute" *ngIf="data?.showButton">{{data?.buttonText}}</button>
+        <button
+          class="standard inverted"
+          mat-flat-button
+          [routerLink]="data?.buttonRoute"
+          *ngIf="data?.showButton"
+        >{{data?.buttonText}}</button>
       </div>
     </div>
 
     <img src="assets/images/Partner hero image left.svg" class="image-left" alt="" *ngIf="data?.showImages">
-    <img src="assets/images/Partner hero image right.png" class="image-right" alt="" *ngIf="data?.showImages">
+    <img src="assets/images/Partner hero image right.svg" class="image-right" alt="" *ngIf="data?.showImages">
   </div>
 </div>

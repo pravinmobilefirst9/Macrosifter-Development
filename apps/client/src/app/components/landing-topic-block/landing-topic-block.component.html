@@ -5,7 +5,7 @@
     <div class="header color" i18n>{{data?.header}}</div>
     <div class="text" i18n>{{data?.text}}</div>
     <div class="btn" *ngIf="data?.buttonLink && data?.buttonText">
-      <button mat-flat-button [routerLink]="data.buttonLink" i18n>{{data.buttonText}}</button>
+      <button class="standard" mat-flat-button [routerLink]="data.buttonLink" i18n>{{data.buttonText}}</button>
     </div>
   </div>
   <div class="image-col">

@@ -11,13 +11,12 @@ import { RequestWithUser } from '@ghostfolio/common/types';
 import { InjectQueue } from '@nestjs/bull';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
-import { DataSource, PlaidHoldings, Prisma, PrismaClient, SplitData, Type } from '@prisma/client';
+import { DataSource, PlaidHoldings, Prisma, PrismaClient, SplitData } from '@prisma/client';
 import { JobOptions, Queue } from 'bull';
 import { format, getDate, getMonth, getYear, isBefore, parseISO, subDays } from 'date-fns';
 import { OrderService } from '../app/order/order.service';
 import { PlaidService } from '../app/plaid/plaid.service';
 const axios = require('axios');
-import { v4 as uuidv4 } from 'uuid';
 const yahooFinance = require('yahoo-finance2').default;
 import { DataProviderService } from './data-provider/data-provider.service';
 import { DataEnhancerInterface } from './data-provider/interfaces/data-enhancer.interface';
@@ -720,38 +719,6 @@ export class DataGatheringService {
     }
   }
 
-  public async investmentsTranscationGet(access_token: string) {
-    if (!access_token) return null;
-
-    const data = JSON.stringify({
-      "client_id": this.PLAID_CLIENT_ID,
-      "secret": this.PLAID_SECRET_ID,
-      "access_token": access_token,
-      "start_date": "2010-01-01",
-      "end_date": "2023-01-01",
-      "options": {
-        "count": 500,
-        "offset": 0
-      }
-    });
-
-    const config = {
-      method: 'post',
-      url: this.PLAID_BASE_URI + `/investments/transactions/get`,
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      data: data
-    };
-
-    try {
-      const response = await axios(config)
-      return response.data;
-    } catch (error) {
-      return null;
-    }
-  }
-
 
   public async handleUpdateHoldingsInvestment(access_token) {
 
@@ -937,189 +904,6 @@ export class DataGatheringService {
     }
 
 
-  }
-
-  public getType(type) {
-    switch (type) {
-      case 'buy': return Type.BUY;
-      case 'sell': return Type.SELL;
-      case 'cash': return Type.CASH;
-      case 'dividend': return Type.DIVIDEND;
-      case 'fees':
-      case 'fee':
-        return Type.FEES;
-      case 'item':
-        return Type.ITEM;
-      case 'tax':
-        return Type.TAX;
-      case 'transfer':
-        return Type.TRANSFER
-      default:
-        console.log(type + '<--- Not mapped yet, Need to map');
-
-        return Type.ITEM;
-    }
-  }
-
-  public getSubType(subtype) {
-    switch (subtype) {
-      case 'buy': return 'Buy';
-      case 'sell': return 'Sell';
-      case 'dividend': return 'Ordinary Dividend';
-      case 'fees':
-      case 'fee':
-        return 'Other Fees';
-      case 'tax':
-        return 'Foreign Tax Withheld';
-      case 'transfer':
-        return 'Transfer'
-      default: return null;
-    }
-  }
-
-  public async getActivitySubTypeId(subtype) {
-    try {
-      let data = null;
-
-      data = await this.prismaService.activitySubType.findFirst({
-        where: {
-          subtype
-        }
-      });
-
-
-      return data && data.id ? data.id : null;
-    } catch (error) {
-      return null;
-    }
-  }
-
-  public async handleUpdateTranscationInvestment(access_token) {
-    try {
-
-      let orderCreated = 0;
-      let orderSkipped = 0;
-
-      const data = await this.investmentsTranscationGet(access_token);
-      if (!(data)) {
-        return;
-      }
-
-      console.log('investment_transactions count -->', data['investment_transactions'].length);
-
-      for (const investment of data['investment_transactions']) {
-
-
-        const symbolProfile = data['securities'].filter((value) => {
-          return (value['security_id'] === investment['security_id'])
-        })
-
-
-        const obj = {
-          account_id: investment['account_id'],
-          amount: investment['amount'],
-          date: investment['date'],
-          fees: investment['amount'] - (investment['price'] * investment['quantity']),
-          iso_currency_code: investment['iso_currency_code'],
-          name: investment['name'],
-          price: investment['price'],
-          security_id: investment['security_id'],
-          quantity: investment['quantity'],
-          subtype: await this.getActivitySubTypeId(this.getSubType(investment['type'])),
-          type: investment['type'],
-          SymbolProfile: {
-            symbol: symbolProfile[0]['ticker_symbol'],
-            type: symbolProfile[0]['type'],
-            name: symbolProfile[0]['name']
-          }
-        }
-
-        if (obj['SymbolProfile']['symbol'] === null) {
-          orderSkipped++;
-          continue;
-        }
-
-
-        const account = await this.prismaService.account.findFirst({
-          where: {
-            account_id: obj['account_id']
-          }
-        })
-
-        let symbolProfileId = null;
-        let symbolProfileEntry = null;
-
-        if (obj['SymbolProfile']['symbol']) {
-
-          symbolProfileEntry = await this.prismaService.symbolProfile.findFirst({
-            where: {
-              symbol: obj['SymbolProfile']['symbol']
-            }
-          })
-
-        }
-
-
-        if (symbolProfileEntry) {
-          symbolProfileId = symbolProfileEntry.id;
-        } else {
-
-          console.log('creating new symbol ---> ',);
-          const temp = await this.prismaService.symbolProfile.create({
-            data: {
-              currency: obj['iso_currency_code'],
-              dataSource: 'YAHOO',
-              symbol: obj['SymbolProfile']['symbol']
-            }
-          })
-
-          symbolProfileId = temp.id;
-
-        }
-
-        await this.prismaService.order.create({
-          data: {
-            date: new Date(obj['date']),
-            fee: obj['fees'],
-            quantity: obj['quantity'],
-            type: this.getType(obj['type']),
-            subtype: obj['subtype'],
-            unitPrice: obj['price'],
-            dividendpershare_at_costFlag: false,
-            Account: {
-              connect: {
-                id_userId: {
-                  id: account.id,
-                  userId: account.userId
-                }
-              }
-            },
-            User: {
-              connect: {
-                id: account.userId
-              }
-            },
-            SymbolProfile: {
-              connect: {
-                id: symbolProfileId
-              }
-            }
-          }
-        });
-        orderCreated++;
-
-      }
-
-      console.log('Total order crated = ', orderCreated);
-      console.log('Total order skipped = ', orderSkipped);
-
-
-
-
-    } catch (error) {
-      console.log(error);
-
-    }
   }
 
   public async syncCashBalanceForPlaidLinkedInvestment(data, access_token) {

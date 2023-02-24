@@ -24,20 +24,20 @@ export class ScreenersComponent {
         'Company Analytics',
         'That Matter',
         'Gain valuable insights into stock valuation metrics to supercharge your investment decision making process. We focus on tried & true valuation metrics, such as Earnings Yield, Operating Cash Flow Yield, Free Cash Flow Yield, EV/EBITDA, and measures of historical valuation.',
-        'assets/images/image01_stock.png'
+        'assets/images/image08.svg'
       ),
       new TopicInput(
         'Market Analytics',
         'That Matter',
         'Gain valuable insights into the largest markets in the world with valuation metrics such as PE, Shiller PE, and market cap to GDP.',
-        'assets/images/image02_stock.png',
+        'assets/images/image09.svg',
         'left'
       ),
       new TopicInput(
         'Sentiment at Your',
         'Fingertips',
         'Understand current market sentiment',
-        'assets/images/image03_stock.png'
+        'assets/images/image10.svg'
       ),
     ],
   }

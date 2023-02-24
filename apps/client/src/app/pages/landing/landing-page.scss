@@ -115,7 +115,8 @@ ms-landing-topic-block {
   text-align: center;
 
   button {
-    padding: 0 3.5rem;
+    padding: 0.5rem 3.5rem;
+    font-size: 1.3rem;
     text-transform: uppercase;
     font-family: Poppins-semibold, sans-serif;
     color: white;
@@ -128,13 +129,14 @@ ms-landing-topic-block {
     margin-bottom: 8rem;
 
     button {
-      padding: .3rem 8rem;
+      padding: .5rem 8rem;
       font-size: 1.3rem;
     }
   }
 }
 
-@media screen and (min-device-width: 901px) {
+// desktop
+@media screen and (min-device-width: 1025px) {
   .ms-container {
     padding: 8rem 4rem 5rem;
   }
@@ -168,7 +170,7 @@ ms-landing-topic-block {
   .features-block {
     .content {
       max-width: 1000px;
-      justify-content: center;
+      justify-content: space-between;
 
       .feature {
         width: 480px;
@@ -177,7 +179,8 @@ ms-landing-topic-block {
   }
 }
 
-@media screen and (max-device-width: 900px) {
+// tablet
+@media screen and (max-device-width: 1024px) {
   .ms-container{
     padding: 8rem 0 2rem;
   }
@@ -219,7 +222,8 @@ ms-landing-topic-block {
   }
 }
 
-@media screen and (max-device-width: 400px) {
+// mobile
+@media screen and (max-device-width: 560px) {
   .ms-container{
     padding: 8rem 0 2rem;
   }

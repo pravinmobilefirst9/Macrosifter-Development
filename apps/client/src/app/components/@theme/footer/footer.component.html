@@ -35,7 +35,7 @@
 
     <div class="ms-container flex-row">
       <div class="icons w-75">
-        <a *ngFor="let menu of icons" [href]="menu.link">
+        <a *ngFor="let menu of icons" [href]="menu.link" target="_blank">
           <img [src]="menu.name" [alt]="menu.name">
         </a>
       </div>
@@ -52,29 +52,29 @@
     <div class="mob-container flex-column">
       <img src="assets/images/White-Logo-MacroSifter 1.svg" alt="MacroSifter white logo" class="mb-3">
       <div class="mb-4">© {{currentYear}} Pactora Inc. All rights reserved.</div>
-      <div *ngFor="let menu of mobMenus" class="menus">
+      <div *ngFor="let menu of mobMenus; let i = index" class="menus">
         <div
           class="header flex-row justify-content-center align-items-center"
-          [ngClass]="{'mb-4': menu.open}"
-          (click)="menu.open = !menu.open"
+          [ngClass]="{'mb-4': i == open}"
+          (click)="openMenu(i)"
           i18n
         >
           <span class="mr-3">{{menu.title}}</span>
-          <div class="chevron" [ngClass]="{'up': menu.open}">
+          <div class="chevron" [ngClass]="{'up': i == open}">
             <ion-icon name="chevron-down"></ion-icon>
           </div>
         </div>
 
         <div
           *ngFor="let m of menu.menu" class="menu"
-          [@openMenu]="menu.open ? 'open' : 'close'"
+          [@openMenu]="i == open ? 'open' : 'close'"
         >
-          <a [href]="m.link" i18n [ngClass]="{'hide': !menu.open}">{{m.name}}</a>
+          <a [href]="m.link" i18n [ngClass]="{'hide': i != open}">{{m.name}}</a>
         </div>
       </div>
 
       <div class="icons justify-content-between align-items-center">
-        <a *ngFor="let menu of icons" [href]="menu.link">
+        <a *ngFor="let menu of icons" [href]="menu.link" target="_blank">
           <img [src]="menu.name" [alt]="menu.name">
         </a>
       </div>

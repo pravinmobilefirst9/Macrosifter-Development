@@ -3,7 +3,6 @@ import { RouterModule, Routes, TitleStrategy } from '@angular/router';
 import { PageTitleStrategy } from '@ghostfolio/client/services/page-title.strategy';
 import { ModulePreloadService } from './core/module-preload.service';
 
-
 const routes: Routes = [
   {
     path: 'about',
@@ -14,6 +13,11 @@ const routes: Routes = [
     path: 'privacy-policy',
     loadChildren: () =>
       import('./pages/privacy/privacy-page.module').then((m) => m.PrivacyPageModule)
+  },
+  {
+    path: 'terms-of-service',
+    loadChildren: () =>
+      import('./pages/terms-of-use/terms-of-use.module').then((m) => m.TermsOfUseModule)
   },
   {
     path: 'about/changelog',

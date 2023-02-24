@@ -562,11 +562,6 @@ export class PlaidController {
       case "INVESTMENTS_TRANSACTIONS":
         this.plaidService.handleInvestmentsTransactionsWebhook(code, bodyData);
         break;
-      case "HOLDINGS":
-        // this.plaidService.handleInvestmentsTransactionsWebhook(code, bodyData);
-        console.log('getting holdings webhook................');
-
-        break;
       default:
         console.log(`Can't handle webhook product ${product}`);
         break;

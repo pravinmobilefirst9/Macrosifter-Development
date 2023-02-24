@@ -1,5 +1,5 @@
 .ms-footer {
-  background: url("../../../../assets/images/footer.png");
+  background: url("../../../../assets/images/footer.svg");
   padding: 5rem 0;
   height: 520px;
   font-size: .9rem;
@@ -43,12 +43,14 @@ a.pp {
 }
 
 .mob-footer {
-  background-image: url("../../../../assets/images/footer.png");
-  background-size: 100% 100%;
+  background-image: url("../../../../assets/images/footer.svg");
+  background-color: #032962;
+  background-size: cover;
   background-repeat: no-repeat;
-  background-position: center;
+  background-position: top;
   padding: 5rem 0;
   font-size: .9rem;
+  height: 1100px;
 }
 
 .mob-container {

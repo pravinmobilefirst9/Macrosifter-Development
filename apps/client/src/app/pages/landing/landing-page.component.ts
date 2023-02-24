@@ -63,13 +63,13 @@ export class LandingPageComponent implements OnDestroy, OnInit {
       'Automated & Simplified',
       'Syncing',
       'We connect to most major financial institutions and make it easy for you to import historical transactions while automatically syncing all future transactions. If you’d like to manually add your accounts or transactions, no problem. We support that too.',
-      'assets/images/image01.png'
+      'assets/images/image01_start.svg'
     ),
     new TopicInput(
       'Multi-Asset Portfolio',
       'Management & Analysis',
       'Track all your assets in MacroSifter and  easily segment your holdings into different portfolios. Stocks, ETFs, Options, Crypto, Real Estate, and even your own businesses. We allow you to track assets all over the world in real time combined with critical insights.',
-      'assets/images/image02.png',
+      'assets/images/image02_start.svg',
       'left',
       'Discover',
       '/start/portfolio-management'
@@ -78,7 +78,7 @@ export class LandingPageComponent implements OnDestroy, OnInit {
       'Dividends &',
       'Distributions',
       'Fidelity Research shows that dividends have accounted for roughly 40% of the total return on US stocks since the 1930s, yet your dividend returns are often opaque. We make it easy to track your dividends. We calculate your dividend yield on cost, dividend growth, current dividend yield, dividend income for assets all over the world, and more. Have real estate or other business investments? We make it easy for you to track your distribution returns too.',
-      'assets/images/image03.png',
+      'assets/images/image03_start.svg',
       'right',
       'Discover',
       '/start/dividends'
@@ -87,7 +87,7 @@ export class LandingPageComponent implements OnDestroy, OnInit {
       'Stock & Market',
       'Screeners',
       'Forget all the noise. At the end of the day, only valuations, business moat, and quality matters in the long run.  We arm you with tried & true valuation metrics, such as Earnings Yield, EV/EBITDA, and Historical Over or Under Valuation, to help you make the right investing decisions for yourself. ',
-      'assets/images/image04.png',
+      'assets/images/image04_start.svg',
       'left',
       'Discover',
       '/start/screeners'
@@ -96,7 +96,7 @@ export class LandingPageComponent implements OnDestroy, OnInit {
       'Macroeconomic',
       'Dashboard',
       'The news cycle never ends - forget the noise and paralysis. We’ve compiled an objective dashboard utilizing multiple objective methodologies so you can see where the economy may be headed at a given point in time. While it’s impossible to predict the future, knowing the probabilities helps one prepare for potential outcomes. ',
-      'assets/images/image05.png',
+      'assets/images/image05_start.svg',
       'right',
       'Discover',
       '/start/macroeconomics'

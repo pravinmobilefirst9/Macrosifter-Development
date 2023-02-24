@@ -24,20 +24,20 @@ export class MacroeconomicsComponent {
         'The News Cycle',
         'Never Ends',
         'In 2020, the narrative was that inflation was dead. In 2023, the narrative is that inflation will never end. Add that in with a million opinions on what will happen tomorrow, next week, next month, next quarter, next year, and it’s very easy to become overwhelmed and confused.',
-        'assets/images/image01_macro.png'
+        'assets/images/image11.svg'
       ),
       new TopicInput(
         'Objective Data',
         'Wins',
         'While it’s impossible to predict what actually happens next, we can understand probable paths with objective data that can be helpful in the decision making process. Over the last decade, we’ve honed in on a number of broad indicators that paint a picture for the direction of the economy. ',
-        'assets/images/image02_macro.png',
+        'assets/images/image12.svg',
         'left'
       ),
       new TopicInput(
         'Several Objective Methodologies is',
         'better than one',
         'We don’t look at just one objective methodology. We’ve identified multiple objective methodologies so you can see where the economy may be headed at a given point in tim',
-        'assets/images/image03_macro.png'
+        'assets/images/image13.svg'
       ),
     ],
   }

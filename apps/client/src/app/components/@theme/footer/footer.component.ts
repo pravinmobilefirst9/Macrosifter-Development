@@ -48,12 +48,12 @@ export class FooterComponent implements OnInit {
   ]
 
   public icons: MenuItemInterface[] = [
-    {link: '/', name: 'assets/icons/twitter.svg'},
-    {link: '/', name: 'assets/icons/instagram.svg'},
-    {link: '/', name: 'assets/icons/linkedin.svg'},
-    {link: '/', name: 'assets/icons/facebook.svg'},
-    {link: '/', name: 'assets/icons/youtube.svg'},
-    {link: '/', name: 'assets/icons/tiktok.svg'},
+    {link: 'https://twitter.com/Macrosifter', name: 'assets/icons/twitter.svg'},
+    {link: 'https://www.instagram.com/macrosifter/', name: 'assets/icons/instagram.svg'},
+    {link: 'https://www.linkedin.com/company/macrosifter/about/', name: 'assets/icons/linkedin.svg'},
+    {link: 'https://www.facebook.com/Macrosifter', name: 'assets/icons/facebook.svg'},
+    {link: 'https://www.youtube.com/@macrosifter', name: 'assets/icons/youtube.svg'},
+    {link: 'https://www.tiktok.com/@macrosifter', name: 'assets/icons/tiktok.svg'},
   ]
 
   deviceType: string;
@@ -63,6 +63,7 @@ export class FooterComponent implements OnInit {
     {title: 'Assets', menu: this.menu2, open: false},
     {title: 'Features', menu: this.menu3, open: false},
   ]
+  open = -1;
 
   termsLink = TERMS_OF_USE_LINK;
   privacyPolicyLink = PRIVACY_POLICY_LINK;
@@ -75,5 +76,9 @@ export class FooterComponent implements OnInit {
   ngOnInit(): void {
     this.deviceType = this.deviceService.getDeviceInfo().deviceType;
     this.changeDetectorRef.markForCheck();
+  }
+
+  openMenu(i: number) {
+    this.open = this.open === i ? -1 : i;
   }
 }

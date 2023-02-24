@@ -1,6 +1,12 @@
 import { Component, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 
+export interface BlogsListItem {
+  title: string;
+  link: string;
+  date?: string;
+}
+
 @Component({
   host: { class: 'page' },
   selector: 'gf-blog-page',
@@ -8,6 +14,8 @@ import { Subject } from 'rxjs';
   templateUrl: './blog-page.html'
 })
 export class BlogPageComponent implements OnDestroy {
+  blogs: BlogsListItem[] = [];
+
   private unsubscribeSubject = new Subject<void>();
 
   public constructor() {}

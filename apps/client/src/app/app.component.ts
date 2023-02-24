@@ -78,6 +78,9 @@ export class AppComponent implements OnDestroy, OnInit {
           permissions.createUserAccount
         );
 
+        /** remove next line if dark theme implemented*/
+        if (this.user?.settings) this.user.settings.colorScheme = 'LIGHT';
+
         this.initializeTheme(this.user?.settings.colorScheme);
 
         this.changeDetectorRef.markForCheck();
@@ -101,9 +104,14 @@ export class AppComponent implements OnDestroy, OnInit {
   }
 
   private initializeTheme(userPreferredColorScheme?: ColorScheme) {
-    const isDarkTheme = userPreferredColorScheme
-      ? userPreferredColorScheme === 'DARK'
-      : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    /** remove next lines when dark theme implemented */
+    const isDarkTheme = false;
+    userPreferredColorScheme = 'LIGHT';
+
+    /** leaving in case we add dark theme later */
+    // const isDarkTheme = userPreferredColorScheme
+    //   ? userPreferredColorScheme === 'DARK'
+    //   : window.matchMedia('(prefers-color-scheme: dark)').matches;
 
     this.materialCssVarsService.setDarkTheme(isDarkTheme);
 

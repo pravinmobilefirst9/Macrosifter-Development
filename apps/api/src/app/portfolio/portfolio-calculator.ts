@@ -150,19 +150,14 @@ export class PortfolioCalculator {
     daysInMarket: number;
     netPerformancePercent: Big;
   }): Big {
-    try {
-
-      if (isNumber(daysInMarket) && daysInMarket > 0) {
-        const exponent = new Big(365).div(daysInMarket).toNumber();
-        return new Big(
-          Math.pow(netPerformancePercent.plus(1).toNumber(), exponent)
-        ).minus(1);
-      }
-
-      return new Big(0);
-    } catch (error) {
-      return new Big(0);
+    if (isNumber(daysInMarket) && daysInMarket > 0) {
+      const exponent = new Big(365).div(daysInMarket).toNumber();
+      return new Big(
+        Math.pow(netPerformancePercent.plus(1).toNumber(), exponent)
+      ).minus(1);
     }
+
+    return new Big(0);
   }
 
   public getTransactionPoints(): TransactionPoint[] {
