@@ -727,8 +727,12 @@ export class DataGatheringService {
       "client_id": this.PLAID_CLIENT_ID,
       "secret": this.PLAID_SECRET_ID,
       "access_token": access_token,
-      "start_date": "2000-01-01",
-      "end_date": "2023-01-01"
+      "start_date": "2010-01-01",
+      "end_date": "2023-01-01",
+      "options": {
+        "count": 500,
+        "offset": 0
+      }
     });
 
     const config = {
@@ -993,6 +997,8 @@ export class DataGatheringService {
   public async handleUpdateTranscationInvestment(access_token) {
     try {
 
+      let orderCreated = 0;
+      let orderSkipped = 0;
 
       const data = await this.investmentsTranscationGet(access_token);
       if (!(data)) {
@@ -1029,6 +1035,7 @@ export class DataGatheringService {
         }
 
         if (obj['SymbolProfile']['symbol'] === null) {
+          orderSkipped++;
           continue;
         }
 
@@ -1099,9 +1106,13 @@ export class DataGatheringService {
             }
           }
         });
-
+        orderCreated++;
 
       }
+
+      console.log('Total order crated = ', orderCreated);
+      console.log('Total order skipped = ', orderSkipped);
+
 
 
 
