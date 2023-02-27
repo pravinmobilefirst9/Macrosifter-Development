@@ -1121,6 +1121,10 @@ export class DataGatheringService {
 
       for (const investment of data['investment_transactions']) {
 
+        if(investment['name']==='CASH ALTERNATIVES PURCHASE' || investment['name']==='CASH ALTERNATIVES REDEMPTION'){
+          orderSkipped++;
+          continue;
+        }
 
         const symbolProfile = data['securities'].filter((value) => {
           return (value['security_id'] === investment['security_id'])
