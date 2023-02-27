@@ -89,6 +89,23 @@ export class CSVController {
     @Post('post-csv-file-upload')
     public async postCSVFileUpload(@Body() bodyData: PostFileCsvUploadDto) {
 
+        const istitution = await this.prismaService.institution.findUnique({
+            where: {
+                id: bodyData['institutionId']
+            }
+        })
+
+        if (istitution.institutionUniqueId === 'ins_117958' || istitution.institutionUniqueId === 'ins_119423') {
+
+
+        } else {
+
+            return {
+                status: `This institution not supported yet!`
+            }
+
+        }
+
         try {
 
             const isFileExist = await this.prismaService.orderCSV.findFirst({
