@@ -13,7 +13,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { DataSource, PlaidHoldings, Prisma, PrismaClient, SplitData, Type } from '@prisma/client';
 import { JobOptions, Queue } from 'bull';
-import { format, getDate, getMonth, getYear, isBefore, parseISO, subDays } from 'date-fns';
+import { format, getDate, getMonth, getYear, isBefore, parseISO, sub, subDays } from 'date-fns';
 import { OrderService } from '../app/order/order.service';
 import { PlaidService } from '../app/plaid/plaid.service';
 const axios = require('axios');
@@ -977,29 +977,141 @@ export class DataGatheringService {
     }
   }
 
-  public async getActivitySubTypeId(subtype) {
+  public async getActivitySubTypeId(type,subtype,orderSubTypeTable) {
     try {
       let data = null;
 
-      data = await this.prismaService.activitySubType.findFirst({
-        where: {
-          subtype
-        }
-      });
+      data = orderSubTypeTable.filter((e)=>{
+          return (e['type']===type && subtype===e['subtype'])
+      })
 
-
-      return data && data.id ? data.id : null;
+      return data && data[0].id ? data[0].id : null;
     } catch (error) {
       return null;
     }
   }
 
+  public getTypeAndSubTypeByName(name){
+
+    let type = null;
+    let subtype = null;
+
+    switch(name){
+
+      case 'INCOME DIV DIVIDEND RECEIVED': 
+        type = 'DIVIDEND',subtype = 'Ordinary Dividend'
+        break;
+
+      case 'SELL Matthews Pacific Tiger Fund Insti Class': 
+        type = 'SELL',subtype = 'Sell'
+        break;
+
+      case 'SELL Trp Equity Income': 
+        type = 'SELL',subtype = 'Sell'
+        break;
+
+      case 'BUY DoubleLine Total Return Bond Fund': 
+        type = 'BUY',subtype = 'Buy'
+        break;
+
+      case 'SELL Cambiar International Equity Institutional': 
+        type = 'SELL',subtype = 'Sell'
+        break;
+
+      case 'BUY Achillion Pharmaceuticals Inc.': 
+       type = 'BUY',subtype = 'Buy'
+        break;
+
+      case 'BUY NFLX DERIVATIVE': 
+       type = 'BUY',subtype = 'Buy'
+        break;
+
+      case 'INVBANKTRAN DEP CO CONTR CURRENT YR EMPLOYER CU CO CONTR CURRENT YR EMPLOYER CUR YR': 
+       type = 'BUY',subtype = 'Buy'
+        break;
+
+      case 'SELL iShares Inc MSCI Brazil': 
+      type = 'SELL',subtype = 'Sell'
+        break;
+
+      case 'SELL Southside Bancshares Inc.': 
+      type = 'SELL',subtype = 'Sell'
+        break;
+
+      case 'BUY FIDELITY INDEX 1055': 
+       type = 'BUY',subtype = 'Buy'
+        break;
+
+      case 'INVBANKTRAN DEP INTEREST EARNED INTEREST EARNED': 
+      type = 'BUY',subtype = 'Buy'
+        break;
+
+      case 'BUY BTC': 
+      type = 'BUY',subtype = 'Buy'
+        break;
+
+      case 'CASH ALTERNATIVES INTEREST': 
+       type = 'CASH',subtype = 'Deposit'
+        break;
+
+      case 'PARTNERSHIP DISTRIBUTION': 
+       type = 'DIVIDEND',subtype = 'Partnership Distribution'
+        break;
+
+      case 'FOREIGN TAX WITHHELD': 
+       type = 'TAX',subtype = 'Foreign Tax Withheld'
+        break;
+
+      case 'QUALIFIED DIVIDEND': 
+       type = 'DIVIDEND',subtype = 'Qualified Dividend'
+        break;
+
+      case 'ORDINARY DIVIDEND': 
+       type = 'DIVIDEND',subtype = 'Ordinary Dividend'
+        break;
+
+      case 'CASH ALTERNATIVES REDEMPTION': 
+       type = 'CASH',subtype = 'Deposit'
+        break;
+
+      case 'Bought': 
+      type = 'BUY',subtype = 'Buy'
+        break;
+
+      case 'CASH ALTERNATIVES PURCHASE': 
+      type = 'CASH',subtype = 'Deposit'
+        break;
+
+      case 'LONG TERM GAIN DISTRIBUTION': 
+      type = 'CASH',subtype = 'Deposit'
+        break;
+
+      case 'FOREIGN SECURITY FEE': 
+      type = 'FEES',subtype = 'Foreign Security Fee'
+        break;
+
+      default: type=null,subtype = null; 
+      console.log('Hey developer, please handle me , I am ',name);
+      
+    }
+
+    return {
+      current_type:type,
+      current_subtype:subtype
+    }
+
+  }
+
+  // plaid account orders (automatically imports)
   public async handleUpdateTranscationInvestment(access_token) {
     try {
 
       let orderCreated = 0;
       let orderSkipped = 0;
 
+    
+      const orderSubTypeTable = await this.prismaService.activitySubType.findMany({});
+    
       const data = await this.investmentsTranscationGet(access_token);
       if (!(data)) {
         return;
@@ -1014,7 +1126,8 @@ export class DataGatheringService {
           return (value['security_id'] === investment['security_id'])
         })
 
-
+        const {current_type,current_subtype} = this.getTypeAndSubTypeByName(investment['name']);
+       ``        
         const obj = {
           account_id: investment['account_id'],
           amount: investment['amount'],
@@ -1025,8 +1138,9 @@ export class DataGatheringService {
           price: investment['price'],
           security_id: investment['security_id'],
           quantity: investment['quantity'],
-          subtype: await this.getActivitySubTypeId(this.getSubType(investment['type'])),
-          type: investment['type'],
+          subtype: await this.getActivitySubTypeId(current_type,current_subtype,orderSubTypeTable),
+          type: current_type,
+          comment : investment['name'],
           SymbolProfile: {
             symbol: symbolProfile[0]['ticker_symbol'],
             type: symbolProfile[0]['type'],
@@ -1082,9 +1196,10 @@ export class DataGatheringService {
             date: new Date(obj['date']),
             fee: obj['fees'],
             quantity: obj['quantity'],
-            type: this.getType(obj['type']),
+            type: obj['type'],
             subtype: obj['subtype'],
             unitPrice: obj['price'],
+            comment:obj['comment'],
             dividendpershare_at_costFlag: false,
             Account: {
               connect: {
